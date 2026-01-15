@@ -38,7 +38,7 @@ metadata:
 spec:
   replicas: 1
   strategy:
-    type: Recreate # Better for PVs/sqlite dbs than RollingUpdate
+    type: Recreate
   selector:
     matchLabels:
       app: qbittorrent

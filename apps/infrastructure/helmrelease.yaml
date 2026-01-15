@@ -175,7 +175,7 @@ spec:
           mountPath: /etc/grafana/provisioning/datasources
           subPath: provisioning/datasources
 
-        # Dashboard provisioning configs (if you have these files as well)
+        # Dashboard provisioning configs
         - name: grafana-host
           mountPath: /etc/grafana/provisioning/dashboards
           subPath: provisioning/dashboards
@@ -191,5 +191,4 @@ spec:
         passwordKey: admin-password
 
       ingress:
-        ## If true, Grafana Ingress will be created
         enabled: false

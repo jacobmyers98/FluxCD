@@ -43,7 +43,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: wildcard-waffle-cert
-  namespace: plex  # <--- For Sonarr, Radarr, Plex
+  namespace: plex
 spec:
   isCA: false
   commonName: "*.waffle-k8s.local"
@@ -65,7 +65,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: wildcard-waffle-cert
-  namespace: infrastructure # <--- For Grafana, etc.
+  namespace: infrastructure
 spec:
   isCA: false
   commonName: "*.waffle-k8s.local"
