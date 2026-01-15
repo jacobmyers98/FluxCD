@@ -38,8 +38,8 @@ spec:
     spec:
       securityContext:
         runAsUser: 1001
-        runAsGroup: 1001
-        fsGroup: 1001
+        runAsGroup: 1004
+        fsGroup: 1004
       containers:
         - name: overseerr
           image: linuxserver/overseerr:1.34.0
