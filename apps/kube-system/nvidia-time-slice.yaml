@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nvidia-time-slice-cfg
+  namespace: kube-system
+data:
+  time-slicing.yaml: |
+    version: v1
+    flags:
+      gfdEnabled: false
+    sharing:
+      timeSlicing:
+        resources:
+          - name: nvidia.com/gpu
+            replicas: 4

@@ -1,0 +1,27 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: radarr
+  namespace: plex
+spec:
+  image: linuxserver/radarr
+  interval: 1h
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: sonarr
+  namespace: plex
+spec:
+  image: linuxserver/sonarr
+  interval: 1h
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: jackett
+  namespace: plex
+spec:
+  image: linuxserver/jackett
+  interval: 1h

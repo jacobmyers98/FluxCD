@@ -1,0 +1,38 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: duckdns-updater
+  namespace: gaming
+spec:
+  schedule: "*/5 * * * *" # Runs every 5 minutes
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: duckdns
+            image: curlimages/curl:8.17.0
+            env:
+            - name: DUCK_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: duckdns-secret
+                  key: token
+            - name: DUCK_SUBDOMAIN
+              valueFrom:
+                secretKeyRef:
+                  name: duckdns-secret
+                  key: subdomain
+            args:
+            - /bin/sh
+            - -c
+            - |
+              # 1. Ask a third party for your real Public IP
+              PUBLIC_IP=$(curl -s https://api.ipify.org)
+              
+              # 2. Send that specific IP to Duck DNS
+              echo "Updating waffle-craft with IP: ${PUBLIC_IP}"
+              curl -v "https://www.duckdns.org/update?domains=${DUCK_SUBDOMAIN}&token=${DUCK_TOKEN}&ip=${PUBLIC_IP}"
+          restartPolicy: OnFailure

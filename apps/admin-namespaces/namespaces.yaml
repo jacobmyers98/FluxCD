@@ -1,0 +1,87 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gaming
+  labels:
+    app: gaming
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: infrastructure
+  labels:
+    app: infrastructure
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: infrastructure-network
+  labels:
+    app: infrastructure-network
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: plex
+  labels:
+    app: plex
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: scraper
+  labels:
+    app: scraper
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: teslamate
+  labels:
+    app: teslamate
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: trivy-system
+  labels:
+    app: trivy-system
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: research
+  labels:
+    app: research
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: keda
+  labels:
+    app: keda
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev
+  labels:
+    app: dev

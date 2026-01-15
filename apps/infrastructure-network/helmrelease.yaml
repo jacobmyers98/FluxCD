@@ -1,0 +1,73 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: metallb
+  namespace: infrastructure-network
+spec:
+  releaseName: metallb
+  chart:
+    spec:
+      chart: metallb
+      sourceRef:
+        kind: HelmRepository
+        name: metallb
+        namespace: flux-system
+      version: "0.13.x"
+  interval: 1h
+  install:
+    createNamespace: true
+  values:
+    # We will configure the IP pool separately (IPAddressPool)
+    # See "Post-Install" below
+
+---
+
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: ingress-nginx
+  namespace: infrastructure-network
+spec:
+  releaseName: ingress-nginx
+  chart:
+    spec:
+      chart: ingress-nginx
+      sourceRef:
+        kind: HelmRepository
+        name: ingress-nginx
+        namespace: flux-system
+      version: "4.x"
+  interval: 1h
+  install:
+    createNamespace: true
+  values:
+    controller:
+      # Use the "ingress-nginx" class
+      ingressClassResource:
+        default: true
+      # Allow snippet annotations (needed for some complex rewrites)
+      allowSnippetAnnotations: true
+
+---
+
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: cert-manager
+  namespace: infrastructure-network
+spec:
+  releaseName: cert-manager
+  chart:
+    spec:
+      chart: cert-manager
+      sourceRef:
+        kind: HelmRepository
+        name: jetstack
+        namespace: flux-system
+      version: "v1.14.x"
+  interval: 1h
+  install:
+    createNamespace: true
+    crds: CreateReplace
+  values:
+    installCRDs: true

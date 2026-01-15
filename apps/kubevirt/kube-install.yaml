@@ -1,0 +1,13 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: kubevirt
+  namespace: flux-system
+spec:
+  interval: 1h
+  prune: true
+  wait: true
+  path: "./apps/kubevirt" 
+  sourceRef:
+    kind: GitRepository
+    name: flux-system

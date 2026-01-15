@@ -1,0 +1,82 @@
+# 1. The Bootstrap Issuer (Allows us to self-sign the Root CA)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-issuer
+spec:
+  selfSigned: {}
+
+---
+# 2. The Root CA Certificate (The "Police Station")
+# This creates the Authority that will sign your other certs.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: my-root-ca
+  namespace: infrastructure-network
+spec:
+  isCA: true               # <--- CRITICAL: This allows it to sign other certs
+  commonName: "Waffle Root CA"
+  secretName: root-ca-secret
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: selfsigned-issuer # Signed by the bootstrap issuer from Step 1
+    kind: ClusterIssuer
+    group: cert-manager.io
+
+---
+# 3. The CA Issuer (The "Signer")
+# This tells Cert-Manager: "Use the certificate from Step 2 to sign apps."
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: my-internal-ca
+spec:
+  ca:
+    secretName: root-ca-secret # Matches the secret in Step 2
+
+---
+# 4a. Certificate for the "plex" namespace
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wildcard-waffle-cert
+  namespace: plex  # <--- For Sonarr, Radarr, Plex
+spec:
+  isCA: false
+  commonName: "*.waffle-k8s.local"
+  secretName: wildcard-tls-secret
+  dnsNames:
+  - "waffle-k8s.local"
+  - "*.waffle-k8s.local"
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: my-internal-ca
+    kind: ClusterIssuer
+    group: cert-manager.io
+
+---
+# 4b. Certificate for the "infrastructure" namespace
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wildcard-waffle-cert
+  namespace: infrastructure # <--- For Grafana, etc.
+spec:
+  isCA: false
+  commonName: "*.waffle-k8s.local"
+  secretName: wildcard-tls-secret
+  dnsNames:
+  - "waffle-k8s.local"
+  - "*.waffle-k8s.local"
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: my-internal-ca
+    kind: ClusterIssuer
+    group: cert-manager.io

@@ -1,0 +1,37 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: folding-scaler
+  namespace: research
+spec:
+  scaleTargetRef:
+    name: protein-research
+  minReplicaCount: 0
+  maxReplicaCount: 2
+  pollingInterval: 30
+  cooldownPeriod: 60
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 600 # Must be idle for 10 mins before killing
+          policies:
+          - type: Percent
+            value: 100
+            periodSeconds: 15
+  triggers:
+  - type: prometheus
+    metadata:
+      serverAddress: http://prometheus-operated.infrastructure.svc.cluster.local:9090
+      metricName: cluster_cpu_step
+      threshold: "1"
+      # Logic:
+      # 1. Is CPU usage < 10% (0.10)? If yes, +1 point.
+      # 2. Is CPU usage < 30% (0.30)? If yes, +1 point.
+      # Result: <10% = 2 pods. <30% = 1 pod. >30% = 0 pods.
+      query: |
+        (
+          (max(cluster:node_cpu:ratio_rate5m) <bool 0.10)
+          +
+          (max(cluster:node_cpu:ratio_rate5m) <bool 0.30)
+        )

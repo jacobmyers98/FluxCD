@@ -1,0 +1,32 @@
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageUpdateAutomation
+metadata:
+  name: infra-automation
+  namespace: infrastructure
+spec:
+  interval: 1h
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  git:
+    checkout:
+      ref:
+        branch: main
+    commit:
+      author:
+        name: flux-bot
+        email: flux@users.noreply.github.com
+      messageTemplate: |
+        update image tag
+        Changes:
+        {{- range $resource, $changes := .Changed.Objects -}}
+          {{- range $change := $changes -}}
+            {{ $change.OldValue }} -> {{ $change.NewValue }}
+          {{- end -}}
+        {{- end -}}
+    push:
+      branch: main
+  update:
+    path: ./apps/infrastructure
+    strategy: Setters

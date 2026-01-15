@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: port-service-radarr
+  namespace: plex
+  labels:
+    app: radarr
+spec:
+  ports:
+    - name: radarr-port
+      port: 7878
+      targetPort: 7878
+      nodePort: 30001
+  selector:
+    app: radarr
+  type: NodePort
+---
+apiVersion: apps/v1 #kubectl api-resources | grep {kind}
+kind: Deployment
+metadata:
+  name: radarr
+  namespace: plex
+  labels:
+    app: radarr
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: radarr
+  template:
+    metadata:
+      labels:
+        app: radarr
+    spec:
+      securityContext:
+        runAsUser: 1001
+        runAsGroup: 1004
+        fsGroup: 1004
+      containers:
+      - name: radarr
+        image: linuxserver/radarr:6.0.4 #  {"$imagepolicy": "plex:radarr-policy"}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 7878
+        volumeMounts:
+        - mountPath: /config
+          name: radarr-config
+        - mountPath: /mnt/Media
+          name: movies-shows-raid
+        - mountPath: /downloads
+          name: torrent-downloads
+      volumes:
+      - name: radarr-config
+        hostPath:
+          path: /home/server/docker/radarr/config
+          type: Directory
+      - name: movies-shows-raid
+        hostPath:
+          path: /mnt/Media
+          type: Directory
+      - name: torrent-downloads
+        hostPath:
+          path: /mnt/Media/Torrent
+          type: Directory

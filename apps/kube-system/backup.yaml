@@ -1,0 +1,47 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: etcd-backup
+  namespace: kube-system
+spec:
+  schedule: "0 3 * * 0"  # Every 7 days at 03:00 AM
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      completions: 1
+      parallelism: 1
+      backoffLimit: 6
+      activeDeadlineSeconds: 300
+      template:
+        spec:
+          securityContext:
+            runAsUser: 0
+          nodeSelector:
+            kubernetes.io/hostname: gameserver
+          hostNetwork: true
+          containers:
+          - name: etcd-backup
+            image: registry.k8s.io/etcd:3.6.4-0
+            env:
+              - name: ETCDCTL_API
+                value: "3"
+            command:
+              - /bin/sh
+              - -c
+              - 'set -x; etcdctl --debug --endpoints=https://127.0.0.1:2379 --cacert=/certs/ca.crt --cert=/certs/client.crt --key=/certs/client.key snapshot save /backup/etcd-$RANDOM.db; exit 0'
+            volumeMounts:
+            - name: etcd-certs
+              mountPath: /certs
+              readOnly: true
+            - name: backup-storage
+              mountPath: /backup
+          restartPolicy: OnFailure
+          volumes:
+          - name: etcd-certs
+            secret:
+              secretName: etcd-certs
+          - name: backup-storage
+            hostPath:
+              path: /mnt/backup/etcd
+              type: Directory

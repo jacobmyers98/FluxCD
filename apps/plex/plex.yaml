@@ -1,0 +1,70 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: port-service-plex
+  namespace: plex
+  labels:
+    app: plex
+spec:
+  ports:
+    - name: plex-port
+      port: 32400
+      targetPort: 32400
+      nodePort: 30013
+  selector:
+    app: plex
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plex
+  namespace: plex
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: plex
+  template:
+    metadata:
+      labels:
+        app: plex
+    spec:
+      securityContext:
+        runAsUser: 1001
+        runAsGroup: 1004
+        fsGroup: 1004
+      containers:
+        - name: plex
+          image: lscr.io/linuxserver/plex:1.42.2
+          ports:
+            - containerPort: 32400
+          env:
+            - name: PUID
+              value: "1001"
+            - name: PGID
+              value: "1004"
+            - name: VERSION
+              value: "docker"
+            - name: PLEX_CLAIM
+              valueFrom:
+                secretKeyRef:
+                  name: plex-secret
+                  key: claim-token
+          volumeMounts:
+            - mountPath: /config
+              name: plex-config
+            - mountPath: /data
+              name: media-data
+      volumes:
+        - name: plex-config
+          hostPath:
+            path: /home/server/docker/plex/config
+            type: DirectoryOrCreate
+        - name: media-data
+          hostPath:
+            path: /mnt/Media
+            type: Directory

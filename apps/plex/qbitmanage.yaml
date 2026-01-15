@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: port-service-qbitmanage
+  namespace: plex
+  labels:
+    app: qbitmanage
+spec:
+  ports:
+    - name: qbitmanage-port
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 30019
+  selector:
+    app: qbitmanage
+  type: NodePort
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qbitmanage
+  namespace: plex
+  labels:
+    app: qbitmanage
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: qbitmanage
+  template:
+    metadata:
+      labels:
+        app: qbitmanage
+    spec:
+      containers:
+        - name: qbitmanage
+          image: ghcr.io/stuffanthings/qbit_manage:v4.6.5
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PUID
+              value: "1001"
+            - name: PGID
+              value: "1001"
+            - name: TZ
+              value: "America/Denver"
+            - name: QBT_WEB_SERVER
+              value: "true"
+          volumeMounts:
+            - name: qbitmanage-config
+              mountPath: /config
+            # OPTIONAL: Un-comment and configure if you use "Orphaned Data" cleanup
+            # - name: media-data
+            #   mountPath: /data/torrents
+      volumes:
+        - name: qbitmanage-config
+          hostPath:
+            path: /home/server/docker/qbitmanage
+            type: Directory
+        # OPTIONAL: Matches your qBittorrent downloads path
+        # - name: media-data
+        #   hostPath:
+        #     path: /home/server/media
+        #     type: Directory

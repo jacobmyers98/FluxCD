@@ -1,0 +1,22 @@
+#/etc/kubernetes/manifests/keepalived.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: keepalived
+  namespace: kube-system
+spec:
+  hostNetwork: true
+  containers:
+  - name: keepalived
+    image: osixia/keepalived:2.0.20
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - name: config
+      mountPath: /usr/local/etc/keepalived/keepalived.conf
+      subPath: keepalived.conf
+  volumes:
+  - name: config
+    hostPath:
+      path: /etc/keepalived/keepalived.conf

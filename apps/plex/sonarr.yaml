@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: port-service-sonarr
+  namespace: plex
+  labels:
+    app: sonarr
+spec:
+  ports:
+    - name: sonarr-port
+      port: 8989
+      targetPort: 8989
+      nodePort: 30002
+  selector:
+    app: sonarr
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sonarr
+  namespace: plex
+  labels:
+    app: sonarr
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: sonarr
+  template:
+    metadata:
+      labels:
+        app: sonarr
+    spec:
+      securityContext:
+        runAsUser: 1001
+        runAsGroup: 1004
+        fsGroup: 1004
+      containers:
+      - name: sonarr
+        image: linuxserver/sonarr:4.0.16 # {"$imagepolicy": "plex:sonarr-policy"}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8989
+        volumeMounts:
+        - mountPath: /config
+          name: sonarr-config
+        - mountPath: /mnt/Media
+          name: movies-shows-raid
+        - mountPath: /downloads
+          name: torrent-downloads
+      volumes:
+      - name: sonarr-config
+        hostPath:
+          path: /home/server/docker/sonarr/config
+          type: Directory
+      - name: movies-shows-raid
+        hostPath:
+          path: /mnt/Media
+          type: Directory
+      - name: torrent-downloads
+        hostPath:
+          path: /mnt/Media/Torrent
+          type: Directory

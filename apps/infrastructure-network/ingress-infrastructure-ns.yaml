@@ -1,0 +1,38 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: infrastructure-ingress
+  namespace: infrastructure
+  annotations:
+    cert-manager.io/cluster-issuer: "my-internal-ca"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - "*.waffle-k8s.local"
+    secretName: wildcard-tls-secret
+  rules:
+  # --- Grafana ---
+  - host: grafana.waffle-k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-grafana
+            port:
+              number: 80
+  # --- Homarr ---
+  - host: homarr.waffle-k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-homarr
+            port:
+              number: 7575

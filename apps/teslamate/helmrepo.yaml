@@ -1,0 +1,18 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: teslamate
+  namespace: flux-system
+spec:
+  interval: 6h
+  url: https://geek-cookbook.github.io/charts/
+
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: mosquitto
+  namespace: flux-system
+spec:
+  interval: 6h
+  url: https://storage.googleapis.com/t3n-helm-charts

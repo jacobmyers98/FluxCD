@@ -1,0 +1,139 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tdarr-server
+  namespace: plex
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: tdarr-server
+  template:
+    metadata:
+      labels:
+        app: tdarr-server
+    spec:
+      securityContext:
+      containers:
+        - name: tdarr-server
+          image: ghcr.io/haveagitgat/tdarr:2.58.02
+          env:
+            - name: serverIP
+              value: "0.0.0.0"
+            - name: serverPort
+              value: "8266"
+            - name: webUIPort
+              value: "8265"
+            - name: internalNode
+              value: "false"
+            - name: PUID
+              value: "1001"
+            - name: PGID
+              value: "1004"
+          ports:
+            - containerPort: 8265
+            - containerPort: 8266
+          volumeMounts:
+            - name: tdarr-config
+              mountPath: /app/server
+            - name: tdarr-media
+              mountPath: /media
+      volumes:
+        - name: tdarr-config
+          hostPath:
+            path: /home/server/docker/tdarr/config
+            type: DirectoryOrCreate
+        - name: tdarr-media
+          hostPath:
+            path: /mnt/Media
+            type: Directory
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tdarr-server
+  namespace: plex
+spec:
+  type: NodePort
+  selector:
+    app: tdarr-server
+  ports:
+    - name: tdarr-webui
+      port: 8265
+      targetPort: 8265
+      nodePort: 30017
+    - name: server
+      port: 8266
+      targetPort: 8266
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tdarr-node
+  namespace: plex
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tdarr-node
+  template:
+    metadata:
+      labels:
+        app: tdarr-node
+    spec:
+      securityContext:
+      containers:
+        - name: tdarr-node
+          image: ghcr.io/haveagitgat/tdarr_node:2.58.02
+          env:
+            - name: nodeID
+              value: "k8s-node-1"
+            - name: serverIP
+              value: "tdarr-server"
+            - name: serverPort
+              value: "8266"
+            - name: nodePort
+              value: "8267"
+            - name: PUID
+              value: "1001"
+            - name: PGID
+              value: "1004"
+          ports:
+            - containerPort: 8267
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+          volumeMounts:
+            - name: tdarr-config
+              mountPath: /app/configs
+            - name: tdarr-media
+              mountPath: /media
+      volumes:
+        - name: tdarr-config
+          hostPath:
+            path: /home/server/docker/tdarr/config
+            type: DirectoryOrCreate
+        - name: tdarr-media
+          hostPath:
+            path: /mnt/Media
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tdarr-node-port
+  namespace: plex
+spec:
+  type: ClusterIP
+  selector:
+    app: tdarr-node
+  ports:
+    - name: tdarr-node
+      port: 8267
+      targetPort: 8267

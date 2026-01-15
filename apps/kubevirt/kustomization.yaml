@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  # 1. The Operator
+  - https://github.com/kubevirt/kubevirt/releases/download/v1.2.0/kubevirt-operator.yaml
+  # 2. The KubeVirt Custom Resource
+  - https://github.com/kubevirt/kubevirt/releases/download/v1.2.0/kubevirt-cr.yaml
+  - secret.cloud-init.yaml
+  - dev-box.yaml
+  - kube-install.yaml

@@ -1,0 +1,7 @@
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: protein-research
+value: -1000
+globalDefault: false
+description: "Lowest priority: allows for immediate preemption."

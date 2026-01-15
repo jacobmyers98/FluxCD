@@ -1,0 +1,195 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: loki
+  namespace: infrastructure
+spec:
+  interval: 15m
+  chart:
+    spec:
+      chart: loki
+      version: 6.46.0
+      sourceRef:
+        kind: HelmRepository
+        name: grafana-charts
+        namespace: flux-system
+  install:
+    createNamespace: true
+  values:
+    deploymentMode: SingleBinary
+
+    backend:
+      replicas: 0
+    read:
+      replicas: 0
+    write:
+      replicas: 0
+
+    ruler:
+      enabled: false
+    ingester:
+      wal:
+        enabled: false
+
+    singleBinary:
+      extraVolumes:
+        - name: var-loki
+          emptyDir:
+            sizeLimit: 10Gi
+      extraVolumeMounts:
+        - name: var-loki
+          mountPath: /var/loki
+      persistence:
+        enabled: false
+
+
+    loki:
+      auth_enabled: false
+      commonConfig:
+        replication_factor: 1
+      storage:
+        type: filesystem
+        bucketNames:
+          chunks: loki-chunks
+          ruler: loki-ruler
+          admin: loki-admin
+        filesystem:
+          chunks_directory: /var/loki/chunks
+          rules_directory: /var/loki/rules
+      schemaConfig:
+        configs:
+          - from: "2024-01-01"
+            store: tsdb
+            object_store: filesystem
+            schema: v13
+            index:
+              prefix: loki_index_
+              period: 24h
+
+    gateway:
+      enabled: true
+
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 256Mi
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: promtail
+  namespace: infrastructure
+spec:
+  chart:
+    spec:
+      chart: promtail
+      version: 6.17.1
+      sourceRef:
+        kind: HelmRepository
+        name: grafana-charts
+        namespace: flux-system
+  interval: 10m
+  values:
+    config:
+      clients:
+        - url: http://loki.infrastructure.svc.cluster.local:3100/loki/api/v1/push
+    daemonset:
+      enabled: true
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: dcgm-exporter
+  namespace: infrastructure
+spec:
+  interval: 15m
+  releaseName: dcgm-exporter
+  chart:
+    spec:
+      chart: dcgm-exporter
+      version: 4.6.0
+      sourceRef:
+        kind: HelmRepository
+        name: dcgm-exporter
+        namespace: flux-system
+  values:
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: prometheus-community
+
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: prometheus-community
+  namespace: infrastructure
+spec:
+  interval: 15m
+  releaseName: prometheus-community
+  chart:
+    spec:
+      chart: kube-prometheus-stack
+      version: 78.5.0
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+        namespace: flux-system
+  values:
+    grafana:
+      enabled: true
+      sidecar:
+        datasources:
+          enabled: false
+        dashboards:
+          enabled: false
+          label: grafana_dashboard
+          labelValue: "1"
+          searchNamespace: ALL
+        serviceMonitorSelectorNilUsesHelmValues: false
+      extraVolumes:
+        - name: grafana-host
+          hostPath:
+            path: /home/server/docker/monitoring/grafana
+            type: Directory
+
+      extraVolumeMounts:
+        # Dashboards (JSON files)
+        - name: grafana-host
+          mountPath: /var/lib/grafana/dashboards
+          subPath: dashboards
+
+        # Datasources provisioning
+        - name: grafana-host
+          mountPath: /etc/grafana/provisioning/datasources
+          subPath: provisioning/datasources
+
+        # Dashboard provisioning configs (if you have these files as well)
+        - name: grafana-host
+          mountPath: /etc/grafana/provisioning/dashboards
+          subPath: provisioning/dashboards
+
+        - name: grafana-host
+          mountPath: /etc/grafana/provisioning/alerting
+          subPath: provisioning/alerting
+          readOnly: false
+
+      admin:
+        existingSecret: "grafana-admin"
+        userKey: admin-user
+        passwordKey: admin-password
+
+      ingress:
+        ## If true, Grafana Ingress will be created
+        enabled: false

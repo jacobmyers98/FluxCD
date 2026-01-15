@@ -1,0 +1,73 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: media-ingress
+  namespace: plex
+  annotations:
+    cert-manager.io/cluster-issuer: "my-internal-ca"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - "*.waffle-k8s.local"
+    secretName: wildcard-tls-secret
+  rules:
+  # --- Sonarr ---
+  - host: sonarr.waffle-k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-sonarr
+            port:
+              number: 8989
+  # --- Radarr ---
+  - host: radarr.waffle-k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-radarr
+            port:
+              number: 7878
+  # --- Plex ---
+  - host: plex.waffle-k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-plex
+            port:
+              number: 32400
+  # --- Qbittorrent ---
+  - host: qbit.waffle-k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-qbit
+            port:
+              number: 8080
+
+  # --- Jackett ---
+  - host: jackett.waffle-k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-jackett
+            port:
+              number: 9117

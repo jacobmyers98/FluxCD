@@ -1,0 +1,83 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: port-service-homarr
+  namespace: infrastructure
+  labels:
+    app: homarr
+spec:
+  ports:
+    - name: homarr-port
+      port: 7575
+      targetPort: 3000
+      nodePort: 30010
+  selector:
+    app: homarr
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homarr-deployment
+  namespace: infrastructure
+  labels:
+    app: homarr
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: homarr
+  template:
+    metadata:
+      labels:
+        app: homarr
+      annotations:
+        fluxcd.io/image: "homarr-policy"
+    spec:
+      securityContext:
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+      containers:
+      - name: homarr
+        image: ghcr.io/homarr-labs/homarr:v1.50.0 # {"$imagepolicy": "infrastructure:homarr-policy"}
+        imagePullPolicy: Always
+        env:
+        - name: SECRET_ENCRYPTION_KEY
+          value: "3378b3035eedd9ee2b167720139477ace39ec8117adda382c3acfde5246e63c7"
+        ports:
+        - containerPort: 7575
+        volumeMounts:
+        - mountPath: /app/data/configs
+          name: homarr-config
+        - mountPath: /app/public/icons
+          name: homarr-icons
+        - mountPath: /data
+          name: homarr-data
+        - mountPath: /app/public/imgs/backgrounds
+          name: homarr-imgs
+        - mountPath: /appdata
+          name: homarr-data2
+      volumes:
+      - name: homarr-config
+        hostPath:
+          path: /home/server/docker/homarr/config
+          type: Directory
+      - name: homarr-icons
+        hostPath:
+          path: /home/server/docker/homarr/icons
+          type: Directory
+      - name: homarr-data
+        hostPath:
+          path: /home/server/docker/homarr/data
+          type: Directory
+      - name: homarr-imgs
+        hostPath:
+          path: /home/server/docker/homarr/imgs
+          type: Directory
+      - name: homarr-data2
+        hostPath:
+          path: /home/server/docker/homarr/data2
+          type: DirectoryOrCreate

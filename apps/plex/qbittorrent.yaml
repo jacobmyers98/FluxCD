@@ -1,0 +1,126 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: port-service-qbit
+  namespace: plex
+  labels:
+    app: qbittorrent
+spec:
+  ports:
+    - name: qbittorrent-port
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 30004
+    - name: qbittorrent-port2
+      protocol: TCP
+      port: 34567          # The port "inside" the Service (can be anything, but keeping it same is easier)
+      targetPort: 34567    # CRITICAL: Must match the port qBittorrent is listening on
+      nodePort: 30005      # External access (optional if you only use VPN for torrenting)
+    - name: qbittorrent-port3
+      protocol: UDP
+      port: 34567
+      targetPort: 34567
+      nodePort: 30006
+  selector:
+    app: qbittorrent
+  type: NodePort
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qbittorrent
+  namespace: plex
+  labels:
+    app: qbittorrent
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate # Better for PVs/sqlite dbs than RollingUpdate
+  selector:
+    matchLabels:
+      app: qbittorrent
+  template:
+    metadata:
+      labels:
+        app: qbittorrent
+    spec:
+      hostname: qbit-server
+      containers:
+      # ---------------------------------------------------------
+      # CONTAINER 1: GLUETUN (The Network Manager & VPN)
+      # ---------------------------------------------------------
+      - name: gluetun
+        image: qmcgaw/gluetun
+        imagePullPolicy: Always
+        securityContext:
+          capabilities:
+            add:
+              - NET_ADMIN
+        env:
+        - name: VPN_SERVICE_PROVIDER
+          value: "custom"
+        - name: VPN_TYPE
+          value: "wireguard"
+        - name: DOT
+          value: "off"
+        - name: FIREWALL_OUTBOUND_SUBNETS
+          value: "10.96.0.0/12,10.244.0.0/16,192.168.1.0/24"
+        - name: FIREWALL_INPUT_PORTS
+          value: "8080,34567"
+        ports:
+          # Gluetun "owns" the network interface, so we declare ports here for clarity
+          - containerPort: 8080
+            name: webui
+            protocol: TCP
+          - containerPort: 34567
+            name: torrent-tcp
+            protocol: TCP
+          - containerPort: 34567
+            name: torrent-udp
+            protocol: UDP
+        volumeMounts:
+          - name: wireguard-config
+            mountPath: /gluetun/wireguard/wg0.conf
+            subPath: wg0.conf
+
+      # ---------------------------------------------------------
+      # CONTAINER 2: LINUXSERVER QBITTORRENT (The App)
+      # ---------------------------------------------------------
+      - name: qbittorrent
+        image: lscr.io/linuxserver/qbittorrent:latest
+        imagePullPolicy: Always
+        env:
+          - name: PUID
+            value: "1000"
+          - name: PGID
+            value: "1000"
+          - name: TZ
+            value: "America/Denver"
+          - name: WEBUI_PORT
+            value: "8080"
+        volumeMounts:
+          - name: qbit-config
+            mountPath: /config
+          - name: torrent-downloads
+            mountPath: /downloads
+          - name: movies-shows-raid
+            mountPath: /mnt/Media
+      volumes:
+      - name: qbit-config
+        hostPath:
+          path: /home/server/docker/qbittorrent/
+          type: Directory
+      - name: torrent-downloads
+        hostPath:
+          path: /mnt/Media/Torrent
+          type: Directory
+      - name: movies-shows-raid
+        hostPath:
+          path: /mnt/Media
+          type: Directory
+      - name: wireguard-config
+        secret:
+          secretName: qbit-wireguard-config
