@@ -94,9 +94,9 @@ spec:
         imagePullPolicy: Always
         env:
           - name: PUID
-            value: "1000"
+            value: "1001"
           - name: PGID
-            value: "1000"
+            value: "1004"
           - name: TZ
             value: "America/Denver"
           - name: WEBUI_PORT
