@@ -46,7 +46,7 @@ spec:
             - name: PUID
               value: "1001"
             - name: PGID
-              value: "1001"
+              value: "1004"
             - name: TZ
               value: "America/Denver"
             - name: QBT_WEB_SERVER
