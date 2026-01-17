@@ -39,7 +39,7 @@ spec:
     spec:
       containers:
       - name: jackett
-        image: linuxserver/jackett:0.24.863 # {"$imagepolicy": "plex:jackett-policy"}
+        image: linuxserver/jackett:0.24.868 # {"$imagepolicy": "plex:jackett-policy"}
         imagePullPolicy: Always
         ports:
         - containerPort: 9117
