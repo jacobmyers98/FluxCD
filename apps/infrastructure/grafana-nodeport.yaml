@@ -9,7 +9,8 @@ spec:
     app.kubernetes.io/instance: prometheus-community
     app.kubernetes.io/name: grafana
   ports:
-    - protocol: TCP
+    - name: grafana-port
+      protocol: TCP
       port: 80 
       targetPort: 3000
       nodePort: 30008

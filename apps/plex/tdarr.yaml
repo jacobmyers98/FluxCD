@@ -64,7 +64,7 @@ spec:
   selector:
     app: tdarr-server
   ports:
-    - name: tdarr-webui
+    - name: tdarr-webui-port
       port: 8265
       targetPort: 8265
       nodePort: 30017

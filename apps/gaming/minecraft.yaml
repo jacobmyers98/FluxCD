@@ -6,7 +6,8 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - port: 25565
+  - name: minecraft-port
+    port: 25565
     targetPort: 25565
     nodePort: 30016
   selector:

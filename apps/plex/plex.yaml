@@ -15,6 +15,7 @@ spec:
   selector:
     app: plex
   type: NodePort
+
 ---
 apiVersion: apps/v1
 kind: Deployment
