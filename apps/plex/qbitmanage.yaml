@@ -54,16 +54,14 @@ spec:
           volumeMounts:
             - name: qbitmanage-config
               mountPath: /config
-            # OPTIONAL: Un-comment and configure if you use "Orphaned Data" cleanup
-            # - name: media-data
-            #   mountPath: /data/torrents
+            - name: mount
+              mountPath: /mnt/Media
       volumes:
         - name: qbitmanage-config
           hostPath:
             path: /home/server/docker/qbitmanage
             type: Directory
-        # OPTIONAL: Matches your qBittorrent downloads path
-        # - name: media-data
-        #   hostPath:
-        #     path: /home/server/media
-        #     type: Directory
+        - name: mount
+          hostPath:
+            path: /mnt/Media
+            type: Directory
