@@ -25,34 +25,6 @@ spec:
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: ingress-nginx
-  namespace: infrastructure-network
-spec:
-  releaseName: ingress-nginx
-  chart:
-    spec:
-      chart: ingress-nginx
-      sourceRef:
-        kind: HelmRepository
-        name: ingress-nginx
-        namespace: flux-system
-      version: "4.x"
-  interval: 1h
-  install:
-    createNamespace: true
-  values:
-    controller:
-      # Use the "ingress-nginx" class
-      ingressClassResource:
-        default: true
-      # Allow snippet annotations (needed for some complex rewrites)
-      allowSnippetAnnotations: true
-
----
-
-apiVersion: helm.toolkit.fluxcd.io/v2
-kind: HelmRelease
-metadata:
   name: cert-manager
   namespace: infrastructure-network
 spec:
