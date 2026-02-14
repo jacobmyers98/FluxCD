@@ -5,11 +5,9 @@ metadata:
   namespace: plex
   annotations:
     cert-manager.io/cluster-issuer: "my-internal-ca"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
-    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    ingress.cilium.io/force-https: "enabled"
 spec:
-  ingressClassName: nginx
+  ingressClassName: cilium
   tls:
   - hosts:
     - "*.waffle-k8s.local"
@@ -70,4 +68,5 @@ spec:
           service:
             name: port-service-jackett
             port:
+
               number: 9117
