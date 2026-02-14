@@ -5,10 +5,9 @@ metadata:
   namespace: infrastructure
   annotations:
     cert-manager.io/cluster-issuer: "my-internal-ca"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    ingress.cilium.io/force-https: "enabled"
 spec:
-  ingressClassName: nginx
+  ingressClassName: cilium
   tls:
   - hosts:
     - "*.waffle-k8s.local"
