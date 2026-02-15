@@ -9,7 +9,11 @@ spec:
   ingressClassName: cilium
   tls:
   - hosts:
-    - "*.waffle-k8s.local"
+    - "sonarr.waffle-k8s.local"
+    - "radarr.waffle-k8s.local"
+    - "plex.waffle-k8s.local"
+    - "qbit.waffle-k8s.local"
+    - "jackett.waffle-k8s.local"
   rules:
   # --- Sonarr ---
   - host: sonarr.waffle-k8s.local

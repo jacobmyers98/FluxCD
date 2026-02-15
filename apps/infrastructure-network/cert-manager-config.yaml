@@ -49,8 +49,11 @@ spec:
   commonName: "*.waffle-k8s.local"
   secretName: wildcard-tls-secret
   dnsNames:
-  - "waffle-k8s.local"
-  - "*.waffle-k8s.local"
+  - "sonarr.waffle-k8s.local"
+  - "radarr.waffle-k8s.local"
+  - "plex.waffle-k8s.local"
+  - "qbit.waffle-k8s.local"
+  - "jackett.waffle-k8s.local"
   privateKey:
     algorithm: ECDSA
     size: 256
@@ -71,8 +74,8 @@ spec:
   commonName: "*.waffle-k8s.local"
   secretName: wildcard-tls-secret
   dnsNames:
-  - "waffle-k8s.local"
-  - "*.waffle-k8s.local"
+  - "homarr.waffle-k8s.local"
+  - "grafana.waffle-k8s.local"
   privateKey:
     algorithm: ECDSA
     size: 256
@@ -80,18 +83,3 @@ spec:
     name: my-internal-ca
     kind: ClusterIssuer
     group: cert-manager.io
-  
----
-#global wildcard
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: global-wildcard-cert
-  namespace: kube-system
-spec:
-  secretName: global-wildcard-tls-secret
-  issuerRef:
-    name: my-internal-ca
-    kind: ClusterIssuer
-  dnsNames:
-  - "*.waffle-k8s.local"

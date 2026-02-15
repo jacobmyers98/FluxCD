@@ -9,7 +9,8 @@ spec:
   ingressClassName: cilium
   tls:
   - hosts:
-    - "*.waffle-k8s.local"
+    - "homarr.waffle-k8s.local"
+    - "grafana.waffle-k8s.local"
   rules:
   # --- Grafana ---
   - host: grafana.waffle-k8s.local
