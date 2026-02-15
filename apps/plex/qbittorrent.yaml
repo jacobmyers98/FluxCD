@@ -14,9 +14,9 @@ spec:
       nodePort: 30004
     - name: qbittorrent-port2
       protocol: TCP
-      port: 34567          # The port "inside" the Service (can be anything, but keeping it same is easier)
-      targetPort: 34567    # CRITICAL: Must match the port qBittorrent is listening on
-      nodePort: 30005      # External access (optional if you only use VPN for torrenting)
+      port: 34567
+      targetPort: 34567
+      nodePort: 30005
     - name: qbittorrent-port3
       protocol: UDP
       port: 34567
@@ -48,13 +48,15 @@ spec:
         app: qbittorrent
     spec:
       hostname: qbit-server
-      containers:
+      initContainers:
       # ---------------------------------------------------------
-      # CONTAINER 1: GLUETUN (The Network Manager & VPN)
+      # INIT 1: GLUETUN (Native K8s Sidecar)
+      # Starts first and runs in the background
       # ---------------------------------------------------------
       - name: gluetun
         image: qmcgaw/gluetun
         imagePullPolicy: Always
+        restartPolicy: Always # Requires Kubernetes v1.28+
         securityContext:
           capabilities:
             add:
@@ -71,7 +73,6 @@ spec:
         - name: FIREWALL_INPUT_PORTS
           value: "8080,34567"
         ports:
-          # Gluetun "owns" the network interface, so we declare ports here for clarity
           - containerPort: 8080
             name: webui
             protocol: TCP
@@ -85,9 +86,21 @@ spec:
           - name: wireguard-config
             mountPath: /gluetun/wireguard/wg0.conf
             subPath: wg0.conf
-
       # ---------------------------------------------------------
-      # CONTAINER 2: LINUXSERVER QBITTORRENT (The App)
+      # INIT 2: VPN CHECKER
+      # Waits until the VPN routes traffic before letting qBit start
+      # ---------------------------------------------------------
+      - name: vpn-check
+        image: busybox:latest
+        command: 
+          - 'sh'
+          - '-c'
+          # Tries to hit an external IP checker. Loops until successful.
+          - 'until wget -qO- https://ifconfig.me; do echo "Waiting for VPN connectivity..."; sleep 2; done; echo " VPN is up!"'
+      containers:
+      # ---------------------------------------------------------
+      # MAIN CONTAINER: LINUXSERVER QBITTORRENT (The App)
+      # Starts only after vpn-check successfully exits
       # ---------------------------------------------------------
       - name: qbittorrent
         image: lscr.io/linuxserver/qbittorrent:latest
