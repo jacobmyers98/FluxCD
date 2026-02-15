@@ -192,7 +192,16 @@ spec:
 
       ingress:
         enabled: false
-
+    prometheus-node-exporter:
+          prometheus:
+            monitor:
+              relabelings:
+                - action: replace
+                  regex: (.+)
+                  replacement: $1
+                  sourceLabels:
+                    - __meta_kubernetes_endpoint_node_name
+                  targetLabel: node
 ---
 
 apiVersion: helm.toolkit.fluxcd.io/v2
