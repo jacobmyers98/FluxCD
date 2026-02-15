@@ -3,7 +3,7 @@ kind: Kustomization
 resources:
   - helmrelease.yaml
   - helmrepo.yaml
-  - metallb-config.yaml
+  - cilium-loadbalancer-config.yaml
   - cert-manager-config.yaml
   - ingress-infrastructure-ns.yaml
   - ingress-plex-ns.yaml

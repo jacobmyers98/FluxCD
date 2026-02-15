@@ -1,0 +1,24 @@
+apiVersion: "cilium.io/v2alpha1"
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: waffle-lb-pool
+  namespace: infrastructure-network
+spec:
+  blocks:
+  - start: "192.168.1.254"
+    stop: "192.168.1.254"
+---
+apiVersion: "cilium.io/v2alpha1"
+kind: CiliumL2AnnouncementPolicy
+metadata:
+  name: waffle-l2-policy
+spec:
+  # This tells Cilium to announce these IPs on all Linux nodes in your cluster
+  nodeSelector:
+    matchExpressions:
+      - key: kubernetes.io/os
+        operator: In
+        values:
+          - linux
+  externalIPs: true
+  loadBalancerIPs: true
