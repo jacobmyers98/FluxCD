@@ -11,6 +11,7 @@ spec:
   - hosts:
     - "homarr.waffle-k8s.local"
     - "grafana.waffle-k8s.local"
+    secretName: wildcard-tls-secret
   rules:
   # --- Grafana ---
   - host: grafana.waffle-k8s.local
