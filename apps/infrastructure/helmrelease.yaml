@@ -201,7 +201,8 @@ metadata:
   name: prometheus-adapter
   namespace: infrastructure
 spec:
-  interval: 10m
+  interval: 15m
+  releaseName: prometheus-adapter
   chart:
     spec:
       chart: prometheus-adapter
@@ -216,46 +217,44 @@ spec:
       port: 9090
     rules:
       default: true
-      
-      # Now correctly indented under rules:
       resource:
-        custom:
-          cpu:
-            containerQuery: |
-              sum by (<<.GroupBy>>) (
-                rate(container_cpu_usage_seconds_total{container!="",<<.LabelMatchers>>}[3m])
-              )
-            nodeQuery: |
-              sum by (<<.GroupBy>>) (
-                rate(node_cpu_seconds_total{mode!="idle",mode!="iowait",mode!="steal",<<.LabelMatchers>>}[3m])
-              )
-            resources:
-              overrides:
-                node:
-                  resource: node
-                namespace:
-                  resource: namespace
-                pod:
-                  resource: pod
-            containerLabel: container
-          memory:
-            containerQuery: |
-              sum by (<<.GroupBy>>) (
-                container_memory_working_set_bytes{container!="",<<.LabelMatchers>>}
-              )
-            nodeQuery: |
-              sum by (<<.GroupBy>>) (
-                node_memory_MemTotal_bytes{<<.LabelMatchers>>}
-                - node_memory_MemFree_bytes{<<.LabelMatchers>>}
-                - node_memory_Buffers_bytes{<<.LabelMatchers>>}
-                - node_memory_Cached_bytes{<<.LabelMatchers>>}
-              )
-            resources:
-              overrides:
-                node:
-                  resource: node
-                namespace:
-                  resource: namespace
-                pod:
-                  resource: pod
-            containerLabel: container
+        # Removed the invalid "custom:" key from here
+        cpu:
+          containerQuery: |
+            sum by (<<.GroupBy>>) (
+              rate(container_cpu_usage_seconds_total{container!="",<<.LabelMatchers>>}[3m])
+            )
+          nodeQuery: |
+            sum by (<<.GroupBy>>) (
+              rate(node_cpu_seconds_total{mode!="idle",mode!="iowait",mode!="steal",<<.LabelMatchers>>}[3m])
+            )
+          resources:
+            overrides:
+              node:
+                resource: node
+              namespace:
+                resource: namespace
+              pod:
+                resource: pod
+          containerLabel: container
+        memory:
+          containerQuery: |
+            sum by (<<.GroupBy>>) (
+              container_memory_working_set_bytes{container!="",<<.LabelMatchers>>}
+            )
+          nodeQuery: |
+            sum by (<<.GroupBy>>) (
+              node_memory_MemTotal_bytes{<<.LabelMatchers>>}
+              - node_memory_MemFree_bytes{<<.LabelMatchers>>}
+              - node_memory_Buffers_bytes{<<.LabelMatchers>>}
+              - node_memory_Cached_bytes{<<.LabelMatchers>>}
+            )
+          resources:
+            overrides:
+              node:
+                resource: node
+              namespace:
+                resource: namespace
+              pod:
+                resource: pod
+          containerLabel: container
