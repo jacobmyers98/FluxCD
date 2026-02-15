@@ -7,6 +7,9 @@ metadata:
     ingress.cilium.io/force-https: "enabled"
 spec:
   ingressClassName: cilium
+  tls:
+  - hosts:
+    - "*.waffle-k8s.local"
   rules:
   # --- Sonarr ---
   - host: sonarr.waffle-k8s.local

@@ -7,6 +7,9 @@ metadata:
     cert-manager.io/cluster-issuer: "my-internal-ca"
 spec:
   ingressClassName: cilium
+  tls:
+  - hosts:
+    - "*.waffle-k8s.local"
   rules:
   # --- Grafana ---
   - host: grafana.waffle-k8s.local

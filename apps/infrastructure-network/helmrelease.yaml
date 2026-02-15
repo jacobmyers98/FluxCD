@@ -17,8 +17,6 @@ spec:
   install:
     createNamespace: true
   values:
-    # We will configure the IP pool separately (IPAddressPool)
-    # See "Post-Install" below
 
 ---
 
