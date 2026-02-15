@@ -212,7 +212,7 @@ spec:
         namespace: flux-system
   values:
     prometheus:
-      url: http://kube-prometheus-stack-prometheus.monitoring.svc
+      url: http://kube-prometheus-stack-prometheus.infrastructure.svc
       port: 9090
     rules:
       default: true
