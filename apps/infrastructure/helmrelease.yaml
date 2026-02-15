@@ -212,47 +212,47 @@ spec:
         name: prometheus-community
         namespace: flux-system
   values:
-      prometheus:
-        url: http://prometheus-community-kube-prometheus.infrastructure.svc
-        port: 9090
-      rules:
-        default: true
-        resource:
-          cpu:
-            containerQuery: |
-              sum by (<<.GroupBy>>) (
-                rate(container_cpu_usage_seconds_total{container!="",container!="POD",<<.LabelMatchers>>}[3m])
-              )
-            # Use cAdvisor (id="/") for node metrics to avoid label mismatches
-            nodeQuery: |
-              sum by (<<.GroupBy>>) (
-                rate(container_cpu_usage_seconds_total{id="/",<<.LabelMatchers>>}[3m])
-              )
-            resources:
-              overrides:
-                node:
-                  resource: node
-                namespace:
-                  resource: namespace
-                pod:
-                  resource: pod
-            containerLabel: container
-          memory:
-            containerQuery: |
-              sum by (<<.GroupBy>>) (
-                container_memory_working_set_bytes{container!="",container!="POD",<<.LabelMatchers>>}
-              )
-            # Use cAdvisor (id="/") for node metrics
-            nodeQuery: |
-              sum by (<<.GroupBy>>) (
-                container_memory_working_set_bytes{id="/",<<.LabelMatchers>>}
-              )
-            resources:
-              overrides:
-                node:
-                  resource: node
-                namespace:
-                  resource: namespace
-                pod:
-                  resource: pod
-            containerLabel: container
+    prometheus:
+      url: http://prometheus-community-kube-prometheus.infrastructure.svc
+      port: 9090
+    rules:
+      default: true
+      resource:
+        cpu:
+          containerQuery: |
+            sum by (<<.GroupBy>>) (
+              rate(container_cpu_usage_seconds_total{container!="",container!="POD",<<.LabelMatchers>>}[3m])
+            )
+          # Use cAdvisor (id="/") for node metrics to avoid label mismatches
+          nodeQuery: |
+            sum by (<<.GroupBy>>) (
+              rate(container_cpu_usage_seconds_total{id="/",<<.LabelMatchers>>}[3m])
+            )
+          resources:
+            overrides:
+              node:
+                resource: node
+              namespace:
+                resource: namespace
+              pod:
+                resource: pod
+          containerLabel: container
+        memory:
+          containerQuery: |
+            sum by (<<.GroupBy>>) (
+              container_memory_working_set_bytes{container!="",container!="POD",<<.LabelMatchers>>}
+            )
+          # Use cAdvisor (id="/") for node metrics
+          nodeQuery: |
+            sum by (<<.GroupBy>>) (
+              container_memory_working_set_bytes{id="/",<<.LabelMatchers>>}
+            )
+          resources:
+            overrides:
+              node:
+                resource: node
+              namespace:
+                resource: namespace
+              pod:
+                resource: pod
+          containerLabel: container
