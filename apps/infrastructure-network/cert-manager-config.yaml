@@ -80,3 +80,18 @@ spec:
     name: my-internal-ca
     kind: ClusterIssuer
     group: cert-manager.io
+  
+---
+#global wildcard
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: global-wildcard-cert
+  namespace: kube-system
+spec:
+  secretName: global-wildcard-tls-secret
+  issuerRef:
+    name: my-internal-ca
+    kind: ClusterIssuer
+  dnsNames:
+  - "*.waffle-k8s.local"
