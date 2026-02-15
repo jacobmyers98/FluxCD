@@ -4,13 +4,12 @@ metadata:
   name: infrastructure-ingress
   namespace: infrastructure
   annotations:
-    cert-manager.io/cluster-issuer: "my-internal-ca"
+    ingress.cilium.io/force-https: "enabled"
 spec:
   ingressClassName: cilium
   tls:
   - hosts:
     - "*.waffle-k8s.local"
-    secretName: global-wildcard-tls-secret
   rules:
   # --- Grafana ---
   - host: grafana.waffle-k8s.local
