@@ -216,6 +216,8 @@ spec:
       port: 9090
     rules:
       default: true
+      
+      # Now correctly indented under rules:
       resource:
         custom:
           cpu:
@@ -227,33 +229,33 @@ spec:
               sum by (<<.GroupBy>>) (
                 rate(node_cpu_seconds_total{mode!="idle",mode!="iowait",mode!="steal",<<.LabelMatchers>>}[3m])
               )
-          resources:
-            overrides:
-              node:
-                resource: node
-              namespace:
-                resource: namespace
-              pod:
-                resource: pod
-          containerLabel: container
-        memory:
-          containerQuery: |
-            sum by (<<.GroupBy>>) (
-              container_memory_working_set_bytes{container!="",<<.LabelMatchers>>}
-            )
-          nodeQuery: |
-            sum by (<<.GroupBy>>) (
-              node_memory_MemTotal_bytes{<<.LabelMatchers>>}
-              - node_memory_MemFree_bytes{<<.LabelMatchers>>}
-              - node_memory_Buffers_bytes{<<.LabelMatchers>>}
-              - node_memory_Cached_bytes{<<.LabelMatchers>>}
-            )
-          resources:
-            overrides:
-              node:
-                resource: node
-              namespace:
-                resource: namespace
-              pod:
-                resource: pod
-          containerLabel: container
+            resources:
+              overrides:
+                node:
+                  resource: node
+                namespace:
+                  resource: namespace
+                pod:
+                  resource: pod
+            containerLabel: container
+          memory:
+            containerQuery: |
+              sum by (<<.GroupBy>>) (
+                container_memory_working_set_bytes{container!="",<<.LabelMatchers>>}
+              )
+            nodeQuery: |
+              sum by (<<.GroupBy>>) (
+                node_memory_MemTotal_bytes{<<.LabelMatchers>>}
+                - node_memory_MemFree_bytes{<<.LabelMatchers>>}
+                - node_memory_Buffers_bytes{<<.LabelMatchers>>}
+                - node_memory_Cached_bytes{<<.LabelMatchers>>}
+              )
+            resources:
+              overrides:
+                node:
+                  resource: node
+                namespace:
+                  resource: namespace
+                pod:
+                  resource: pod
+            containerLabel: container
