@@ -1,28 +1,6 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: metallb
-  namespace: infrastructure-network
-spec:
-  releaseName: metallb
-  chart:
-    spec:
-      chart: metallb
-      sourceRef:
-        kind: HelmRepository
-        name: metallb
-        namespace: flux-system
-      version: "0.13.x"
-  interval: 1h
-  install:
-    createNamespace: true
-  values:
-
----
-
-apiVersion: helm.toolkit.fluxcd.io/v2
-kind: HelmRelease
-metadata:
   name: cert-manager
   namespace: infrastructure-network
 spec:
