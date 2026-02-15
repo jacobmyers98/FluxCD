@@ -10,6 +10,7 @@ spec:
   tls:
   - hosts:
     - "*.waffle-k8s.local"
+    secretName: global-wildcard-tls-secret
   rules:
   # --- Sonarr ---
   - host: sonarr.waffle-k8s.local
@@ -66,6 +67,4 @@ spec:
           service:
             name: port-service-jackett
             port:
-
               number: 9117
-
