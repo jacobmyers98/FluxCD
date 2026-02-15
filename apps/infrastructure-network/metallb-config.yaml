@@ -12,3 +12,8 @@ kind: L2Advertisement
 metadata:
   name: advertise-all
   namespace: infrastructure-network
+spec:
+  ipAddressPools:
+  - metallb-pool
+  interfaces:
+  - enp3s0
