@@ -216,17 +216,17 @@ spec:
       port: 9090
     rules:
       default: true
-    resource:
-      custom:
-        cpu:
-          containerQuery: |
-            sum by (<<.GroupBy>>) (
-              rate(container_cpu_usage_seconds_total{container!="",<<.LabelMatchers>>}[3m])
-            )
-          nodeQuery: |
-            sum by (<<.GroupBy>>) (
-              rate(node_cpu_seconds_total{mode!="idle",mode!="iowait",mode!="steal",<<.LabelMatchers>>}[3m])
-            )
+      resource:
+        custom:
+          cpu:
+            containerQuery: |
+              sum by (<<.GroupBy>>) (
+                rate(container_cpu_usage_seconds_total{container!="",<<.LabelMatchers>>}[3m])
+              )
+            nodeQuery: |
+              sum by (<<.GroupBy>>) (
+                rate(node_cpu_seconds_total{mode!="idle",mode!="iowait",mode!="steal",<<.LabelMatchers>>}[3m])
+              )
           resources:
             overrides:
               node:
