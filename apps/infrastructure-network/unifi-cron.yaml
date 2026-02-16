@@ -2,6 +2,7 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: udm-cert-sync
+  namespace: infrastructure-network
 spec:
   schedule: "0 0 * * 0" # Runs every Sunday at midnight
   jobTemplate:
