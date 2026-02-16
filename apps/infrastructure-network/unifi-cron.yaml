@@ -5,6 +5,8 @@ metadata:
   namespace: infrastructure-network
 spec:
   schedule: "0 0 * * 0" # Runs every Sunday at midnight
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
   jobTemplate:
     spec:
       template:
@@ -55,4 +57,5 @@ spec:
               secretName: udm-pro-tls-internal # The secret your cert-manager created
           - name: ssh-key
             secret:
+
               secretName: udm-ssh-key
