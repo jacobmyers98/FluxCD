@@ -1,0 +1,47 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: udm-cert-sync
+spec:
+  schedule: "0 0 * * 0" # Runs every Sunday at midnight
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: cert-pusher
+            image: alpine:latest
+            command:
+            - "/bin/sh"
+            - "-c"
+            - |
+              apk add --no-cache openssh-client
+              # Define UDM Details
+              UDM_IP="192.168.1.1"
+              
+              # Prep SSH (strict host checking off for automation simplicity)
+              mkdir -p ~/.ssh
+              cp /etc/ssh-key/id_rsa ~/.ssh/id_rsa
+              chmod 600 ~/.ssh/id_rsa
+              
+              echo "Pushing certs to UDM..."
+              scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no /etc/tls/tls.crt root@$UDM_IP:/data/unifi-core/config/unifi-core.crt
+              scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no /etc/tls/tls.key root@$UDM_IP:/data/unifi-core/config/unifi-core.key
+              
+              echo "Restarting UniFi OS Core..."
+              ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no root@$UDM_IP "systemctl restart unifi-core"
+            volumeMounts:
+            - name: certs
+              mountPath: /etc/tls
+              readOnly: true
+            - name: ssh-key
+              mountPath: /etc/ssh-key
+              readOnly: true
+          restartPolicy: OnFailure
+          volumes:
+          - name: certs
+            secret:
+              secretName: udm-pro-tls-internal # The secret your cert-manager created
+          - name: ssh-key
+            secret:
+              secretName: udm-ssh-key
