@@ -17,20 +17,30 @@ spec:
             - "-c"
             - |
               apk add --no-cache openssh-client
-              # Define UDM Details
               UDM_IP="192.168.1.1"
               
-              # Prep SSH (strict host checking off for automation simplicity)
+              # 1. Setup SSH Key
               mkdir -p ~/.ssh
               cp /etc/ssh-key/id_rsa ~/.ssh/id_rsa
               chmod 600 ~/.ssh/id_rsa
               
-              echo "Pushing certs to UDM..."
-              scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no /etc/tls/tls.crt root@$UDM_IP:/data/unifi-core/config/unifi-core.crt
+              # 2. CREATE THE FULL CHAIN (The Fix)
+              # Most internal CA secrets have tls.crt and ca.crt
+              # We combine them so browsers like Opera can follow the path to the root
+              echo "Combining Leaf and CA certs..."
+              cat /etc/tls/tls.crt /etc/tls/ca.crt > /tmp/fullchain.crt
+              
+              # 3. PUSH TO UDM
+              echo "Pushing Full Chain and Key to UDM..."
+              scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no /tmp/fullchain.crt root@$UDM_IP:/data/unifi-core/config/unifi-core.crt
               scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no /etc/tls/tls.key root@$UDM_IP:/data/unifi-core/config/unifi-core.key
               
-              echo "Restarting UniFi OS Core..."
-              ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no root@$UDM_IP "systemctl restart unifi-core"
+              # 4. FIX PERMISSIONS AND RESTART
+              # UniFi 4.4.6 is very picky about permissions (644/600)
+              echo "Applying permissions and restarting UniFi OS..."
+              ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no root@$UDM_IP "chmod 644 /data/unifi-core/config/unifi-core.crt && chmod 600 /data/unifi-core/config/unifi-core.key && systemctl restart unifi-core"
+              
+              echo "Job Complete."
             volumeMounts:
             - name: certs
               mountPath: /etc/tls
