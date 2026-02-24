@@ -148,6 +148,10 @@ spec:
         namespace: flux-system
   values:
     grafana:
+      deploymentStrategy:
+        type: Recreate
+      initChownData:
+        enabled: true
       enabled: true
       sidecar:
         datasources:
