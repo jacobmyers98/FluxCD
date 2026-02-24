@@ -37,6 +37,18 @@ spec:
       labels:
         app: jackett
     spec:
+      initContainers:
+      - name: flaresolverr
+        image:  ghcr.io/flaresolverr/flaresolverr:v3.4.6
+        imagePullPolicy: Always
+        restartPolicy: Always
+        ports:
+        - containerPort: 8191
+        env:
+        - name: LOG_LEVEL
+          value: "info"
+        - name: CAPTCHA_SOLVER
+          value: "none"
       containers:
       - name: jackett
         image: linuxserver/jackett:0.24.1184 # {"$imagepolicy": "plex:jackett-policy"}
