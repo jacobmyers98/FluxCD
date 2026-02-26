@@ -82,4 +82,26 @@ spec:
   issuerRef:
     name: my-internal-ca
     kind: ClusterIssuer
+
+    group: cert-manager.io
+
+---
+# 4b. Certificate for the "infrastructure" namespace
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wildcard-waffle-cert
+  namespace: kube-system
+spec:
+  isCA: false
+  commonName: "*.waffle-k8s.local"
+  secretName: wildcard-tls-secret
+  dnsNames:
+  - "hubble.waffle-k8s.local"
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: my-internal-ca
+    kind: ClusterIssuer
     group: cert-manager.io
