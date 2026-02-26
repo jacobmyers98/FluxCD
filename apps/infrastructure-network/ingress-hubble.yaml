@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: hubble-ingress
-  namespace: infrastructure-network
+  namespace: kube-system
   annotations:
     ingress.cilium.io/force-https: "enabled"
 spec:
