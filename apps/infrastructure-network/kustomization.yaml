@@ -7,5 +7,6 @@ resources:
   - cert-manager-config.yaml
   - ingress-infrastructure-ns.yaml
   - ingress-plex-ns.yaml
+  - ingress-hubble.yaml
   - unifi-cert.yaml
   - unifi-cron.yaml
