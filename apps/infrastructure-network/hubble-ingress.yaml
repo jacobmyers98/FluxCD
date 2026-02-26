@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hubble-ingress
+  namespace: infrastructure-network
+  annotations:
+    ingress.cilium.io/force-https: "enabled"
+spec:
+  ingressClassName: cilium
+  tls:
+  - hosts:
+    - "hubble.waffle-k8s.local"
+    secretName: wildcard-tls-secret
+  rules:
+  # --- hubble ---
+  - host: hubble.waffle-k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: hubble-ui
+            port:
+              number: 80
