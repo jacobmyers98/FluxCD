@@ -54,7 +54,7 @@ spec:
       # Starts first and runs in the background
       # ---------------------------------------------------------
       - name: gluetun
-        image: qmcgaw/gluetun
+        image: qmcgaw/gluetun:v3.41.1
         imagePullPolicy: Always
         restartPolicy: Always # Requires Kubernetes v1.28+
         securityContext:
@@ -91,7 +91,7 @@ spec:
       # Waits until the VPN routes traffic before letting qBit start
       # ---------------------------------------------------------
       - name: vpn-check
-        image: busybox:latest
+        image: busybox:1.37.0
         command: 
           - 'sh'
           - '-c'
