@@ -87,8 +87,7 @@ spec:
       labels:
         app: tdarr-node
     spec:
-      securityContext:
-      initContainer:
+      initContainers:
         - name: tdarr-checker
           image: curlimages/curl:8.5.0
           command:
