@@ -88,6 +88,19 @@ spec:
         app: tdarr-node
     spec:
       securityContext:
+      initContainer:
+        - name: tdarr-checker
+          image: curlimages/curl:8.5.0
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Waiting for Tdarr Server..."
+              until curl -s http://tdarr-server:8265/api/v2/status > /dev/null; do
+                echo "Tdarr Server is unavailable - sleeping"
+                sleep 2
+              done
+              echo "Tdarr Server is up!"
       containers:
         - name: tdarr-node
           image: ghcr.io/haveagitgat/tdarr_node:2.58.02
