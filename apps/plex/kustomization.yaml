@@ -12,6 +12,7 @@ resources:
   - sonarr.yaml
   - tdarr.yaml
   - overseerr.yaml
+  - prowlarr.yaml
   - secret.qbit.yaml
   - secret.ghcr.yaml
   - secret.plex.yaml
