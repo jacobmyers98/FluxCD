@@ -31,8 +31,9 @@ spec:
           mountPath: /config
       volumes:
       - name: config
-          hostPath:
-            path: /home/server/docker/prowlarr/
+        hostPath:
+          path: /home/server/docker/prowlarr/
+          type: Directory
 ---
 apiVersion: v1
 kind: Service
