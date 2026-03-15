@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prowlarr
+  labels:
+    app: prowlarr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prowlarr
+  template:
+    metadata:
+      labels:
+        app: prowlarr
+    spec:
+      containers:
+      - name: prowlarr
+        image: lscr.io/linuxserver/prowlarr:latest
+        env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        - name: TZ
+          value: "Etc/UTC"
+        ports:
+        - containerPort: 9696
+        volumeMounts:
+        - name: config
+          mountPath: /config
+      volumes:
+      - name: config
+          hostPath:
+            path: /home/server/docker/prowlarr/
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prowlarr-service
+spec:
+  type: NodePort
+  selector:
+    app: prowlarr
+  ports:
+    - protocol: TCP
+      port: 9696         # Port internal to the cluster
+      targetPort: 9696   # Port the container listens on
+      nodePort: 32000    # Port accessible from outside (Range: 30000-32767)
