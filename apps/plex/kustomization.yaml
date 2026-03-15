@@ -4,7 +4,6 @@ resources:
   - image-policies.yaml
   - image-repositories.yaml
   - image-update-automation.yaml
-  #- jackett.yaml
   - plex.yaml
   - qbittorrent.yaml
   - qbitmanage.yaml
