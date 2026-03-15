@@ -34,7 +34,7 @@ spec:
           value: "none"
       containers:
       - name: prowlarr
-        image: lscr.io/linuxserver/prowlarr:2.3.0 #  {"$imagepolicy": "plex:prowlarr-policy"}
+        image: linuxserver/prowlarr:2.3.0 #  {"$imagepolicy": "plex:prowlarr-policy"}
         env:
         - name: PUID
           value: "1001"
@@ -64,6 +64,6 @@ spec:
     app: prowlarr
   ports:
     - protocol: TCP
-      port: 9696         # Port internal to the cluster
-      targetPort: 9696   # Port the container listens on
-      nodePort: 30003    # Port accessible from outside (Range: 30000-32767)
+      port: 9696 # Port internal to the cluster
+      targetPort: 9696 # Port the container listens on
+      nodePort: 30003 # Port accessible from outside (Range: 30000-32767)
