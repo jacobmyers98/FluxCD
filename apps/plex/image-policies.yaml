@@ -26,11 +26,11 @@ spec:
 apiVersion: image.toolkit.fluxcd.io/v1beta2
 kind: ImagePolicy
 metadata:
-  name: jackett-policy
+  name: prowlarr-policy
   namespace: plex
 spec:
   imageRepositoryRef:
-    name: jackett
+    name: prowlarr
   policy:
     semver:
-      range: ">=0.24.95"
+      range: ">=2.3.0"
