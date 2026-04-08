@@ -1,0 +1,77 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: addy-io
+  labels:
+    app: addy-io
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: addy-io
+  template:
+    metadata:
+      labels:
+        app: addy-io
+    spec:
+      containers:
+      - name: addy-io-web
+        # Addy.io still uses the anonaddy image repository
+        image: anonaddy/anonaddy:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        # Core App Settings
+        - name: APP_NAME
+          value: "Addy.io"
+        - name: APP_ENV
+          value: "local" 
+        - name: APP_KEY
+          # REQUIRED: Must be a valid base64 32-character string. 
+          # You can generate one via: echo "base64:$(openssl rand -base64 32)"
+          value: "base64:INSERT_GENERATED_KEY_HERE"
+        - name: APP_DEBUG
+          value: "true"
+        - name: APP_URL
+          value: "http://localhost:8000"
+        - name: ANONADDY_DOMAIN
+          value: "example.com"
+        
+        # Database Settings (Requires a separate MariaDB/MySQL Pod)
+        - name: DB_CONNECTION
+          value: "mysql"
+        - name: DB_HOST
+          value: "mariadb-service-name" # Change to your DB service name/IP
+        - name: DB_PORT
+          value: "3306"
+        - name: DB_DATABASE
+          value: "anonaddy"
+        - name: DB_USERNAME
+          value: "anonaddy_user"
+        - name: DB_PASSWORD
+          value: "your_db_password"
+
+        # Redis Settings (Requires a separate Redis Pod)
+        - name: REDIS_HOST
+          value: "redis-service-name" # Change to your Redis service name/IP
+        - name: REDIS_PASSWORD
+          value: "null"
+        - name: REDIS_PORT
+          value: "6379"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: addy-io-service
+spec:
+  type: ClusterIP # Change to NodePort or LoadBalancer if accessing outside the cluster
+  selector:
+    app: addy-io
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
