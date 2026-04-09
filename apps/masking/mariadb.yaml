@@ -1,0 +1,92 @@
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariadb-pvc
+  namespace: masking
+  labels:
+    app: mariadb
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mariadb-pv
+  labels:
+    app: mariadb
+spec:
+  storageClassName: ""
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/home/server/docker/masking/mariadb"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb-service-name
+  namespace: masking
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: mariadb
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mariadb
+  namespace: masking
+  labels:
+    app: mariadb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mariadb
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      containers:
+      - name: mariadb
+        image: mariadb:10.11
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3306
+        env:
+        # Sets up the root user
+        - name: MARIADB_ROOT_PASSWORD
+          value: "change_this_root_password_before_prod" 
+        # Automatically creates the database and user requested by Addy.io
+        - name: MARIADB_DATABASE
+          value: "anonaddy"
+        - name: MARIADB_USER
+          value: "anonaddy_user"
+        - name: MARIADB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: database-admin
+              key: admin-password
+        volumeMounts:
+        - name: mariadb-data
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mariadb-data
+        persistentVolumeClaim:
+          claimName: mariadb-pvc

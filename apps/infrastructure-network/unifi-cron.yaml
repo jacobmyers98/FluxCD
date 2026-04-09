@@ -57,5 +57,4 @@ spec:
               secretName: udm-pro-tls-internal # The secret your cert-manager created
           - name: ssh-key
             secret:
-
               secretName: udm-ssh-key

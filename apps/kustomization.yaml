@@ -11,3 +11,4 @@ resources:
   - ./trivy-system
   - ./kube-system
   - ./keda
+  - ./masking
