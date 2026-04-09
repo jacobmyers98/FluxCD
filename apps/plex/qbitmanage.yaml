@@ -64,5 +64,4 @@ spec:
         - name: mount
           hostPath:
             path: /mnt/Media
-
             type: Directory
