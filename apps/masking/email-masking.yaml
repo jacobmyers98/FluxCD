@@ -48,7 +48,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: addy-mail-secret
-              key: MAIL_USERNAAME
+              key: MAIL_USERNAME
         - name: MAIL_PASSWORD
           valueFrom:
             secretKeyRef:
