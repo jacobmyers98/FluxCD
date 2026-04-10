@@ -36,6 +36,8 @@ spec:
           value: "http://localhost:8000"
         - name: ANONADDY_DOMAIN
           value: "addy.waffle-k8s.local"
+        - name: ANONADDY_ADMIN_USERNAME
+          value: "admin"
         
         # Database Settings (Requires a separate MariaDB/MySQL Pod)
         - name: DB_CONNECTION
