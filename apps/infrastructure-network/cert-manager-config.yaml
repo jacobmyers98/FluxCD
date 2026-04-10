@@ -18,6 +18,8 @@ spec:
   isCA: true               # <--- CRITICAL: This allows it to sign other certs
   commonName: "Waffle Root CA"
   secretName: root-ca-secret
+#  duration: 8760h # 1 year (365 days * 24)
+#  renewBefore: 720h
   privateKey:
     algorithm: ECDSA
     size: 256
