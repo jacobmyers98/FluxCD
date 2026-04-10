@@ -20,7 +20,7 @@ spec:
       hostNetwork: true 
       containers:
       - name: tailscale
-        image: tailscale/tailscale:1
+        image: tailscale/tailscale:v1.96.5
         env:
         # 2. Define your home network subnet here (e.g., 192.168.1.0/24 or 10.0.0.0/24)
         - name: TS_ROUTES

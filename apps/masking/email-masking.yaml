@@ -30,9 +30,6 @@ spec:
           value: "Addy.io"
         - name: APP_ENV
           value: "local" 
-        - name: APP_KEY
-          # You can generate one via: echo "base64:$(openssl rand -base64 32)"
-          value: "base64:7HGdyLZ4iBzRRMgHDMmDeW1sOB6BiGpZ4Q7nRhtnFws="
         - name: APP_DEBUG
           value: "true"
         - name: APP_URL
@@ -56,6 +53,16 @@ spec:
             secretKeyRef:
               name: database-admin
               key: admin-password
+        - name: ANONADDY_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: addy-io-secrets
+              key: ANONADDY_SECRET
+        - name: APP_KEY
+          valueFrom:
+            secretKeyRef:
+              name: addy-io-secrets
+              key: APP_KEY
         # Redis Settings (Requires a separate Redis Pod)
         - name: REDIS_HOST
           value: "redis-service-name" # Change to your Redis service name/IP
