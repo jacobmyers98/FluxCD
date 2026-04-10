@@ -15,14 +15,12 @@ spec:
       labels:
         app: tailscale
     spec:
-      # hostNetwork bypasses K8s internal CNI. This makes it much easier 
-      # for the container to route traffic directly to your physical LAN.
-      hostNetwork: true 
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       containers:
       - name: tailscale
         image: tailscale/tailscale:v1.96.5
         env:
-        # 2. Define your home network subnet here (e.g., 192.168.1.0/24 or 10.0.0.0/24)
         - name: TS_ROUTES
           value: "192.168.1.0/24" 
         - name: TS_AUTHKEY
@@ -40,7 +38,6 @@ spec:
         - name: tun-device
           mountPath: /dev/net/tun
       volumes:
-      # Mount the host's TUN device so WireGuard can create network interfaces
       - name: tun-device
         hostPath:
           path: /dev/net/tun
