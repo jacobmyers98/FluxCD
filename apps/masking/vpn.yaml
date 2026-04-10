@@ -17,10 +17,21 @@ spec:
     spec:
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
+      serviceAccountName: tailscale-sa
       containers:
       - name: tailscale
         image: tailscale/tailscale:v1.96.5
         env:
+        - name: TS_KUBE_SECRET
+          value: "tailscale"
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_UID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.uid
         - name: TS_ROUTES
           value: "192.168.1.0/24" 
         - name: TS_AUTHKEY
