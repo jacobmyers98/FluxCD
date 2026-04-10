@@ -25,7 +25,7 @@ spec:
         - name: TS_KUBE_SECRET
           value: "tailscale"
         - name: TS_EXTRA_ARGS
-          value: "--snat-subnet-routes=false"
+          value: "--snat-subnet-routes=true"
         - name: POD_NAME
           valueFrom:
             fieldRef:
