@@ -166,4 +166,4 @@ spec:
           service:
             name: port-service-addy
             port:
-              number: 30020
+              number: 80

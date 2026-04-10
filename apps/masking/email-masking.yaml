@@ -84,7 +84,6 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 8000
-      nodePort: 30020
   selector:
     app: addy-io
-  type: NodePort
+  type: ClusterIP
