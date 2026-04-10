@@ -107,24 +107,3 @@ spec:
     name: my-internal-ca
     kind: ClusterIssuer
     group: cert-manager.io
-
----
-
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: wildcard-waffle-cert
-  namespace: masking
-spec:
-  isCA: false
-  commonName: "*.waffle-k8s.local"
-  secretName: wildcard-tls-secret
-  dnsNames:
-  - "addy.waffle-k8s.local"
-  privateKey:
-    algorithm: ECDSA
-    size: 256
-  issuerRef:
-    name: my-internal-ca
-    kind: ClusterIssuer
-    group: cert-manager.io

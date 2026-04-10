@@ -85,12 +85,3 @@ metadata:
   name: dev
   labels:
     app: dev
-
----
-
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: masking
-  labels:
-    app: masking
