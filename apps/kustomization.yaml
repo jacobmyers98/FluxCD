@@ -10,5 +10,4 @@ resources:
   - ./plex
   - ./trivy-system
   - ./kube-system
-  - ./keda
   - ./masking
