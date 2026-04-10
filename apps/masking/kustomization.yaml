@@ -6,3 +6,4 @@ resources:
   - redis.yaml
   - secret.database.yaml
   - secret.addy.yaml
+  - secret.mail.yaml

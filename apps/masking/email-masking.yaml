@@ -38,6 +38,26 @@ spec:
           value: "addy.waffle-k8s.local"
         - name: ANONADDY_ADMIN_USERNAME
           value: "admin"
+        - name: MAIL_MAILER
+          value: "smtp"
+        - name: MAIL_HOST
+          value: "smtp-relay.brevo.com" 
+        - name: MAIL_PORT
+          value: "587"
+        - name: MAIL_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: addy-mail-secret
+              key: MAIL_USERNAAME
+        - name: MAIL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: addy-mail-secret
+              key: MAIL_PASSWORD
+        - name: MAIL_FROM_ADDRESS
+          value: "no-reply@addy.waffle-k8s.local" # Or your public domain
+        - name: MAIL_FROM_NAME
+          value: "Addy.io"
         
         # Database Settings (Requires a separate MariaDB/MySQL Pod)
         - name: DB_CONNECTION
