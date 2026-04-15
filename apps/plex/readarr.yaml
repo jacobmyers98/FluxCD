@@ -3,6 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: readarr
+  namespace: plex
   labels:
     app: readarr
 spec:
@@ -59,6 +60,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: readarr
+  namespace: plex
   labels:
     app: readarr
 spec:
