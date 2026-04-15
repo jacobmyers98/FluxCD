@@ -44,15 +44,15 @@ spec:
         # or multi-node clusters, you should use PersistentVolumeClaims (PVCs).
         - name: readarr-config
           hostPath:
-            path: /path/to/your/readarr/config
+            path: /home/server/docker/books
             type: DirectoryOrCreate
         - name: media-books
           hostPath:
-            path: /path/to/your/library/books
+            path: /mnt/Media/Books
             type: Directory
         - name: media-downloads
           hostPath:
-            path: /path/to/your/downloads
+            path: /mnt/Media/book-tmp
             type: Directory
 
 ---
