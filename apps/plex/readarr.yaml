@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: readarr
-          image: lscr.io/linuxserver/readarr:latest
+          image: linuxserver/readarr:0.4.19-nightly
           imagePullPolicy: IfNotPresent
           env:
             - name: PUID
