@@ -16,3 +16,4 @@ resources:
   - secret.qbit.yaml
   - secret.ghcr.yaml
   - secret.plex.yaml
+  - readarr.yaml

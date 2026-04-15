@@ -1,0 +1,72 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: readarr
+  labels:
+    app: readarr
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate # Prevents multiple pods from accessing the SQLite DB simultaneously
+  selector:
+    matchLabels:
+      app: readarr
+  template:
+    metadata:
+      labels:
+        app: readarr
+    spec:
+      containers:
+        - name: readarr
+          image: lscr.io/linuxserver/readarr:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: PUID
+              value: "1000" # Change to match your user's UID
+            - name: PGID
+              value: "1000" # Change to match your user's GID
+            - name: TZ
+              value: "America/Denver" # Change to your local timezone
+          ports:
+            - containerPort: 8787
+              name: webui
+          volumeMounts:
+            - name: readarr-config
+              mountPath: /config
+            - name: media-books
+              mountPath: /books # Where your finalized library lives
+            - name: media-downloads
+              mountPath: /downloads # Where your download client places files
+      volumes:
+        # Note: These are set as hostPath for easy setup, but for production 
+        # or multi-node clusters, you should use PersistentVolumeClaims (PVCs).
+        - name: readarr-config
+          hostPath:
+            path: /path/to/your/readarr/config
+            type: DirectoryOrCreate
+        - name: media-books
+          hostPath:
+            path: /path/to/your/library/books
+            type: Directory
+        - name: media-downloads
+          hostPath:
+            path: /path/to/your/downloads
+            type: Directory
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: readarr
+  labels:
+    app: readarr
+spec:
+  type: NodePort
+  selector:
+    app: readarr
+  ports:
+    - port: 8787
+      targetPort: 8787
+      nodePort: 30021
+      protocol: TCP
