@@ -49,8 +49,19 @@ spec:
     persistence:
       import:
         enabled: false
-        accessMode: ReadWriteOnce
-        size: 10Gi
+
+    extraVolumes:
+      - name: postgres-data
+        hostPath:
+          path: /root/docker/teslamate/teslamate-db
+          type: DirectoryOrCreate
+              
+    extraVolumeMounts:
+      - name: postgres-data
+        mountPath: /bitnami/postgresql
+
+
+
 
     postgresql:
       enabled: true
@@ -60,8 +71,9 @@ spec:
         digest: ""
         pullPolicy: IfNotPresent
       primary:
-        volumePermissions:
+        persistence:
           enabled: false
+          
       auth:
         existingSecret: teslamate-postgresql
         database: teslamate
