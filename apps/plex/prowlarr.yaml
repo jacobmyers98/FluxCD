@@ -34,7 +34,7 @@ spec:
           value: "none"
       containers:
       - name: prowlarr
-        image: linuxserver/prowlarr:2.3.5 #  {"$imagepolicy": "plex:prowlarr-policy"}
+        image: linuxserver/prowlarr:2.4.0 #  {"$imagepolicy": "plex:prowlarr-policy"}
         env:
         - name: PUID
           value: "1001"
