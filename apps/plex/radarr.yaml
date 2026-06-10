@@ -40,7 +40,7 @@ spec:
         fsGroup: 1004
       containers:
       - name: radarr
-        image: linuxserver/radarr:6.1.1 #  {"$imagepolicy": "plex:radarr-policy"}
+        image: linuxserver/radarr:6.2.1 #  {"$imagepolicy": "plex:radarr-policy"}
         imagePullPolicy: Always
         ports:
         - containerPort: 7878
