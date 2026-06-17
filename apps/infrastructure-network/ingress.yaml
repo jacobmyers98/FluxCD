@@ -140,3 +140,30 @@ spec:
             name: port-service-jackett
             port:
               number: 9117
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hybrid-analyst-ingress
+  namespace: investing
+  annotations:
+    ingress.cilium.io/force-https: "enabled"
+spec:
+  ingressClassName: cilium
+  tls:
+  - hosts:
+    - "investing.waffle-k8s.local"
+    secretName: wildcard-tls-secret
+  rules:
+  - host: investing.waffle-k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: hybrid-analyst-service
+            port:
+              number: 80

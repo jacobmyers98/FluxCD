@@ -84,7 +84,6 @@ spec:
   issuerRef:
     name: my-internal-ca
     kind: ClusterIssuer
-
     group: cert-manager.io
 
 ---
@@ -100,6 +99,27 @@ spec:
   secretName: wildcard-tls-secret
   dnsNames:
   - "hubble.waffle-k8s.local"
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: my-internal-ca
+    kind: ClusterIssuer
+    group: cert-manager.io
+
+---
+# 4b. Certificate for the "infrastructure" namespace
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wildcard-investing-cert
+  namespace: investing
+spec:
+  isCA: false
+  commonName: "*.waffle-k8s.local"
+  secretName: wildcard-tls-secret
+  dnsNames:
+  - "investing.waffle-k8s.local"
   privateKey:
     algorithm: ECDSA
     size: 256

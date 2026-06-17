@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hybrid-analyst-app
+  namespace: investing
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hybrid-analyst
+  template:
+    metadata:
+      labels:
+        app: hybrid-analyst
+    spec:
+      containers:
+      - name: analyst-ui
+        image: python:3.11-slim
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            pip install streamlit google-generativeai psycopg2-binary yfinance
+            cat << 'EOF' > app.py
+            import streamlit as st
+            import google.generativeai as genai
+            import yfinance as yf
+            import psycopg2
+            
+            st.title("⚡ Hybrid AI Market Intelligence")
+            st.write("Review model-generated daily sentiment and strategy adjustments.")
+            
+            ticker = st.text_input("Enter Ticker Symbol for Analysis:", value="SPY").upper()
+            
+            if st.button("Generate Strategy Draft"):
+                with st.spinner("Fetching market telemetry and prompting Gemini..."):
+                    try:
+                        data = yf.Ticker(ticker).history(period="5d")
+                        summary = f"Last 5 days close prices for {ticker}: {data['Close'].tolist()}"
+                        
+                        genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+                        model = genai.GenerativeModel('gemini-1.5-flash')
+                        response = model.generate_content(
+                            f"Act as a conservative quantitative risk manager. Analyze this data: {summary}. "
+                            "Provide a 3-sentence draft plan: Trend observation, Target entry zone, and specific execution warning. "
+                            "Format cleanly using markdown."
+                        )
+                        st.subheader(f"🤖 Draft Strategy for {ticker}")
+                        st.markdown(response.text)
+                        st.info("⚠️ Review parameters thoroughly before executing trades manually in your brokerage account.")
+                    except Exception as e:
+                        st.error(f"Execution Error: {e}")
+            EOF
+            mkdir -p .streamlit
+            cat << 'EOF' > .streamlit/secrets.toml
+            GEMINI_API_KEY = "$GEMINI_API_KEY"
+            EOF
+            streamlit run app.py --server.port=8501 --server.address=0.0.0.0
+        env:
+        - name: GEMINI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: ai-trading-secrets
+              key: GEMINI_API_KEY
+        - name: DB_HOST
+          value: "market-db-service"
+        ports:
+        - containerPort: 8501
+          name: ui-port
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: hybrid-analyst-service
+  namespace: investing
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 8501
+    nodePort: 30020
+  selector:
+    app: hybrid-analyst

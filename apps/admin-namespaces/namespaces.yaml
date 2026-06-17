@@ -85,3 +85,12 @@ metadata:
   name: dev
   labels:
     app: dev
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: investing
+  labels:
+    app: investing
