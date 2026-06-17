@@ -89,3 +89,19 @@ spec:
         ports:
         - containerPort: 8501
           name: ui-port
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: hybrid-analyst-service
+  namespace: investing
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 8501
+    nodePort: 30020
+  selector:
+    app: hybrid-analyst
