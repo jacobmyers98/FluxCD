@@ -24,7 +24,7 @@ spec:
             import streamlit as st
             import google.generativeai as genai
             import yfinance as yf
-            import psycopg2
+            import os
             
             st.title("⚡ Hybrid AI Market Intelligence")
             st.write("Review model-generated daily sentiment and strategy adjustments.")
