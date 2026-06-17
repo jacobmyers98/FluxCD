@@ -37,7 +37,7 @@ spec:
                         data = yf.Ticker(ticker).history(period="5d")
                         summary = f"Last 5 days close prices for {ticker}: {data['Close'].tolist()}"
                         
-                        genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+                        genai.configure(api_key=api_key)
                         model = genai.GenerativeModel('gemini-1.5-flash')
                         response = model.generate_content(
                             f"Act as a conservative quantitative risk manager. Analyze this data: {summary}. "
