@@ -37,6 +37,12 @@ spec:
                         data = yf.Ticker(ticker).history(period="5d")
                         summary = f"Last 5 days close prices for {ticker}: {data['Close'].tolist()}"
                         
+                        #Fetch the key dynamically from the container environment
+                        api_key = os.environ.get("GEMINI_API_KEY")
+                        if not api_key:
+                            st.error("Missing API Key. Check the Kubernetes Secret.")
+                            st.stop()
+                            
                         genai.configure(api_key=api_key)
                         model = genai.GenerativeModel('gemini-1.5-flash')
                         response = model.generate_content(
