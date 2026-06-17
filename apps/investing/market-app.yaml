@@ -59,7 +59,7 @@ spec:
         - name: GEMINI_API_KEY
           valueFrom:
             secretKeyRef:
-              name: ai-trading-secrets
+              name: gemini-api
               key: GEMINI_API_KEY
         - name: DB_HOST
           value: "market-db-service"
