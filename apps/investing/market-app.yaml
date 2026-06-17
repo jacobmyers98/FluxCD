@@ -37,8 +37,10 @@ spec:
                         data = yf.Ticker(ticker).history(period="5d")
                         summary = f"Last 5 days close prices for {ticker}: {data['Close'].tolist()}"
                         
-                        #Fetch the key dynamically from the container environment
-                        api_key = os.environ.get("GEMINI_API_KEY")
+                        # Fetch the key dynamically and strip any hidden newlines/spaces
+                        raw_key = os.environ.get("GEMINI_API_KEY", "")
+                        api_key = raw_key.strip().replace('"', '').replace("'", "")
+                        
                         if not api_key:
                             st.error("Missing API Key. Check the Kubernetes Secret.")
                             st.stop()
@@ -55,10 +57,6 @@ spec:
                         st.info("⚠️ Review parameters thoroughly before executing trades manually in your brokerage account.")
                     except Exception as e:
                         st.error(f"Execution Error: {e}")
-            EOF
-            mkdir -p .streamlit
-            cat << 'EOF' > .streamlit/secrets.toml
-            GEMINI_API_KEY = "$GEMINI_API_KEY"
             EOF
             streamlit run app.py --server.port=8501 --server.address=0.0.0.0
         env:
