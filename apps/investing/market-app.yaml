@@ -42,7 +42,7 @@ spec:
                     return "ERROR: Missing API Key"
                     
                 genai.configure(api_key=api_key)
-                model = genai.GenerativeModel('gemini-3.5-flash')
+                model = genai.GenerativeModel('gemini-3.1-flash-lite')
                 
                 # Retry loop to handle 429 quota exhaustion gracefully
                 for attempt in range(3):
