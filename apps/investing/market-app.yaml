@@ -61,10 +61,33 @@ spec:
                 return "ERROR: Rate limit exceeded. Please wait 60 seconds and try again."
             
             if st.button("Generate Strategy Draft"):
-                with st.spinner("Fetching market telemetry and prompting Gemini (may take 30s if rate-limited)..."):
+                with st.spinner("Fetching 30-day telemetry and prompting Gemini..."):
                     try:
-                        data = yf.Ticker(ticker).history(period="5d")
-                        summary = f"Last 5 days close prices for {ticker}: {data['Close'].tolist()}"
+                        # 1. Pull 30 days of data
+                        data = yf.Ticker(ticker).history(period="30d")
+                        closes = data['Close'].tolist()
+                        
+                        if not closes:
+                            st.error(f"Could not retrieve data for ticker {ticker}.")
+                            st.stop()
+
+                        # 2. Pre-calculate context metrics to prevent AI hallucinations
+                        current_price = round(closes[-1], 2)
+                        max_30d = round(max(closes), 2)
+                        min_30d = round(min(closes), 2)
+                        
+                        # Calculate 20-day Simple Moving Average (SMA)
+                        sma_20 = round(sum(closes[-20:]) / 20, 2) if len(closes) >= 20 else "N/A"
+                        
+                        # 3. Build a structured context payload
+                        summary = (
+                            f"30-Day Context for {ticker}:\n"
+                            f"- Current Price: ${current_price}\n"
+                            f"- 30-Day High: ${max_30d}\n"
+                            f"- 30-Day Low: ${min_30d}\n"
+                            f"- 20-Day SMA: ${sma_20}\n"
+                            f"- Raw Closes (Oldest to Newest): {closes}"
+                        )
                         
                         result = get_strategy(ticker, summary)
                         
