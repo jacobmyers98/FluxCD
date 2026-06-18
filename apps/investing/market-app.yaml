@@ -32,7 +32,6 @@ spec:
             
             ticker = st.text_input("Enter Ticker Symbol for Analysis:", value="SPY").upper()
             
-            # Cache responses for 1 hour so repeat requests don't burn free-tier quota
             @st.cache_data(ttl=3600)
             def get_strategy(ticker_symbol, summary_data):
                 raw_key = os.environ.get("GEMINI_API_KEY", "")
@@ -44,49 +43,57 @@ spec:
                 genai.configure(api_key=api_key)
                 model = genai.GenerativeModel('gemini-3.1-flash-lite')
                 
-                # Retry loop to handle 429 quota exhaustion gracefully
                 for attempt in range(3):
                     try:
                         response = model.generate_content(
-                            f"Act as a conservative quantitative risk manager. Analyze this data: {summary_data}. "
-                            "Provide a 3-sentence draft plan: Trend observation, Target entry zone, and specific execution warning. "
+                            f"Act as a conservative quantitative risk manager. Analyze the following technical data and recent news headlines: {summary_data}. "
+                            "Provide a 3-sentence draft plan: "
+                            "1. Trend observation (correlate the price action with the news sentiment). "
+                            "2. Target entry zone. "
+                            "3. Specific execution warning based on the headlines or volatility. "
                             "Format cleanly using markdown."
                         )
                         return response.text
                     except Exception as e:
                         if "429" in str(e) or "Quota exceeded" in str(e):
-                            time.sleep(35) # Wait for the minute timer to reset
+                            time.sleep(35)
                         else:
                             raise e
                 return "ERROR: Rate limit exceeded. Please wait 60 seconds and try again."
             
             if st.button("Generate Strategy Draft"):
-                with st.spinner("Fetching 30-day telemetry and prompting Gemini..."):
+                with st.spinner("Fetching 30-day telemetry, live news, and prompting Gemini..."):
                     try:
+                        ticker_obj = yf.Ticker(ticker)
+                        
                         # 1. Pull 30 days of data
-                        data = yf.Ticker(ticker).history(period="30d")
+                        data = ticker_obj.history(period="30d")
                         closes = data['Close'].tolist()
                         
                         if not closes:
                             st.error(f"Could not retrieve data for ticker {ticker}.")
                             st.stop()
 
-                        # 2. Pre-calculate context metrics to prevent AI hallucinations
+                        # 2. Pull latest news headlines
+                        raw_news = ticker_obj.news
+                        headlines = [article.get('title', '') for article in raw_news[:3]] if raw_news else ["No recent news found."]
+                        news_context = "\n- ".join(headlines)
+
+                        # 3. Pre-calculate context metrics
                         current_price = round(closes[-1], 2)
                         max_30d = round(max(closes), 2)
                         min_30d = round(min(closes), 2)
-                        
-                        # Calculate 20-day Simple Moving Average (SMA)
                         sma_20 = round(sum(closes[-20:]) / 20, 2) if len(closes) >= 20 else "N/A"
                         
-                        # 3. Build a structured context payload
+                        # 4. Build the hybrid context payload
                         summary = (
                             f"30-Day Context for {ticker}:\n"
                             f"- Current Price: ${current_price}\n"
                             f"- 30-Day High: ${max_30d}\n"
                             f"- 30-Day Low: ${min_30d}\n"
-                            f"- 20-Day SMA: ${sma_20}\n"
-                            f"- Raw Closes (Oldest to Newest): {closes}"
+                            f"- 20-Day SMA: ${sma_20}\n\n"
+                            f"Recent News Headlines:\n- {news_context}\n\n"
+                            f"Raw Closes (Oldest to Newest): {closes}"
                         )
                         
                         result = get_strategy(ticker, summary)
