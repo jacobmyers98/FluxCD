@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: market-db
+  name: market-re-db
   namespace: investing
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: market-db
+      app: market-re-db
   template:
     metadata:
       labels:
-        app: market-db
+        app: market-re-db
     spec:
       containers:
       - name: postgres
@@ -46,11 +46,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: market-db-service
+  name: market-re-db-service
   namespace: investing
 spec:
   ports:
   - port: 5432
     targetPort: 5432
   selector:
-    app: market-db
+    app: market-re-db
