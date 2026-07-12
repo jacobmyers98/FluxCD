@@ -1,10 +1,3 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - market-app-db.yaml
-  - market-app.yaml
-  - secret.gemini-api.yaml
-  - secret.postgres.yaml
-  - real-estate.yaml
-  - real-estate-cron.yaml
-  - real-estate-db.yaml
