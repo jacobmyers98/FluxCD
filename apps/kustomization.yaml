@@ -10,4 +10,4 @@ resources:
   - ./plex
   - ./trivy-system
   - ./kube-system
-  - ./investing
+#  - ./investing
