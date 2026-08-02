@@ -17,14 +17,12 @@ spec:
     createNamespace: true
   values:
     deploymentMode: SingleBinary
-
     backend:
       replicas: 0
     read:
       replicas: 0
     write:
       replicas: 0
-
     ruler:
       enabled: false
     ingester:
@@ -41,8 +39,6 @@ spec:
           mountPath: /var/loki
       persistence:
         enabled: false
-
-
     loki:
       auth_enabled: false
       commonConfig:
@@ -65,10 +61,8 @@ spec:
             index:
               prefix: loki_index_
               period: 24h
-
     gateway:
       enabled: true
-
     resources:
       limits:
         cpu: 500m
@@ -76,7 +70,9 @@ spec:
       requests:
         cpu: 100m
         memory: 256Mi
+
 ---
+
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -107,6 +103,7 @@ spec:
         memory: 128Mi
 
 ---
+
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -130,6 +127,7 @@ spec:
         release: prometheus-community
 
 ---
+
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -147,6 +145,13 @@ spec:
         name: prometheus-community
         namespace: flux-system
   values:
+    defaultRules:
+      rules:
+        etcd: false
+        kubeControllerManager: false
+        kubeProxy: false
+        kubeSchedulerAlerting: false
+        kubeSchedulerRecording: false
     grafana:
       deploymentStrategy:
         type: Recreate
