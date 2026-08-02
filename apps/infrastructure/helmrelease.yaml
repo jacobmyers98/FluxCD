@@ -152,6 +152,7 @@ spec:
         kubeProxy: false
         kubeSchedulerAlerting: false
         kubeSchedulerRecording: false
+        general: false
     grafana:
       deploymentStrategy:
         type: Recreate
