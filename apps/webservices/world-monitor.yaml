@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: worldmonitor
-          image: ghcr.io/koala73/worldmonitor:latest
+          image: ghcr.io/koala73/worldmonitor:sha-6c48a33
           ports:
             - name: http
               containerPort: 8080
