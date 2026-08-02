@@ -10,4 +10,5 @@ resources:
   - ./plex
   - ./trivy-system
   - ./kube-system
+  - ./webservices
 #  - ./investing

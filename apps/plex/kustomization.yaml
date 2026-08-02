@@ -6,7 +6,6 @@ resources:
   - image-update-automation.yaml
   - plex.yaml
   - qbittorrent.yaml
-  - qbitmanage.yaml
   - qbit-restart-cron.yaml
   - radarr.yaml
   - sonarr.yaml

@@ -94,3 +94,12 @@ metadata:
   name: investing
   labels:
     app: investing
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: webservices
+  labels:
+    app: webservices

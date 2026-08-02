@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worldmonitor
+  namespace: webservices
+  labels:
+    app: worldmonitor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worldmonitor
+  template:
+    metadata:
+      labels:
+        app: worldmonitor
+    spec:
+      containers:
+        - name: worldmonitor
+          image: ghcr.io/koala73/worldmonitor:latest
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          # env:
+          #   - name: GROQ_API_KEY
+          #     valueFrom:
+          #       secretKeyRef:
+          #         name: worldmonitor-secrets
+          #         key: groq-api-key
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
