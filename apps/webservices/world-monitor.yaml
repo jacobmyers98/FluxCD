@@ -35,3 +35,22 @@ spec:
             limits:
               memory: "256Mi"
               cpu: "500m"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: port-service-worldmonitor
+  namespace: webservices
+  labels:
+    app: worldmonitor
+spec:
+  ports:
+    - name: worldmonitor-port
+      port: 8080
+      targetPort: 8080
+      nodePort: 30019
+  selector:
+    app: worldmonitor
+  type: NodePort
