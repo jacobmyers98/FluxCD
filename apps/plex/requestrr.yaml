@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: requestrr
+  namespace: plex
+  labels:
+    app: requestrr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: requestrr
+  template:
+    metadata:
+      labels:
+        app: requestrr
+    spec:
+      containers:
+        - name: requestrr
+          # Using the official image from the developer
+          image: darkalfx/requestrr:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4545
+              name: webui
+              protocol: TCP
+          volumeMounts:
+            - name: requestrr-config
+              # Requestrr expects configuration data to live here
+              mountPath: /root/config
+      volumes:
+        - name: requestrr-config
+          hostPath:
+            # Your requested hostPath directory
+            path: /home/server/docker/requestrr
+            # Will automatically create the directory on the host if it doesn't exist
+            type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: requestrr-service
+  namespace: plex
+  labels:
+    app: requestrr
+spec:
+  type: NodePort
+  selector:
+    app: requestrr
+  ports:
+    - name: http
+      port: 4545
+      targetPort: 4545
+      nodePort: 30020
+      protocol: TCP
