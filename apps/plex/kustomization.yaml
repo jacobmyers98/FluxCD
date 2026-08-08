@@ -13,6 +13,7 @@ resources:
   - overseerr.yaml
   - prowlarr.yaml
   - requestrr.yaml
+  - maintainerr.yaml
   - secret.qbit.yaml
   - secret.ghcr.yaml
   - secret.plex.yaml
