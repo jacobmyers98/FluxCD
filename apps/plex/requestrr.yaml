@@ -15,6 +15,10 @@ spec:
       labels:
         app: requestrr
     spec:
+      securityContext:
+        runAsUser: 1001
+        runAsGroup: 1004
+        fsGroup: 1004
       containers:
         - name: requestrr
           # Using the official image from the developer
