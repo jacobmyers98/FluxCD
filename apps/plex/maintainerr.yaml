@@ -15,6 +15,10 @@ spec:
       labels:
         app: maintainerr
     spec:
+      securityContext:
+        runAsUser: 1001
+        runAsGroup: 1004
+        fsGroup: 1004
       containers:
       - name: maintainerr
         image: ghcr.io/maintainerr/maintainerr:latest
