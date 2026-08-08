@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: maintainerr
+  namespace: plex
+  labels:
+    app: maintainerr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: maintainerr
+  template:
+    metadata:
+      labels:
+        app: maintainerr
+    spec:
+      containers:
+      - name: maintainerr
+        image: ghcr.io/maintainerr/maintainerr:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 6246
+        volumeMounts:
+        - name: maintainerr-data
+          mountPath: /opt/data
+      volumes:
+      - name: maintainerr-data
+        hostPath:
+          path: /home/server/docker/maintainerr
+          type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: maintainerr
+  namespace: plex
+  labels:
+    app: maintainerr
+spec:
+  type: NodePort
+  selector:
+    app: maintainerr
+  ports:
+  - port: 6246
+    targetPort: 6246
+    nodePort: 30021
