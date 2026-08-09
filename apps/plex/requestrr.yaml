@@ -21,27 +21,24 @@ spec:
         fsGroup: 1004
       containers:
         - name: requestrr
-          # Using the official image from the developer
           image: darkalfx/requestrr:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 4545
               name: webui
               protocol: TCP
-          env:
-            - name: TMPDIR
-              value: "/tmp"
           volumeMounts:
             - name: requestrr-config
-              # Requestrr expects configuration data to live here
               mountPath: /root/config
+            - name: requestrr-tmp
+              mountPath: /root/tmp
       volumes:
         - name: requestrr-config
           hostPath:
-            # Your requested hostPath directory
             path: /home/server/docker/requestrr
-            # Will automatically create the directory on the host if it doesn't exist
             type: DirectoryOrCreate
+        - name: requestrr-tmp
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
