@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tailscale-subnet-router
+  namespace: infrastructure-network
+  labels:
+    app: tailscale
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tailscale
+  template:
+    metadata:
+      labels:
+        app: tailscale
+    spec:
+      serviceAccountName: tailscale
+      containers:
+      - name: tailscale
+        image: tailscale/tailscale:latest
+        env:
+        - name: TS_AUTHKEY
+          valueFrom:
+            secretKeyRef:
+              name: tailscale-auth
+              key: TS_AUTHKEY
+        - name: TS_ROUTES
+          value: "192.168.1.0/24" 
+        - name: TS_KUBE_SECRET
+          value: tailscale-state
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+        volumeMounts:
+        - name: tun-device
+          mountPath: /dev/net/tun
+      volumes:
+      - name: tun-device
+        hostPath:
+          path: /dev/net/tun
+
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tailscale
+  namespace: infrastructure-network
+
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: tailscale
+  namespace: infrastructure-network
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["create", "get", "update", "patch"]
+
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: tailscale
+  namespace: infrastructure-network
+subjects:
+- kind: ServiceAccount
+  name: tailscale
+roleRef:
+  kind: Role
+  name: tailscale
+  apiGroup: rbac.authorization.k8s.io
