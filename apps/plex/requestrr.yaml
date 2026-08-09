@@ -28,6 +28,9 @@ spec:
             - containerPort: 4545
               name: webui
               protocol: TCP
+          env:
+            - name: TMPDIR
+              value: "/tmp"
           volumeMounts:
             - name: requestrr-config
               # Requestrr expects configuration data to live here
