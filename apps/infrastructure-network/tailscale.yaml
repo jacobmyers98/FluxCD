@@ -26,7 +26,7 @@ spec:
               name: tailscale-auth
               key: TS_AUTHKEY
         - name: TS_ROUTES
-          value: "192.168.1.0/24" 
+          value: "192.168.1.0/24,10.96.0.0/12,10.244.0.0/16" 
         - name: TS_KUBE_SECRET
           value: tailscale-state
         securityContext:
