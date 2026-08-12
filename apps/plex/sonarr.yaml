@@ -38,6 +38,10 @@ spec:
         runAsUser: 1001
         runAsGroup: 1004
         fsGroup: 1004
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL 
       containers:
       - name: sonarr
         image: linuxserver/sonarr:4.0.19 # {"$imagepolicy": "plex:sonarr-policy"}

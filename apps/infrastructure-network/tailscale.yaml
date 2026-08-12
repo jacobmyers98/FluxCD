@@ -30,9 +30,13 @@ spec:
         - name: TS_KUBE_SECRET
           value: tailscale-state
         securityContext:
+          allowPrivilegeEscalation: false
           capabilities:
+            drop:
+              - ALL                    
             add:
-            - NET_ADMIN
+              - NET_ADMIN                
+              - NET_RAW
         volumeMounts:
         - name: tun-device
           mountPath: /dev/net/tun

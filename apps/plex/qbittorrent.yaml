@@ -56,11 +56,15 @@ spec:
       - name: gluetun
         image: qmcgaw/gluetun:v3.41.1
         imagePullPolicy: Always
-        restartPolicy: Always # Requires Kubernetes v1.28+
+        restartPolicy: Always
         securityContext:
+          allowPrivilegeEscalation: false
           capabilities:
+            drop:
+              - ALL                    
             add:
-              - NET_ADMIN
+              - NET_ADMIN                
+              - NET_RAW
         env:
         - name: VPN_SERVICE_PROVIDER
           value: "custom"

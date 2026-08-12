@@ -38,8 +38,12 @@ spec:
     spec:
       securityContext:
         runAsUser: 1001
-        runAsGroup: 1001
-        fsGroup: 1001
+        runAsGroup: 1004
+        fsGroup: 1004
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL 
       containers:
       - name: homarr
         image: ghcr.io/homarr-labs/homarr:v1.74.0 # {"$imagepolicy": "infrastructure:homarr-policy"}

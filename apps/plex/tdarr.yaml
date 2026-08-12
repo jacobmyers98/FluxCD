@@ -19,6 +19,10 @@ spec:
         app: tdarr-server
     spec:
       securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
       containers:
         - name: tdarr-server
           image: ghcr.io/haveagitgat/tdarr:2.58.02
