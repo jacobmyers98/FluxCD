@@ -21,13 +21,9 @@ spec:
         app: prowlarr
     spec:
       securityContext:
-        runAsUser: 1001
-        runAsGroup: 1004
-        fsGroup: 1004
-        allowPrivilegeEscalation: true
-        capabilities:
-          drop:
-            - ALL 
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
       initContainers:
       - name: flaresolverr
         image: ghcr.io/flaresolverr/flaresolverr:v3.4.6
