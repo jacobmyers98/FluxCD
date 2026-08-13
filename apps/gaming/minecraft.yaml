@@ -33,10 +33,6 @@ spec:
         app: minecraft
     spec:
       restartPolicy: Always
-      securityContext:
-        runAsUser: 1001
-        runAsGroup: 1004
-        fsGroup: 1004
       containers:
       - name: mc
         image: itzg/minecraft-server:java21
@@ -58,6 +54,10 @@ spec:
           value: "3"
         - name: SEED
           value: "-8395554130348605121"
+        - name: UID
+          value: "1001"
+        - name: GID
+          value: "1004"
         volumeMounts:
         - mountPath: /data
           name: mc-data
