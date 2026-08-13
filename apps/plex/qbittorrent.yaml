@@ -58,12 +58,9 @@ spec:
         imagePullPolicy: Always
         restartPolicy: Always
         securityContext:
-          capabilities:
-            drop:
-              - ALL                    
+          capabilities:                
             add:
-              - NET_ADMIN                
-              - NET_RAW
+              - NET_ADMIN
         env:
         - name: VPN_SERVICE_PROVIDER
           value: "custom"
