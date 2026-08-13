@@ -58,7 +58,6 @@ spec:
         imagePullPolicy: Always
         restartPolicy: Always
         securityContext:
-          allowPrivilegeEscalation: false
           capabilities:
             drop:
               - ALL                    
