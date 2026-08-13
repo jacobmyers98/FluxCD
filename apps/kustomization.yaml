@@ -11,4 +11,3 @@ resources:
   - ./trivy-system
   - ./kube-system
   - ./webservices
-#  - ./investing
