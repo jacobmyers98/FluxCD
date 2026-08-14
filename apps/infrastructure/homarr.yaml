@@ -43,45 +43,45 @@ spec:
         allowPrivilegeEscalation: false
         capabilities:
           drop:
-            - ALL 
+            - ALL
       containers:
-      - name: homarr
-        image: ghcr.io/homarr-labs/homarr:v1.74.0 # {"$imagepolicy": "infrastructure:homarr-policy"}
-        imagePullPolicy: Always
-        env:
-        - name: SECRET_ENCRYPTION_KEY
-          value: "3378b3035eedd9ee2b167720139477ace39ec8117adda382c3acfde5246e63c7"
-        ports:
-        - containerPort: 7575
-        volumeMounts:
-        - mountPath: /app/data/configs
-          name: homarr-config
-        - mountPath: /app/public/icons
-          name: homarr-icons
-        - mountPath: /data
-          name: homarr-data
-        - mountPath: /app/public/imgs/backgrounds
-          name: homarr-imgs
-        - mountPath: /appdata
-          name: homarr-data2
+        - name: homarr
+          image: ghcr.io/homarr-labs/homarr:v1.75.0 # {"$imagepolicy": "infrastructure:homarr-policy"}
+          imagePullPolicy: Always
+          env:
+            - name: SECRET_ENCRYPTION_KEY
+              value: "3378b3035eedd9ee2b167720139477ace39ec8117adda382c3acfde5246e63c7"
+          ports:
+            - containerPort: 7575
+          volumeMounts:
+            - mountPath: /app/data/configs
+              name: homarr-config
+            - mountPath: /app/public/icons
+              name: homarr-icons
+            - mountPath: /data
+              name: homarr-data
+            - mountPath: /app/public/imgs/backgrounds
+              name: homarr-imgs
+            - mountPath: /appdata
+              name: homarr-data2
       volumes:
-      - name: homarr-config
-        hostPath:
-          path: /home/server/docker/homarr/config
-          type: Directory
-      - name: homarr-icons
-        hostPath:
-          path: /home/server/docker/homarr/icons
-          type: Directory
-      - name: homarr-data
-        hostPath:
-          path: /home/server/docker/homarr/data
-          type: Directory
-      - name: homarr-imgs
-        hostPath:
-          path: /home/server/docker/homarr/imgs
-          type: Directory
-      - name: homarr-data2
-        hostPath:
-          path: /home/server/docker/homarr/data2
-          type: DirectoryOrCreate
+        - name: homarr-config
+          hostPath:
+            path: /home/server/docker/homarr/config
+            type: Directory
+        - name: homarr-icons
+          hostPath:
+            path: /home/server/docker/homarr/icons
+            type: Directory
+        - name: homarr-data
+          hostPath:
+            path: /home/server/docker/homarr/data
+            type: Directory
+        - name: homarr-imgs
+          hostPath:
+            path: /home/server/docker/homarr/imgs
+            type: Directory
+        - name: homarr-data2
+          hostPath:
+            path: /home/server/docker/homarr/data2
+            type: DirectoryOrCreate
