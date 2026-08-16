@@ -46,6 +46,7 @@ spec:
     metadata:
       labels:
         app: qbittorrent
+        exposed: nodeport
     spec:
       hostname: qbit-server
       initContainers:

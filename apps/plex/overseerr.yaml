@@ -36,6 +36,7 @@ spec:
     metadata:
       labels:
         app: overseerr
+        exposed: nodeport
     spec:
       securityContext:
         runAsUser: 1001

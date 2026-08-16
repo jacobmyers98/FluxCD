@@ -33,6 +33,7 @@ spec:
     metadata:
       labels:
         app: plex
+        exposed: nodeport
     spec:
       securityContext:
         runAsUser: 1001

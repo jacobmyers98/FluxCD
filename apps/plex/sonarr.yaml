@@ -33,6 +33,7 @@ spec:
     metadata:
       labels:
         app: sonarr
+        exposed: nodeport
     spec:
       securityContext:
         runAsUser: 1001

@@ -17,6 +17,7 @@ spec:
     metadata:
       labels:
         app: tdarr-server
+        exposed: nodeport
     spec:
       securityContext:
         allowPrivilegeEscalation: false
@@ -90,6 +91,7 @@ spec:
     metadata:
       labels:
         app: tdarr-node
+        exposed: nodeport
     spec:
       initContainers:
         - name: tdarr-checker
