@@ -1,0 +1,13 @@
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-external-nodeport
+  namespace: your-app-namespace
+spec:
+  endpointSelector:
+    matchLabels:
+      exposed: nodeport
+  ingress:
+  - fromEntities:
+    - world
+    - host
