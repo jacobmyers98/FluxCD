@@ -6,3 +6,4 @@ resources:
   - nvidia-time-slice.yaml
   - backup.yaml
   - cillium-nodeport.yaml
+  - cilium-mTLS.yaml
