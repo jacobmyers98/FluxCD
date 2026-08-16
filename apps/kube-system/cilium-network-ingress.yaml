@@ -1,8 +1,8 @@
 apiVersion: "cilium.io/v2"
-kind: CiliumNetworkPolicy
+kind: CiliumClusterwideNetworkPolicy
 metadata:
   name: allow-external-nodeport
-  namespace: your-app-namespace
+  namespace: gaming
 spec:
   endpointSelector:
     matchLabels:
