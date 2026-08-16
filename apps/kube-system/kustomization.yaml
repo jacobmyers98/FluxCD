@@ -5,5 +5,5 @@ resources:
   - nvidia-runtime.yaml
   - nvidia-time-slice.yaml
   - backup.yaml
-  - cillium-nodeport.yaml
+  - cilium-nodeport.yaml
   - cilium-mTLS.yaml
