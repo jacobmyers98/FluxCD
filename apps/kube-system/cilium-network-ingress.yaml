@@ -2,7 +2,6 @@ apiVersion: "cilium.io/v2"
 kind: CiliumClusterwideNetworkPolicy
 metadata:
   name: allow-external-nodeport
-  namespace: gaming
 spec:
   endpointSelector:
     matchLabels:
@@ -11,29 +10,3 @@ spec:
   - fromEntities:
     - world
     - host
-    toPorts:
-    - ports:
-      - port: "80"
-        protocol: TCP
-      - port: "25565"
-        protocol: TCP
-      - port: "7575"
-        protocol: TCP
-      - port: "5055"
-        protocol: TCP
-      - port: "32400"
-        protocol: TCP
-      - port: "8080"
-        protocol: TCP
-      - port: "7878"
-        protocol: TCP
-      - port: "8989"
-        protocol: TCP
-      - port: "9696"
-        protocol: TCP
-      - port: "4545"
-        protocol: TCP
-      - port: "8265"
-        protocol: TCP
-      - port: "4000"
-        protocol: TCP
