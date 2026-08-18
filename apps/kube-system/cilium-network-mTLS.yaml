@@ -12,12 +12,56 @@ spec:
       - kube-system
       - cilium-spire
       - flux-system
-    - key: "exposed"
-      operator: NotIn
-      values:
-      - nodeport
   ingress:
   - fromEndpoints:
     - matchLabels: {}
     authentication:
       mode: "required"
+
+---
+
+apiVersion: "cilium.io/v2"
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: allow-external-nodeport
+spec:
+  endpointSelector:
+    matchLabels:
+      exposed: nodeport
+  ingress:
+  - fromEntities:
+    - world
+    - host
+
+---
+
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: media-stack-ingress
+  namespace: plex
+spec:
+  endpointSelector:
+    matchExpressions:
+    - key: "app"
+      operator: In
+      values:
+      - radarr
+      - sonarr
+  ingress:
+  # ----------------------------------------------------
+  # RULE 1: Internal Pods MUST use mTLS (e.g., Prowlarr)
+  # ----------------------------------------------------
+  - fromEndpoints:
+    - matchLabels:
+        app: prowlarr
+        tier: internal
+    authentication:
+      mode: "required"
+  # ----------------------------------------------------
+  # RULE 2: Ingress Controller uses standard TCP (NO mTLS)
+  # ----------------------------------------------------
+  - fromEndpoints:
+    - matchLabels:
+        app: ingress-nginx # Update this to match your ingress controller's labels
+      # Notice there is no authentication block here!

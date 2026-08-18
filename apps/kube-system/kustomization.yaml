@@ -8,4 +8,3 @@ resources:
   - cilium-nodeport.yaml
   - cilium-mTLS.yaml
   - cilium-network-mTLS.yaml
-  - cilium-network-ingress.yaml
