@@ -6,11 +6,11 @@ metadata:
     app.kubernetes.io/name: hubble-ui
     app.kubernetes.io/part-of: cilium
     k8s-app: hubble-ui
-  name: port-service-cillium
+  name: port-service-cilium
   namespace: kube-system
 spec:
   ports:
-  - name: cillium-port
+  - name: cilium-port
     nodePort: 30007
     port: 80
     protocol: TCP

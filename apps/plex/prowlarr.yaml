@@ -1,3 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: port-service-prowlarr
+  namespace: plex
+spec:
+  type: NodePort
+  selector:
+    app: prowlarr
+  ports:
+    - protocol: TCP
+      port: 9696
+      targetPort: 9696
+      nodePort: 30003
+
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -57,18 +74,3 @@ spec:
         hostPath:
           path: /home/server/docker/prowlarr/
           type: Directory
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: prowlarr-service
-  namespace: plex
-spec:
-  type: NodePort
-  selector:
-    app: prowlarr
-  ports:
-    - protocol: TCP
-      port: 9696 # Port internal to the cluster
-      targetPort: 9696 # Port the container listens on
-      nodePort: 30003 # Port accessible from outside (Range: 30000-32767)

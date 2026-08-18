@@ -81,6 +81,9 @@ spec:
     - "radarr.waffle-k8s.local"
     - "plex.waffle-k8s.local"
     - "qbit.waffle-k8s.local"
+    - "prowlarr.waffle-k8s.local"
+    - "requestrr.waffle-k8s.local"
+    - "overseerr.waffle-k8s.local"
     secretName: wildcard-tls-secret
   rules:
   # --- Sonarr ---
@@ -127,3 +130,36 @@ spec:
             name: port-service-qbit
             port:
               number: 8080
+  # --- Overseerr ---
+  - host: overseerr.waffle-k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-overseerr
+            port:
+              number: 5055
+  # --- Prowlarr ---
+  - host: prowlarr.waffle-k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-prowlarr
+            port:
+              number: 9696
+  # --- Requestrr ---
+  - host: requestrr.waffle-k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-requestrr
+            port:
+              number: 4545

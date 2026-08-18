@@ -18,8 +18,8 @@ spec:
   isCA: true               # <--- CRITICAL: This allows it to sign other certs
   commonName: "Waffle Root CA"
   secretName: root-ca-secret
-#  duration: 8760h # 1 year (365 days * 24)
-#  renewBefore: 720h
+  duration: 87600h
+  renewBefore: 720h
   privateKey:
     algorithm: ECDSA
     size: 256
@@ -40,7 +40,7 @@ spec:
     secretName: root-ca-secret # Matches the secret in Step 2
 
 ---
-# 4a. Certificate for the "plex" namespace
+# 4. Certificate for the "plex" namespace
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -55,7 +55,6 @@ spec:
   - "radarr.waffle-k8s.local"
   - "plex.waffle-k8s.local"
   - "qbit.waffle-k8s.local"
-  - "jackett.waffle-k8s.local"
   privateKey:
     algorithm: ECDSA
     size: 256
@@ -65,7 +64,7 @@ spec:
     group: cert-manager.io
 
 ---
-# 4b. Certificate for the "infrastructure" namespace
+# 4. Certificate for the "infrastructure" namespace
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -87,7 +86,7 @@ spec:
     group: cert-manager.io
 
 ---
-# 4b. Certificate for the "infrastructure" namespace
+# 4. Certificate for the "kube-system" namespace
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -99,27 +98,6 @@ spec:
   secretName: wildcard-tls-secret
   dnsNames:
   - "hubble.waffle-k8s.local"
-  privateKey:
-    algorithm: ECDSA
-    size: 256
-  issuerRef:
-    name: my-internal-ca
-    kind: ClusterIssuer
-    group: cert-manager.io
-
----
-# 4b. Certificate for the "infrastructure" namespace
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: wildcard-investing-cert
-  namespace: investing
-spec:
-  isCA: false
-  commonName: "*.waffle-k8s.local"
-  secretName: wildcard-tls-secret
-  dnsNames:
-  - "investing.waffle-k8s.local"
   privateKey:
     algorithm: ECDSA
     size: 256
