@@ -64,15 +64,6 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: research
-  labels:
-    app: research
-
----
-
-apiVersion: v1
-kind: Namespace
-metadata:
   name: keda
   labels:
     app: keda
@@ -85,15 +76,6 @@ metadata:
   name: dev
   labels:
     app: dev
-
----
-
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: investing
-  labels:
-    app: investing
 
 ---
 

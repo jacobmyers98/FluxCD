@@ -35,18 +35,17 @@ spec:
         app: radarr
         exposed: nodeport
     spec:
-      securityContext:
-        runAsUser: 1001
-        runAsGroup: 1004
-        fsGroup: 1004
-        allowPrivilegeEscalation: false
-        capabilities:
-          drop:
-            - ALL 
       containers:
       - name: radarr
         image: linuxserver/radarr:6.3.0 #  {"$imagepolicy": "plex:radarr-policy"}
         imagePullPolicy: Always
+        env:
+        - name: PUID
+          value: "1001"
+        - name: PGID
+          value: "1004"
+        - name: TZ
+          value: "America/Denver"
         ports:
         - containerPort: 7878
         volumeMounts:

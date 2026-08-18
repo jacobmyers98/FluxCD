@@ -12,6 +12,10 @@ spec:
       - kube-system
       - cilium-spire
       - flux-system
+    - key: "exposed"
+      operator: NotIn
+      values:
+      - nodeport
   ingress:
   - fromEndpoints:
     - matchLabels: {}
