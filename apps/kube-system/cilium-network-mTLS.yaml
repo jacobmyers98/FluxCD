@@ -69,7 +69,6 @@ spec:
         - prowlarr
         - radarr
         - sonarr
-        - qbittorrent
     authentication:
       mode: "required"
       
@@ -80,3 +79,10 @@ spec:
     - world
     - host
     - ingress
+
+  - fromEndpoints:
+      - matchExpressions:
+        - key: "app"
+          operator: In
+          values:
+          - qbittorrent
