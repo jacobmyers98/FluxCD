@@ -57,7 +57,7 @@ spec:
       - radarr
       - sonarr
       - qbittorrent
-ingress:
+  ingress:
   # ----------------------------------------------------
   # RULE 1: Internal Media Stack Pods MUST use mTLS 
   # ----------------------------------------------------
