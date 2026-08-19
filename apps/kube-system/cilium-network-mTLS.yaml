@@ -54,6 +54,7 @@ spec:
       values:
       - radarr
       - sonarr
+      - qbittorrent
   ingress:
   # ----------------------------------------------------
   # RULE 1: Internal Pods MUST use mTLS (e.g., Prowlarr)
