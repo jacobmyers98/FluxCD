@@ -3,9 +3,11 @@ kind: CiliumClusterwideNetworkPolicy
 metadata:
   name: "default-require-mtls"
 spec:
-  description: "Require mTLS globally, except for infrastructure and storage"
+  description: "Require mTLS globally for Pods, ignoring reserved Cilium identities"
   endpointSelector:
     matchExpressions:
+    - key: "k8s:io.kubernetes.pod.namespace"
+      operator: Exists
     - key: "k8s:io.kubernetes.pod.namespace"
       operator: NotIn
       values:
@@ -36,7 +38,6 @@ spec:
   - fromEntities:
     - world
     - host
-    - ingress
 
 ---
 
