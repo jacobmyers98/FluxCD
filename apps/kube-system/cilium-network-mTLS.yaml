@@ -68,4 +68,4 @@ spec:
   - fromEntities:
     - world
     - host
-  # Notice there is no authentication block here!
+    - ingress
