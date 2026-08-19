@@ -12,6 +12,10 @@ spec:
       - kube-system
       - cilium-spire
       - flux-system
+    - key: "exposed"
+      operator: NotIn
+      values:
+      - nodeport
   ingress:
   - fromEndpoints:
     - matchLabels: {}
@@ -55,13 +59,13 @@ spec:
   - fromEndpoints:
     - matchLabels:
         app: prowlarr
-        tier: internal
     authentication:
       mode: "required"
+      
   # ----------------------------------------------------
-  # RULE 2: Ingress Controller uses standard TCP (NO mTLS)
+  # RULE 2: External NodePort traffic (NO mTLS)
   # ----------------------------------------------------
-  - fromEndpoints:
-    - matchLabels:
-        app: ingress-nginx # Update this to match your ingress controller's labels
-      # Notice there is no authentication block here!
+  - fromEntities:
+    - world
+    - host
+  # Notice there is no authentication block here!
