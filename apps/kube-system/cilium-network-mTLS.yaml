@@ -54,9 +54,7 @@ spec:
     - key: "app"
       operator: In
       values:
-      - radarr
-      - sonarr
-      - qbittorrent
+      -
   ingress:
   # ----------------------------------------------------
   # RULE 1: Internal Media Stack Pods MUST use mTLS 
@@ -66,9 +64,7 @@ spec:
       - key: "app"
         operator: In
         values:
-        - prowlarr
-        - radarr
-        - sonarr
+        -
     authentication:
       mode: "required"
       
@@ -86,3 +82,6 @@ spec:
           operator: In
           values:
           - qbittorrent
+          - prowlarr
+          - radarr
+          - sonarr
