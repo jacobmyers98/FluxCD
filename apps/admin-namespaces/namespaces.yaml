@@ -10,24 +10,6 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: infrastructure
-  labels:
-    app: infrastructure
-
----
-
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: infrastructure-network
-  labels:
-    app: infrastructure-network
-
----
-
-apiVersion: v1
-kind: Namespace
-metadata:
   name: plex
   labels:
     app: plex
@@ -37,18 +19,9 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: scraper
+  name: monitoring
   labels:
-    app: scraper
-
----
-
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: teslamate
-  labels:
-    app: teslamate
+    app: monitoring
 
 ---
 
@@ -76,12 +49,3 @@ metadata:
   name: dev
   labels:
     app: dev
-
----
-
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: webservices
-  labels:
-    app: webservices

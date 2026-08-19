@@ -1,11 +1,16 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+  - helmrelease.yaml
+  - helmrepo.yaml
+  - teslamate-nodeport.yaml
+  - pv.yaml
+  - secret.teslamate.yaml
+  - secret.postgresql.yaml
   - homarr.yaml
   - image-policies.yaml
   - image-repositories.yaml
   - image-update-automation.yaml
-  - helmrelease.yaml
-  - helmrepo.yaml
   - grafana-nodeport.yaml
   - secret.grafana.yaml
+  - world-monitor.yaml

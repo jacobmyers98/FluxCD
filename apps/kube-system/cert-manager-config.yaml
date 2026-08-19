@@ -13,7 +13,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: my-root-ca
-  namespace: infrastructure-network
+  namespace: kube-system
 spec:
   isCA: true               # <--- CRITICAL: This allows it to sign other certs
   commonName: "Waffle Root CA"

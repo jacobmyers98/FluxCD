@@ -2,7 +2,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: cert-manager
-  namespace: infrastructure-network
+  namespace: kube-system
 spec:
   releaseName: cert-manager
   chart:

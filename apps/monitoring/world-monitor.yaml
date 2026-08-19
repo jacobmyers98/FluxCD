@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: worldmonitor
-  namespace: webservices
+  namespace: monitoring
   labels:
     app: worldmonitor
 spec:
@@ -43,7 +43,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: port-service-worldmonitor
-  namespace: webservices
+  namespace: monitoring
   labels:
     app: worldmonitor
 spec:

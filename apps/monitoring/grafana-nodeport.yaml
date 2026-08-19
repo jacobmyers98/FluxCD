@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: port-service-grafana
-  namespace: infrastructure
+  namespace: monitoring
 spec:
   type: NodePort
   selector:

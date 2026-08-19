@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: port-service-homarr
-  namespace: infrastructure
+  namespace: monitoring
   labels:
     app: homarr
 spec:
@@ -19,7 +19,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: homarr-deployment
-  namespace: infrastructure
+  namespace: monitoring
   labels:
     app: homarr
 spec:
