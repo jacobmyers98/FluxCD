@@ -23,6 +23,7 @@ spec:
     - matchLabels: {}
     authentication:
       mode: "required"
+# default blanket mTLS for everything except those 3 namespaces, and =externally exposed apps exposed=nodeport
 
 ---
 
@@ -38,6 +39,7 @@ spec:
   - fromEntities:
     - world
     - host
+# blanket policy to allow nodeport to reach world and host
 
 ---
 
@@ -55,13 +57,19 @@ spec:
       - radarr
       - sonarr
       - qbittorrent
-  ingress:
+ingress:
   # ----------------------------------------------------
-  # RULE 1: Internal Pods MUST use mTLS (e.g., Prowlarr)
+  # RULE 1: Internal Media Stack Pods MUST use mTLS 
   # ----------------------------------------------------
   - fromEndpoints:
-    - matchLabels:
-        app: prowlarr
+    - matchExpressions:
+      - key: "app"
+        operator: In
+        values:
+        - prowlarr
+        - radarr
+        - sonarr
+        - qbittorrent
     authentication:
       mode: "required"
       
