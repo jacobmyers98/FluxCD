@@ -54,7 +54,6 @@ spec:
     - key: "app"
       operator: In
       values:
-      -
   ingress:
   # ----------------------------------------------------
   # RULE 1: Internal Media Stack Pods MUST use mTLS 
@@ -64,7 +63,6 @@ spec:
       - key: "app"
         operator: In
         values:
-        -
     authentication:
       mode: "required"
       
