@@ -63,6 +63,7 @@ spec:
       - sonarr
       - tdarr-node
       - tdarr-server
+      - overseerr
 
   ingress:
   # ----------------------------------------------------
@@ -80,6 +81,7 @@ spec:
         - sonarr
         - tdarr-node
         - tdarr-server
+        - overseerr
     authentication:
       mode: "required"
       
@@ -105,3 +107,4 @@ spec:
         - sonarr
         - tdarr-node
         - tdarr-server
+        - overseerr
