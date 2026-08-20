@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: tdarr-server
-          image: ghcr.io/haveagitgat/tdarr:2.58.02
+          image: ghcr.io/haveagitgat/tdarr:2.86.01
           env:
             - name: serverIP
               value: "0.0.0.0"
@@ -121,7 +121,7 @@ spec:
               echo "Tdarr Server is up!"
       containers:
         - name: tdarr-node
-          image: ghcr.io/haveagitgat/tdarr_node:2.58.02
+          image: ghcr.io/haveagitgat/tdarr_node:2.86.01
           env:
             - name: nodeID
               value: "k8s-node-1"
