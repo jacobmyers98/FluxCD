@@ -61,7 +61,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: tailscale
-  namespace: infrastructure-network
+  namespace: kube-system
 rules:
 - apiGroups: [""]
   resources: ["secrets"]
