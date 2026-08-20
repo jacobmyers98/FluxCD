@@ -20,10 +20,6 @@ spec:
         exposed: nodeport
     spec:
       securityContext:
-        allowPrivilegeEscalation: false
-        capabilities:
-          drop:
-            - ALL
       containers:
         - name: tdarr-server
           image: ghcr.io/haveagitgat/tdarr:2.58.02
@@ -76,7 +72,9 @@ spec:
     - name: server
       port: 8266
       targetPort: 8266
+
 ---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -141,7 +139,9 @@ spec:
           hostPath:
             path: /mnt/Media
             type: Directory
+
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
