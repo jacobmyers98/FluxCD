@@ -39,9 +39,9 @@ spec:
         exposed: nodeport
     spec:
       securityContext:
-        runAsUser: 1000
-        runAsGroup: 1000
-        fsGroup: 1000
+        runAsUser: 1001
+        runAsGroup: 1004
+        fsGroup: 1004
       initContainers:
       - name: flaresolverr
         image: ghcr.io/flaresolverr/flaresolverr:v3.4.6
