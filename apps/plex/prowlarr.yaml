@@ -57,13 +57,13 @@ spec:
       containers:
       - name: prowlarr
         image: linuxserver/prowlarr:2.5.2 #  {"$imagepolicy": "plex:prowlarr-policy"}
-        env:
-        - name: PUID
-          value: "1001"
-        - name: PGID
-          value: "1004"
-        - name: TZ
-          value: "Etc/UTC"
+#        env:
+#        - name: PUID
+#          value: "1001"
+#        - name: PGID
+#          value: "1004"
+#        - name: TZ
+#          value: "Etc/UTC"
         ports:
         - containerPort: 9696
         volumeMounts:
