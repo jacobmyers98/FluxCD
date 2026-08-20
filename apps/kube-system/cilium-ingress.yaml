@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: hubble-ingress
+  name: kube-ingress
   namespace: kube-system
   annotations:
     ingress.cilium.io/force-https: "enabled"
@@ -10,8 +10,6 @@ spec:
   tls:
   - hosts:
     - "hubble.waffle-k8s.local"
-    - "homarr.waffle-k8s.local"
-    - "grafana.waffle-k8s.local"
     secretName: wildcard-tls-secret
   rules:
   # --- hubble ---
@@ -25,35 +23,13 @@ spec:
             name: hubble-ui
             port:
               number: 80
-  # --- Grafana ---
-  - host: grafana.waffle-k8s.local
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: port-service-grafana
-            port:
-              number: 80
-  # --- Homarr ---
-  - host: homarr.waffle-k8s.local
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: port-service-homarr
-            port:
-              number: 7575
 
 ---
 
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: media-ingress
+  name: plex-ingress
   namespace: plex
   annotations:
     ingress.cilium.io/force-https: "enabled"
@@ -147,3 +123,43 @@ spec:
             name: port-service-requestrr
             port:
               number: 4545
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: monitoring-ingress
+  namespace: monitoring
+  annotations:
+    ingress.cilium.io/force-https: "enabled"
+spec:
+  ingressClassName: cilium
+  tls:
+  - hosts:
+    - "homarr.waffle-k8s.local"
+    - "grafana.waffle-k8s.local"
+    secretName: wildcard-tls-secret
+  rules:
+  # --- Grafana ---
+  - host: grafana.waffle-k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-grafana
+            port:
+              number: 80
+  # --- Homarr ---
+  - host: homarr.waffle-k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-homarr
+            port:
+              number: 7575

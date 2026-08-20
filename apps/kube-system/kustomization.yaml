@@ -4,15 +4,15 @@ resources:
   - nvidia-daemonset.yaml
   - nvidia-runtime.yaml
   - nvidia-time-slice.yaml
-  - backup.yaml
+  - etcd-backup.yaml
   - cilium-nodeport.yaml
   - cilium-mTLS-pv.yaml
   - cilium-network-mTLS.yaml
   - helmrelease.yaml
   - helmrepo.yaml
   - cilium-loadbalancer-config.yaml
-  - cert-manager-config.yaml
-  - ingress.yaml
+  - cert-manager.yaml
+  - cilium-ingress.yaml
   - secret-tailscale.yaml
   - tailscale.yaml
   - unifi-cert.yaml

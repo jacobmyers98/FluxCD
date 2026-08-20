@@ -47,7 +47,7 @@ spec:
 apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
 metadata:
-  name: media-stack-ingress
+  name: plex-stack-ingress
   namespace: plex
 spec:
   endpointSelector:
@@ -111,3 +111,52 @@ spec:
         - tdarr-server
         - overseerr
         - requestrr
+
+---
+
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: monitoring-stack-ingress
+  namespace: monitoring
+spec:
+  endpointSelector:
+    matchExpressions:
+    - key: "app"
+      operator: In
+      values:
+      - grafana
+      - teslamate
+      - homarr
+  ingress:
+  # ----------------------------------------------------
+  # RULE 1: Internal Media Stack Pods MUST use mTLS
+  # ----------------------------------------------------
+  - fromEndpoints:
+    - matchExpressions:
+      - key: "app"
+        operator: In
+        values:
+      - grafana
+      - teslamate
+      - homarr
+    authentication:
+      mode: "required"
+  # ----------------------------------------------------
+  # RULE 2: External NodePort traffic (NO mTLS)
+  # ----------------------------------------------------
+  - fromEntities:
+    - world
+    - host
+    - ingress
+  # ----------------------------------------------------
+  # RULE 3: Allow these specific apps to talk
+  # ----------------------------------------------------
+  - fromEndpoints:
+    - matchExpressions:
+      - key: "app"
+        operator: In
+        values:
+      - grafana
+      - teslamate
+      - homarr
