@@ -15,7 +15,7 @@ metadata:
   name: my-root-ca
   namespace: kube-system
 spec:
-  isCA: true               # <--- CRITICAL: This allows it to sign other certs
+  isCA: true
   commonName: "Waffle Root CA"
   secretName: root-ca-secret
   duration: 87600h
@@ -55,6 +55,9 @@ spec:
   - "radarr.waffle-k8s.local"
   - "plex.waffle-k8s.local"
   - "qbit.waffle-k8s.local"
+  - "prowlarr.waffle-k8s.local"
+  - "requestrr.waffle-k8s.local"
+  - "overseerr.waffle-k8s.local"
   privateKey:
     algorithm: ECDSA
     size: 256

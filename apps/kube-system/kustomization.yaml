@@ -11,7 +11,7 @@ resources:
   - helmrelease.yaml
   - helmrepo.yaml
   - cilium-loadbalancer-config.yaml
-  - cert-manager-config.yaml
+#  - cert-manager-config.yaml
   - ingress.yaml
   - secret-tailscale.yaml
   - tailscale.yaml
