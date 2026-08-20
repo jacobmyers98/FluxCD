@@ -12,7 +12,9 @@ spec:
   hostPath:
     path: /home/server/docker/teslamate/postgres-data
   storageClassName: ""
+
 ---
+
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -26,3 +28,19 @@ spec:
       storage: 15Gi
   volumeName: teslamate-postgres-pv
   storageClassName: ""
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mosquitto-pv
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /home/server/docker/mosquitto
+  storageClassName: local-storage

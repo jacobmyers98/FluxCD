@@ -4,7 +4,7 @@ resources:
   - helmrelease.yaml
   - helmrepo.yaml
   - teslamate-nodeport.yaml
-  - pv.yaml
+  - teslamate-pv.yaml
   - secret.teslamate.yaml
   - secret.postgresql.yaml
   - homarr.yaml
