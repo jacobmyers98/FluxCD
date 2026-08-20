@@ -198,7 +198,7 @@ spec:
   values:
     config:
       clients:
-        - url: http://loki.infrastructure.svc.cluster.local:3100/loki/api/v1/push
+        - url: http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push
     daemonset:
       enabled: true
     resources:
@@ -339,7 +339,7 @@ spec:
         namespace: flux-system
   values:
     prometheus:
-      url: http://prometheus-community-kube-prometheus.infrastructure.svc
+      url: http://prometheus-community-kube-prometheus.monitoring.svc
       port: 9090
     rules:
       default: false
