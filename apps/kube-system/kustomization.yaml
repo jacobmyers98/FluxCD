@@ -17,3 +17,4 @@ resources:
   - tailscale.yaml
   - unifi-cert.yaml
   - unifi-cron.yaml
+  - test.yaml
