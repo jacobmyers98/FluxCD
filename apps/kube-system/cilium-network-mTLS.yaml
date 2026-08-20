@@ -55,6 +55,12 @@ spec:
     - key: "app"
       operator: In
       values:
+      - plex
+      - qbittorrent
+      - prowlarr
+      - radarr
+      - sonarr
+
   ingress:
   # ----------------------------------------------------
   # RULE 1: Internal Media Stack Pods MUST use mTLS 
@@ -64,6 +70,11 @@ spec:
       - key: "app"
         operator: In
         values:
+        - plex
+        - qbittorrent
+        - prowlarr
+        - radarr
+        - sonarr
     authentication:
       mode: "required"
       
@@ -75,12 +86,15 @@ spec:
     - host
     - ingress
 
+  # ----------------------------------------------------
+  # RULE 3: Allow these specific apps 
+  # ----------------------------------------------------
   - fromEndpoints:
-      - matchExpressions:
-        - key: "app"
-          operator: In
-          values:
-          - qbittorrent
-          - prowlarr
-          - radarr
-          - sonarr
+    - matchExpressions:
+      - key: "app"
+        operator: In
+        values:
+        - qbittorrent
+        - prowlarr
+        - radarr
+        - sonarr
