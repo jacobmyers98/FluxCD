@@ -60,6 +60,7 @@ spec:
       - prowlarr
       - radarr
       - sonarr
+      - tdarr-node
 
   ingress:
   # ----------------------------------------------------
@@ -75,6 +76,7 @@ spec:
         - prowlarr
         - radarr
         - sonarr
+        - tdarr-node
     authentication:
       mode: "required"
       
