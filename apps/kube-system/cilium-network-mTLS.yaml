@@ -64,7 +64,6 @@ spec:
       - tdarr-server
       - overseerr
       - requestrr
-
   ingress:
   # ----------------------------------------------------
   # RULE 1: Internal Media Stack Pods MUST use mTLS
@@ -85,7 +84,6 @@ spec:
         - requestrr
     authentication:
       mode: "required"
-      
   # ----------------------------------------------------
   # RULE 2: External LAN traffic (NO mTLS)
   # NOTE: If all these pods have the 'exposed: nodeport' label,
@@ -114,7 +112,6 @@ spec:
       - grafana
       - teslamate
       - homarr
-
   ingress:
   # ----------------------------------------------------
   # RULE 1: Internal Media Stack Pods MUST use mTLS
@@ -124,12 +121,11 @@ spec:
       - key: "app"
         operator: In
         values:
-      - grafana
-      - teslamate
-      - homarr
+        - grafana
+        - teslamate
+        - homarr
     authentication:
       mode: "required"
-      
   # ----------------------------------------------------
   # RULE 2: External LAN traffic (NO mTLS)
   # NOTE: If all these pods have the 'exposed: nodeport' label,
