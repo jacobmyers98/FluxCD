@@ -94,7 +94,6 @@ spec:
   - fromEntities:
     - world
     - host
-    - ingress
 
 ---
 
@@ -138,4 +137,3 @@ spec:
   - fromEntities:
     - world
     - host
-    - ingress
