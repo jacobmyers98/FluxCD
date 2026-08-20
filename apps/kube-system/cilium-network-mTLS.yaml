@@ -40,6 +40,7 @@ spec:
   - fromEntities:
     - world
     - host
+    - ingress
 # blanket policy to allow nodeport to reach world and host
 
 ---
@@ -94,6 +95,7 @@ spec:
   - fromEntities:
     - world
     - host
+    - ingress
 
 ---
 
@@ -137,3 +139,4 @@ spec:
   - fromEntities:
     - world
     - host
+    - ingress
