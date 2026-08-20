@@ -114,7 +114,7 @@ spec:
             - -c
             - |
               echo "Waiting for Tdarr Server..."
-              until curl -s http://tdarr-server:8265/api/v2/status > /dev/null; do
+              until curl -s http://port-service-tdarr-server-clusterip.plex.svc:8265/api/v2/status > /dev/null; do
                 echo "Tdarr Server is unavailable - sleeping"
                 sleep 2
               done
