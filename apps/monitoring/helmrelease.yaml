@@ -17,6 +17,8 @@ spec:
   install:
     createNamespace: true
   values:
+    podLabels:
+      exposed: nodeport
     image:
       repository: teslamate/teslamate
       tag: 2.2.0
@@ -261,6 +263,8 @@ spec:
         kubeSchedulerRecording: false
         general: false
     grafana:
+      podLabels:
+        exposed: nodeport
       deploymentStrategy:
         type: Recreate
       initChownData:

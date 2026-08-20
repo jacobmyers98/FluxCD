@@ -21,7 +21,7 @@ spec:
           image: ghcr.io/koala73/worldmonitor:sha-6c48a33
           ports:
             - name: http
-              containerPort: 8080
+              containerPort: 80
               protocol: TCP
           # env:
           #   - name: GROQ_API_KEY
@@ -49,8 +49,8 @@ metadata:
 spec:
   ports:
     - name: worldmonitor-port
-      port: 8080
-      targetPort: 8080
+      port: 80
+      targetPort: 80
       nodePort: 30019
   selector:
     app: worldmonitor
