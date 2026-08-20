@@ -112,6 +112,7 @@ spec:
       - grafana
       - teslamate
       - homarr
+      - worldmonitor
   ingress:
   # ----------------------------------------------------
   # RULE 1: Internal Media Stack Pods MUST use mTLS
@@ -124,6 +125,7 @@ spec:
         - grafana
         - teslamate
         - homarr
+        - worldmonitor
     authentication:
       mode: "required"
   # ----------------------------------------------------
