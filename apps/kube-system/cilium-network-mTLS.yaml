@@ -61,6 +61,7 @@ spec:
       - radarr
       - sonarr
       - tdarr-node
+      - tdarr-server
 
   ingress:
   # ----------------------------------------------------
@@ -77,6 +78,7 @@ spec:
         - radarr
         - sonarr
         - tdarr-node
+        - tdarr-server
     authentication:
       mode: "required"
       
