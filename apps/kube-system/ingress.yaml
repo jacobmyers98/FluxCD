@@ -10,6 +10,8 @@ spec:
   tls:
   - hosts:
     - "hubble.waffle-k8s.local"
+    - "homarr.waffle-k8s.local"
+    - "grafana.waffle-k8s.local"
     secretName: wildcard-tls-secret
   rules:
   # --- hubble ---
@@ -23,24 +25,6 @@ spec:
             name: hubble-ui
             port:
               number: 80
-
----
-
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: infrastructure-ingress
-  namespace: infrastructure
-  annotations:
-    ingress.cilium.io/force-https: "enabled"
-spec:
-  ingressClassName: cilium
-  tls:
-  - hosts:
-    - "homarr.waffle-k8s.local"
-    - "grafana.waffle-k8s.local"
-    secretName: wildcard-tls-secret
-  rules:
   # --- Grafana ---
   - host: grafana.waffle-k8s.local
     http:

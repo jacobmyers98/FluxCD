@@ -64,28 +64,6 @@ spec:
     group: cert-manager.io
 
 ---
-# 4. Certificate for the "infrastructure" namespace
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: wildcard-infrastructure-cert
-  namespace: infrastructure
-spec:
-  isCA: false
-  commonName: "*.waffle-k8s.local"
-  secretName: wildcard-tls-secret
-  dnsNames:
-  - "homarr.waffle-k8s.local"
-  - "grafana.waffle-k8s.local"
-  privateKey:
-    algorithm: ECDSA
-    size: 256
-  issuerRef:
-    name: my-internal-ca
-    kind: ClusterIssuer
-    group: cert-manager.io
-
----
 # 4. Certificate for the "kube-system" namespace
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -98,6 +76,8 @@ spec:
   secretName: wildcard-tls-secret
   dnsNames:
   - "hubble.waffle-k8s.local"
+  - "homarr.waffle-k8s.local"
+  - "grafana.waffle-k8s.local"
   privateKey:
     algorithm: ECDSA
     size: 256
