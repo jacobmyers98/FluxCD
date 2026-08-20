@@ -15,6 +15,22 @@ spec:
 
 ---
 
+apiVersion: v1
+kind: Service
+metadata:
+  name: prowlarr-service
+  namespace: plex
+spec:
+  type: ClusterIP
+  selector:
+    app: prowlarr
+  ports:
+    - name: prowlarr-service
+      port: 9696
+      targetPort: 9696
+
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -47,6 +63,8 @@ spec:
         image: ghcr.io/flaresolverr/flaresolverr:v3.4.6
         imagePullPolicy: Always
         restartPolicy: Always
+        securityContext:
+          runAsUser: 0
         ports:
         - containerPort: 8191
         env:
