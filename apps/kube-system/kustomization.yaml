@@ -6,7 +6,7 @@ resources:
   - nvidia-time-slice.yaml
   - backup.yaml
   - cilium-nodeport.yaml
-  - cilium-mTLS.yaml
+  - cilium-mTLS-pv.yaml
   - cilium-network-mTLS.yaml
   - helmrelease.yaml
   - helmrepo.yaml
