@@ -19,7 +19,6 @@ spec:
         app: tdarr-server
         exposed: nodeport
     spec:
-      securityContext:
       containers:
         - name: tdarr-server
           image: ghcr.io/haveagitgat/tdarr:2.58.02
@@ -83,7 +82,7 @@ metadata:
 spec:
   type: ClusterIP
   selector:
-    app: tdarr-node
+    app: tdarr-server
   ports:
     - name: tdarr-node
       port: 8265

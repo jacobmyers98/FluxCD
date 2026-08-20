@@ -52,6 +52,7 @@ metadata:
 spec:
   endpointSelector:
     matchExpressions:
+# scope of apps to select in the plex namespace
     - key: "app"
       operator: In
       values:
@@ -65,7 +66,7 @@ spec:
 
   ingress:
   # ----------------------------------------------------
-  # RULE 1: Internal Media Stack Pods MUST use mTLS 
+  # RULE 1: Internal Media Stack Pods MUST use mTLS
   # ----------------------------------------------------
   - fromEndpoints:
     - matchExpressions:
@@ -91,7 +92,7 @@ spec:
     - ingress
 
   # ----------------------------------------------------
-  # RULE 3: Allow these specific apps 
+  # RULE 3: Allow these specific apps to talk
   # ----------------------------------------------------
   - fromEndpoints:
     - matchExpressions:
