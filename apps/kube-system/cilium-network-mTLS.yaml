@@ -96,6 +96,17 @@ spec:
     - world
     - host
     - ingress
+    # Allow Homarr to talk to Plex media apps
+  - fromEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: monitoring
+        app: homarr
+  # Allow Tailscale VPN traffic
+  - fromEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: kube-system
+        # NOTE: Verify this label matches your Tailscale pod (e.g., app: tailscale)
+        app: tailscale
 
 ---
 
