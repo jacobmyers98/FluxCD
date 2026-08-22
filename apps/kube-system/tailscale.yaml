@@ -17,6 +17,7 @@ spec:
     spec:
       serviceAccountName: tailscale
       hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       containers:
       - name: tailscale
         image: tailscale/tailscale:latest
