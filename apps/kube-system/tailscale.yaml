@@ -29,16 +29,6 @@ spec:
           value: "192.168.1.0/24,10.96.0.0/12,10.244.0.0/16" 
         - name: TS_KUBE_SECRET
           value: tailscale-state
-        - name: TS_USERSPACE
-          value: "true"
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - ALL                    
-            add:
-              - NET_ADMIN                
-              - NET_RAW
         volumeMounts:
         - name: tun-device
           mountPath: /dev/net/tun
