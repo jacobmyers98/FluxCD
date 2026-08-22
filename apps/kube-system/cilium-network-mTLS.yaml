@@ -188,26 +188,3 @@ spec:
     - matchLabels:
         k8s:io.kubernetes.pod.namespace: monitoring
         app: homarr
-
----
-
-#apiVersion: "cilium.io/v2"
-#kind: CiliumNetworkPolicy
-#metadata:
-#  name: tailscale-unrestricted-egress
-#  namespace: kube-system
-#spec:
-#  endpointSelector:
-#    matchLabels:
-#      app: tailscale
-#  egress:
-  # 1. Explicitly allow the exact subnets Tailscale is responsible for
-#  - toCIDR:
-#    - "192.168.1.0/24"   # Allows SSH and bare-metal LAN access
-#    - "10.96.0.0/12"     # Allows Kubernetes Services (ClusterIPs like Homarr)
-#    - "10.244.0.0/16"    # Allows direct Pod IP access
-  # 2. Keep the default entity fallbacks just in case
-#  - toEntities:
-#    - host
-#    - world
-#    - cluster

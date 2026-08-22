@@ -7,6 +7,8 @@ metadata:
     app: tailscale
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: tailscale
@@ -39,6 +41,8 @@ spec:
           value: tailscale-state
         - name: TS_USERSPACE
           value: "false"
+        - name: TS_EXTRA_ARGS
+          value: "--accept-dns=false"
         volumeMounts:
         - name: tun-device
           mountPath: /dev/net/tun
