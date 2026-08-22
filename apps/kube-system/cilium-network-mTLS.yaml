@@ -188,3 +188,20 @@ spec:
     - matchLabels:
         k8s:io.kubernetes.pod.namespace: monitoring
         app: homarr
+
+---
+
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: tailscale-unrestricted-egress
+  namespace: kube-system
+spec:
+  endpointSelector:
+    matchLabels:
+      app: tailscale
+  egress:
+  - toEntities:
+    - host
+    - world
+    - cluster
