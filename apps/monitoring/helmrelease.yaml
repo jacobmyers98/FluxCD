@@ -224,7 +224,7 @@ spec:
   chart:
     spec:
       chart: dcgm-exporter
-      version: 4.6.0
+      version: 4.8.3
       sourceRef:
         kind: HelmRepository
         name: dcgm-exporter
@@ -248,7 +248,7 @@ spec:
   chart:
     spec:
       chart: kube-prometheus-stack
-      version: 78.5.0
+      version: 88.5.2
       sourceRef:
         kind: HelmRepository
         name: prometheus-community
@@ -336,7 +336,7 @@ spec:
   chart:
     spec:
       chart: prometheus-adapter
-      version: "4.0.0"
+      version: "5.3.0"
       sourceRef:
         kind: HelmRepository
         name: prometheus-community
