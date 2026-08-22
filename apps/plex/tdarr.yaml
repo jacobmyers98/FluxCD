@@ -126,7 +126,7 @@ spec:
             - name: nodeID
               value: "k8s-node-1"
             - name: serverIP
-              value: "port-service-tdarr-server-clusterip"
+              value: "port-service-tdarr-server"
             - name: serverPort
               value: "8266"
             - name: nodePort
