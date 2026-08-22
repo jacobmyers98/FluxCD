@@ -21,7 +21,7 @@ spec:
       exposed: nodeport
     image:
       repository: teslamate/teslamate
-      tag: 2.2.0
+      tag: 4.1
     env:
       - name: TZ
         value: UTC
