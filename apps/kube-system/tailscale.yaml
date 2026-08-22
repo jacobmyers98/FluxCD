@@ -20,7 +20,6 @@ spec:
       - name: tailscale
         image: tailscale/tailscale:latest
         securityContext:
-          allowPrivilegeEscalation: false
           capabilities:
             add:
             - NET_ADMIN                
