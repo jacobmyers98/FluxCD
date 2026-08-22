@@ -16,6 +16,7 @@ spec:
         app: tailscale
     spec:
       serviceAccountName: tailscale
+      hostNetwork: true
       containers:
       - name: tailscale
         image: tailscale/tailscale:latest
