@@ -156,3 +156,35 @@ spec:
         k8s:io.kubernetes.pod.namespace: kube-system
         # NOTE: Verify this label matches your Tailscale pod (e.g., app: tailscale)
         app: tailscale
+
+---
+
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: gaming-stack-ingress
+  namespace: gaming
+spec:
+  endpointSelector:
+    matchExpressions:
+    - key: "app"
+      operator: In
+      values:
+      - minecraft
+  ingress:
+  # ----------------------------------------------------
+  # RULE 2: External LAN traffic (NO mTLS)
+  # NOTE: If all these pods have the 'exposed: nodeport' label,
+  # your 'allow-external-nodeport' ClusterWide policy already 
+  # allows world/host. We only include 'ingress' here in case 
+  # you are routing anything locally via an Ingress Controller.
+  # ----------------------------------------------------
+  - fromEntities:
+    - world
+    - host
+    - ingress
+    # Allow Homarr to talk to Plex media apps
+  - fromEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: monitoring
+        app: homarr
