@@ -18,8 +18,6 @@ spec:
         app: tailscale
     spec:
       serviceAccountName: tailscale
-      hostNetwork: true
-      dnsPolicy: ClusterFirstWithHostNet
       containers:
       - name: tailscale
         image: tailscale/tailscale:latest
@@ -41,8 +39,6 @@ spec:
           value: tailscale-state
         - name: TS_USERSPACE
           value: "false"
-        - name: TS_EXTRA_ARGS
-          value: "--accept-dns=false"
         volumeMounts:
         - name: tun-device
           mountPath: /dev/net/tun
