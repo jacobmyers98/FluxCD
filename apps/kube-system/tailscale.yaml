@@ -19,6 +19,12 @@ spec:
       containers:
       - name: tailscale
         image: tailscale/tailscale:latest
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            add:
+            - NET_ADMIN                
+            - NET_RAW
         env:
         - name: TS_AUTHKEY
           valueFrom:
