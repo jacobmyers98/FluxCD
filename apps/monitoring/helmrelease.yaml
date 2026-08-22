@@ -50,17 +50,26 @@ spec:
 
     persistence:
       import:
-        enabled: false
+        enabled: true
+        type: hostPath
+        hostPath: /home/server/docker/teslamate/teslamate
+        mountPath: /opt/app/import
 
     extraVolumes:
       - name: postgres-data
         hostPath:
           path: /root/docker/teslamate/teslamate-db
           type: DirectoryOrCreate
-              
+      - name: teslamate-data
+        hostPath:
+          path: /home/server/docker/teslamate/teslamate
+          type: DirectoryOrCreate
+
     extraVolumeMounts:
       - name: postgres-data
         mountPath: /bitnami/postgresql
+      - name: teslamate-data
+        mountPath: /opt/app/import
 
 
 
