@@ -28,5 +28,5 @@ spec:
     push:
       branch: main
   update:
-    path: ./apps/infrastructure
+    path: ./apps/monitoring
     strategy: Setters
