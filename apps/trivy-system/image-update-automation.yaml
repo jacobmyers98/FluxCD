@@ -28,5 +28,5 @@ spec:
     push:
       branch: main
   update:
-    path: ./apps/trivy
+    path: ./apps/trivy-system
     strategy: Setters
