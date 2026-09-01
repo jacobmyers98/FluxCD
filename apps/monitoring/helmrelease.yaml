@@ -214,7 +214,7 @@ spec:
           loki.source.file "host_syslogs" {
             targets = [
               {
-                __path__ = "/var/log/messages",
+                __path__ = "/var/log/syslog",
                 "host" = sys.env("HOSTNAME"),
                 "job" = "host-syslogs",
               },
