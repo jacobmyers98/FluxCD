@@ -117,7 +117,7 @@ spec:
   chart:
     spec:
       chart: loki
-      version: 6.46.0
+      version: 18.11.7
       sourceRef:
         kind: HelmRepository
         name: grafana-charts
@@ -185,31 +185,42 @@ spec:
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: promtail
+  name: alloy
   namespace: monitoring
 spec:
   chart:
     spec:
-      chart: promtail
-      version: 6.17.1
+      chart: alloy
+      version: 1.12.1
       sourceRef:
         kind: HelmRepository
         name: grafana-charts
         namespace: flux-system
   interval: 10m
   values:
-    config:
-      clients:
-        - url: http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push
-    daemonset:
-      enabled: true
-    resources:
-      limits:
-        cpu: 200m
-        memory: 256Mi
-      requests:
-        cpu: 100m
-        memory: 128Mi
+    rbac:
+      create: true
+    alloy:
+      mounts:
+        varlog: true
+        dockerrcontainers: true
+      configMap:
+        content: |-
+          loki.write "loki" {
+            endpoint {
+              url = "http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push"
+              }
+          }
+          loki.source.file "host_syslogs" {
+            targets = [
+              {
+                __path__ = "/var/log/messages",
+                "host" = sys.env("HOSTNAME"),
+                "job" = "host-syslogs",
+              },
+            ]
+            forward_to = [loki.write.loki.receiver]
+          }
 
 ---
 
@@ -248,7 +259,7 @@ spec:
   chart:
     spec:
       chart: kube-prometheus-stack
-      version: 88.5.2
+      version: 88.6.2
       sourceRef:
         kind: HelmRepository
         name: prometheus-community

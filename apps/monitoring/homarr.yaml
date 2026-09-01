@@ -47,7 +47,7 @@ spec:
             - ALL
       containers:
         - name: homarr
-          image: ghcr.io/homarr-labs/homarr:v1.75.0 # {"$imagepolicy": "infrastructure:homarr-policy"}
+          image: ghcr.io/homarr-labs/homarr:v1.75.0 # {"$imagepolicy": "monitoring:homarr-policy"}
           imagePullPolicy: Always
           env:
             - name: SECRET_ENCRYPTION_KEY
