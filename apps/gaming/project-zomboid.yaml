@@ -49,8 +49,11 @@ spec:
           env:
             - name: SERVER_NAME
               value: "K8s Zomboid Server"
-            - name: ADMIN_PASSWORD
-              value: "ChangeThisPassword123!"
+            - name: ADMIN_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: project-zomboid
+                  key: ADMIN_PASSWORD
             - name: MAX_MEMORY
               value: "16g"
           ports:
