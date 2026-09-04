@@ -45,7 +45,7 @@ spec:
         fsGroup: 10000 
       containers:
         - name: pz-server
-          image: jsknnr/project-zomboid-server:latest
+          image: lis314/project-zomboid-docker:latest
           env:
             - name: SERVER_NAME
               value: "K8s Zomboid Server"
