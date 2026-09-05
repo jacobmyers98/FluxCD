@@ -41,21 +41,24 @@ spec:
         app: project-zomboid
     spec:
       securityContext:
-        # Ensures the steam user (UID 10000) has write access to the volumes
         fsGroup: 10000 
       containers:
         - name: pz-server
-          image: lis314/project-zomboid-docker:latest
+          image: indifferentbroccoli/projectzomboid-server-docker:latest
           env:
+            - name: PUID
+              value: "10000"
+            - name: PGID
+              value: "10000"
             - name: SERVER_NAME
-              value: "K8s Zomboid Server"
-            - name: ADMIN_PASS
+              value: "ProJM" 
+            - name: ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: project-zomboid
                   key: ADMIN_PASSWORD
-            - name: MAX_MEMORY
-              value: "16g"
+            - name: MEMORY_XMX_GB
+              value: "16"
           ports:
             - containerPort: 16261
               protocol: UDP
@@ -65,9 +68,9 @@ spec:
               name: direct
           volumeMounts:
             - name: pz-server-files
-              mountPath: /home/steam/zomboid
+              mountPath: /project-zomboid
             - name: pz-data-files
-              mountPath: /home/steam/zomboid_data
+              mountPath: /project-zomboid-config
       volumes:
         - name: pz-server-files
           hostPath:
