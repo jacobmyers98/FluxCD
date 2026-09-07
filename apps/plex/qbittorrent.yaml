@@ -25,9 +25,7 @@ spec:
   selector:
     app: qbittorrent
   type: NodePort
-
 ---
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -59,9 +57,9 @@ spec:
         imagePullPolicy: Always
         restartPolicy: Always
         securityContext:
-          capabilities:                
+          capabilities:
             add:
-              - NET_ADMIN
+            - NET_ADMIN
         env:
         - name: VPN_SERVICE_PROVIDER
           value: "custom"
@@ -74,54 +72,54 @@ spec:
         - name: FIREWALL_INPUT_PORTS
           value: "8080,34567"
         ports:
-          - containerPort: 8080
-            name: webui
-            protocol: TCP
-          - containerPort: 34567
-            name: torrent-tcp
-            protocol: TCP
-          - containerPort: 34567
-            name: torrent-udp
-            protocol: UDP
+        - containerPort: 8080
+          name: webui
+          protocol: TCP
+        - containerPort: 34567
+          name: torrent-tcp
+          protocol: TCP
+        - containerPort: 34567
+          name: torrent-udp
+          protocol: UDP
         volumeMounts:
-          - name: wireguard-config
-            mountPath: /gluetun/wireguard/wg0.conf
-            subPath: wg0.conf
+        - name: wireguard-config
+          mountPath: /gluetun/wireguard/wg0.conf
+          subPath: wg0.conf
       # ---------------------------------------------------------
       # INIT 2: VPN CHECKER
       # Waits until the VPN routes traffic before letting qBit start
       # ---------------------------------------------------------
       - name: vpn-check
         image: busybox:1.37.0
-        command: 
-          - 'sh'
-          - '-c'
-          # Tries to hit an external IP checker. Loops until successful.
-          - 'until wget -qO- https://ifconfig.me; do echo "Waiting for VPN connectivity..."; sleep 2; done; echo " VPN is up!"'
+        command:
+        - 'sh'
+        - '-c'
+        # Tries to hit an external IP checker. Loops until successful.
+        - 'until wget -qO- https://ifconfig.me; do echo "Waiting for VPN connectivity..."; sleep 2; done; echo " VPN is up!"'
       containers:
       # ---------------------------------------------------------
       # MAIN CONTAINER: LINUXSERVER QBITTORRENT (The App)
       # Starts only after vpn-check successfully exits
       # ---------------------------------------------------------
       - name: qbittorrent
-        image: lscr.io/linuxserver/qbittorrent:5.2.3 #  {"$imagepolicy": "plex:qbittorrent-policy"}
+        image: lscr.io/linuxserver/qbittorrent:20.04.1 #  {"$imagepolicy": "plex:qbittorrent-policy"}
         imagePullPolicy: Always
         env:
-          - name: PUID
-            value: "1001"
-          - name: PGID
-            value: "1004"
-          - name: TZ
-            value: "America/Denver"
-          - name: WEBUI_PORT
-            value: "8080"
+        - name: PUID
+          value: "1001"
+        - name: PGID
+          value: "1004"
+        - name: TZ
+          value: "America/Denver"
+        - name: WEBUI_PORT
+          value: "8080"
         volumeMounts:
-          - name: qbit-config
-            mountPath: /config
-          - name: torrent-downloads
-            mountPath: /downloads
-          - name: movies-shows-raid
-            mountPath: /mnt/Media
+        - name: qbit-config
+          mountPath: /config
+        - name: torrent-downloads
+          mountPath: /downloads
+        - name: movies-shows-raid
+          mountPath: /mnt/Media
       volumes:
       - name: qbit-config
         hostPath:
