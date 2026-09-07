@@ -4,5 +4,5 @@ metadata:
   name: trivy
   namespace: trivy-system
 spec:
-  image: aquasec/trivy
+  image: ghcr.io/aquasecurity/helm-charts/trivy-operator
   interval: 1h
