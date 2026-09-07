@@ -20,11 +20,11 @@ spec:
       messageTemplate: |
         Trivy-System Namespace Update
         Changes:
-        {{- range $resource, $changes := .Changed.Objects -}}
-          {{- range $change := $changes -}}
-            {{ $resource.Kind }}/{{ $resource.Namespace }}/{{ $resource.Name }}:{{ $change.OldValue }} -> {{ $change.NewValue }}
+          {{- range $resource, $changes := .Changed.Objects -}}
+            {{- range $change := $changes -}}
+              {{ $resource.Kind }}/{{ $resource.Namespace }}/{{ $resource.Name }}:{{ $change.OldValue }} -> {{ $change.NewValue }}
+            {{- end -}}
           {{- end -}}
-        {{- end -}}
     push:
       branch: main
   update:
