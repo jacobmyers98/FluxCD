@@ -22,7 +22,7 @@ spec:
         Changes:
         {{- range $resource, $changes := .Changed.Objects -}}
           {{- range $change := $changes -}}
-            {{ $change.OldValue }} -> {{ $change.NewValue }}
+            {{ $resource.Kind }}/{{ $resource.Namespace }}/{{ $resource.Name }}:{{ $change.OldValue }} -> {{ $change.NewValue }}
           {{- end -}}
         {{- end -}}
     push:

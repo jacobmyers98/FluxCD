@@ -18,11 +18,12 @@ spec:
         name: flux-bot
         email: flux@users.noreply.github.com
       messageTemplate: |
-        Updated Chart Version
-        Changes:{{- range $resource, $changes := .Changed.Objects -}}
-        {{- range $change := $changes -}}
-        {{ $resource }}:{{ $change.OldValue }} -> {{ $resource }}:{{ $change.NewValue }}
-        {{- end -}}
+        Trivy-System Namespace Update
+        Changes:
+        {{- range $resource, $changes := .Changed.Objects -}}
+          {{- range $change := $changes -}}
+            {{ $resource.Kind }}/{{ $resource.Namespace }}/{{ $resource.Name }}:{{ $change.OldValue }} -> {{ $change.NewValue }}
+          {{- end -}}
         {{- end -}}
     push:
       branch: main
