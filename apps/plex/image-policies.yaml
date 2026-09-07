@@ -47,7 +47,7 @@ spec:
     name: overseerr
   policy:
     semver:
-      range: ">=1.35.0"
+      range: ">=1.35.0 <9.0.0"
 
 ---
 apiVersion: image.toolkit.fluxcd.io/v1beta2
@@ -60,7 +60,7 @@ spec:
     name: qbittorrent
   policy:
     semver:
-      range: ">=5.2.3"
+      range: ">=5.2.3 <9.0.0"
 
 ---
 apiVersion: image.toolkit.fluxcd.io/v1beta2
