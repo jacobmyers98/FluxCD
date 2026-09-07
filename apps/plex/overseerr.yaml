@@ -48,7 +48,7 @@ spec:
             - ALL 
       containers:
         - name: overseerr
-          image: linuxserver/overseerr:1.35.0
+          image: linuxserver/overseerr:1.35.0 #  {"$imagepolicy": "plex:overseerr-policy"}
           imagePullPolicy: Always
           ports:
             - containerPort: 5055

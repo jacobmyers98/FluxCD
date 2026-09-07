@@ -104,7 +104,7 @@ spec:
       # Starts only after vpn-check successfully exits
       # ---------------------------------------------------------
       - name: qbittorrent
-        image: lscr.io/linuxserver/qbittorrent:latest
+        image: lscr.io/linuxserver/qbittorrent:5.2.3 #  {"$imagepolicy": "plex:qbittorrent-policy"}
         imagePullPolicy: Always
         env:
           - name: PUID
