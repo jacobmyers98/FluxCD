@@ -18,12 +18,11 @@ spec:
         name: flux-bot
         email: flux@users.noreply.github.com
       messageTemplate: |
-        update image tag
-        Changes:
-        {{- range $resource, $changes := .Changed.Objects -}}
-          {{- range $change := $changes -}}
-            {{ $change.OldValue }} -> {{ $change.NewValue }}
-          {{- end -}}
+        Updated Chart Version
+        Changes:{{- range $resource, $changes := .Changed.Objects -}}
+        {{- range $change := $changes -}}
+        {{ $resource }}:{{ $change.OldValue }} -> {{ $resource }}:{{ $change.NewValue }}
+        {{- end -}}
         {{- end -}}
     push:
       branch: main
