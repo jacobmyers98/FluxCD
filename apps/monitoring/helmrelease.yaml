@@ -117,10 +117,10 @@ spec:
   chart:
     spec:
       chart: loki
-      version: "v3.7.7"
+      version: ">=18.12.1"
       sourceRef:
         kind: HelmRepository
-        name: grafana-charts
+        name: grafana-community
         namespace: flux-system
   install:
     createNamespace: true
@@ -194,7 +194,7 @@ spec:
       version: ">=1.12.1"
       sourceRef:
         kind: HelmRepository
-        name: grafana-charts
+        name: grafana-community
         namespace: flux-system
   interval: 10m
   values:
