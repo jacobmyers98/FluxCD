@@ -11,7 +11,7 @@ spec:
   chart:
     spec:
       chart: teslamate
-      version: 7.2.0
+      version: ">=7.2.0"
       sourceRef:
         kind: HelmRepository
         name: teslamate
@@ -93,7 +93,7 @@ spec:
   chart:
     spec:
       chart: mosquitto
-      version: 2.4.1
+      version: ">=2.4.1"
       sourceRef:
         kind: HelmRepository
         name: mosquitto
@@ -117,7 +117,7 @@ spec:
   chart:
     spec:
       chart: loki
-      version: 18.11.7
+      version: ">=18.11.7"
       sourceRef:
         kind: HelmRepository
         name: grafana-charts
@@ -191,7 +191,7 @@ spec:
   chart:
     spec:
       chart: alloy
-      version: 1.12.1
+      version: ">=1.12.1"
       sourceRef:
         kind: HelmRepository
         name: grafana-charts
@@ -238,7 +238,7 @@ spec:
   chart:
     spec:
       chart: dcgm-exporter
-      version: 4.8.3
+      version: ">=4.8.3"
       sourceRef:
         kind: HelmRepository
         name: dcgm-exporter
@@ -263,7 +263,7 @@ spec:
   chart:
     spec:
       chart: kube-prometheus-stack
-      version: 88.6.2
+      version: ">=88.6.2"
       sourceRef:
         kind: HelmRepository
         name: prometheus-community
@@ -348,7 +348,7 @@ spec:
   chart:
     spec:
       chart: prometheus-adapter
-      version: "5.3.0"
+      version: ">=5.3.0"
       sourceRef:
         kind: HelmRepository
         name: prometheus-community

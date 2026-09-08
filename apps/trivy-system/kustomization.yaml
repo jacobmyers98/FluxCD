@@ -3,6 +3,3 @@ kind: Kustomization
 resources:
   - helmrelease.yaml
   - helmrepo.yaml
-  - image-policies.yaml
-  - image-repositories.yaml
-  - image-update-automation.yaml

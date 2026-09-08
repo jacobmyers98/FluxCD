@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: port-service-seerr
+  namespace: plex
+spec:
+  type: NodePort
+  selector:
+    app: seerr
+  ports:
+    - name: seerr-port
+      port: 5055
+      targetPort: 5055
+      nodePort: 30023
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seerr
+  namespace: plex
+  labels:
+    app: seerr
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate 
+  selector:
+    matchLabels:
+      app: seerr
+  template:
+    metadata:
+      labels:
+        app: seerr
+        exposed: nodeport
+    spec:
+      securityContext:
+        runAsUser: 1001
+        runAsGroup: 1004
+        fsGroup: 1004
+      containers:
+        - name: seerr
+          image: ghcr.io/seerr-team/seerr:v3.4.1 # {"$imagepolicy": "plex:seerr-policy"}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5055
+          securityContext: 
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: seerr-config
+              mountPath: /app/config 
+      volumes:
+        - name: seerr-config
+          hostPath:
+            path: /home/server/docker/seerr
+            type: DirectoryOrCreate
