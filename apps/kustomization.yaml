@@ -6,5 +6,5 @@ resources:
   - ./gaming
   - ./kubevirt
   - ./plex
-  - ./trivy-system
+#  - ./trivy-system
   - ./kube-system
