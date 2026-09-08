@@ -3,6 +3,8 @@ kind: HelmRelease
 metadata:
   name: teslamate
   namespace: monitoring
+  annotations:
+    image.toolkit.fluxcd.io/image-ref: teslamate
 spec:
   interval: 15m
   releaseName: teslamate
@@ -43,28 +45,23 @@ spec:
           secretKeyRef:
             name: teslamate-secret
             key: encryption-key
-
     ingress:
       main:
         enabled: false
-
     persistence:
       import:
         enabled: true
         type: hostPath
         hostPath: /home/server/docker/teslamate/teslamate
         mountPath: /opt/app/import
-
     extraVolumes:
       - name: teslamate-data
         hostPath:
           path: /home/server/docker/teslamate/teslamate
           type: DirectoryOrCreate
-
     extraVolumeMounts:
       - name: teslamate-data
         mountPath: /opt/app/import
-
     postgresql:
       enabled: true
       image:
@@ -75,19 +72,21 @@ spec:
       primary:
         persistence:
           enabled: true
-          existingClaim: teslamate-postgres-pvc
-          
+          existingClaim: teslamate-postgres-pvc  
       auth:
         existingSecret: teslamate-postgresql
         database: teslamate
         persistence:
           enabled: false
+
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: mosquitto
   namespace: monitoring
+  annotations:
+    image.toolkit.fluxcd.io/image-ref: mosquitto
 spec:
   interval: 15m
   releaseName: mosquitto
@@ -106,12 +105,13 @@ spec:
       annotations: {}
 
 ---
-
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: loki
   namespace: monitoring
+  annotations:
+    image.toolkit.fluxcd.io/image-ref: loki
 spec:
   interval: 15m
   chart:
@@ -137,7 +137,6 @@ spec:
     ingester:
       wal:
         enabled: false
-
     singleBinary:
       extraVolumes:
         - name: var-loki
@@ -181,12 +180,13 @@ spec:
         memory: 256Mi
 
 ---
-
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: alloy
   namespace: monitoring
+  annotations:
+    image.toolkit.fluxcd.io/image-ref: alloy
 spec:
   chart:
     spec:
@@ -225,12 +225,13 @@ spec:
           }
 
 ---
-
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: dcgm-exporter
   namespace: monitoring
+  annotations:
+    image.toolkit.fluxcd.io/image-ref: dcgm-exporter
 spec:
   interval: 15m
   releaseName: dcgm-exporter
@@ -249,12 +250,13 @@ spec:
         release: prometheus-community
 
 ---
-
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: prometheus-community
   namespace: monitoring
+  annotations:
+    image.toolkit.fluxcd.io/image-ref: prometheus-community
 spec:
   interval: 15m
   releaseName: prometheus-community
@@ -297,18 +299,15 @@ spec:
           hostPath:
             path: /home/server/docker/monitoring/grafana
             type: Directory
-
       extraVolumeMounts:
         # Dashboards (JSON files)
         - name: grafana-host
           mountPath: /var/lib/grafana/dashboards
           subPath: dashboards
-
         # Datasources provisioning
         - name: grafana-host
           mountPath: /etc/grafana/provisioning/datasources
           subPath: provisioning/datasources
-
         # Dashboard provisioning configs
         - name: grafana-host
           mountPath: /etc/grafana/provisioning/dashboards
@@ -318,12 +317,10 @@ spec:
           mountPath: /etc/grafana/provisioning/alerting
           subPath: provisioning/alerting
           readOnly: false
-
       admin:
         existingSecret: "grafana-admin"
         userKey: admin-user
         passwordKey: admin-password
-
       ingress:
         enabled: false
     prometheus-node-exporter:
@@ -336,13 +333,15 @@ spec:
                   sourceLabels:
                     - __meta_kubernetes_endpoint_node_name
                   targetLabel: node
----
 
+---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: prometheus-adapter
   namespace: monitoring
+  annotations:
+    image.toolkit.fluxcd.io/image-ref: prometheus-adapter
 spec:
   interval: 15m
   releaseName: prometheus-adapter
