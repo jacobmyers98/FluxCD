@@ -31,10 +31,10 @@ spec:
 apiVersion: image.toolkit.fluxcd.io/v1beta2
 kind: ImageRepository
 metadata:
-  name: overseerr
+  name: seerr
   namespace: plex
 spec:
-  image: linuxserver/overseerr
+  image: ghcr.io/seerr-team/seerr
   interval: 1h
 
 ---

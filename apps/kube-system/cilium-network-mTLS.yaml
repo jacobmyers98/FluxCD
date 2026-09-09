@@ -82,7 +82,6 @@ spec:
         - sonarr
         - tdarr-node
         - tdarr-server
-        - overseerr
         - requestrr
         - seerr
     authentication:

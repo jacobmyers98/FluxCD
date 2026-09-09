@@ -10,7 +10,6 @@ resources:
   - radarr.yaml
   - sonarr.yaml
   - tdarr.yaml
-  - overseerr.yaml
   - prowlarr.yaml
   - requestrr.yaml
   - seerr.yaml
