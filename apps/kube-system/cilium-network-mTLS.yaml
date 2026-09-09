@@ -65,6 +65,7 @@ spec:
       - tdarr-server
       - overseerr
       - requestrr
+      - seerr
   ingress:
   # ----------------------------------------------------
   # RULE 1: Internal Media Stack Pods MUST use mTLS
@@ -83,6 +84,7 @@ spec:
         - tdarr-server
         - overseerr
         - requestrr
+        - seerr
     authentication:
       mode: "required"
   # ----------------------------------------------------
