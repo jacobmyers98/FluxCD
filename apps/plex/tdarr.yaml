@@ -91,6 +91,8 @@ metadata:
   name: tdarr-node
   namespace: plex
 spec:
+strategy:
+  type: Recreate
   replicas: 1
   selector:
     matchLabels:
