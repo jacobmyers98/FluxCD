@@ -163,3 +163,30 @@ spec:
             name: port-service-homarr
             port:
               number: 7575
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dev-ingress
+  namespace: dev
+  annotations:
+    ingress.cilium.io/force-https: "enabled"
+spec:
+  ingressClassName: cilium
+  tls:
+  - hosts:
+    - "finance-friend.waffle-k8s.local"
+    secretName: wildcard-tls-secret
+  rules:
+  # --- Finance Friend ---
+  - host: finance-friend.waffle-k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-finance-friend
+            port:
+              number: 80
