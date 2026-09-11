@@ -16,7 +16,7 @@ spec:
         app: web
     spec:
       imagePullSecrets:
-      - name: ghcr-registry-secret
+      - name: ghcr-secret
       containers:
       - name: web
         image: ghcr.io/jacobmyers98/finance-friend:1.0.0 # Replace with your actual web image (e.g., your-dockerhub-user/web-app)
