@@ -3,9 +3,9 @@ FluxCD GitOps pipeline for home automation<br>
 
 
 
-### **Current Pod count: 68**<br>
-### **Current K8s version: v1.34.0**<br>
-### **Current GPU version: 535.274.02 (NVIDIA)**<br>
+### **Current Pod count: 79**<br>
+### **Current K8s version: v1.37.0**<br>
+### **Current GPU version: 580.178.04 (NVIDIA)**<br>
 ### **Current OS version: Ubuntu Server 5.15.0-164**<br>
 
 
