@@ -29,7 +29,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: finance-friend-nodeport-service
+  name: port-service-finance-friend
   namespace: dev
   labels:
     app: web
