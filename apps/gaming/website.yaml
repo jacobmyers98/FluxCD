@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: finance-friend
+  namespace: dev
+  labels:
+    app: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      imagePullSecrets:
+      - name: ghcr-registry-secret
+      containers:
+      - name: web
+        image: ghcr.io/jacobmyers98/finance-friend:1.0.0 # Replace with your actual web image (e.g., your-dockerhub-user/web-app)
+        ports:
+        - containerPort: 80 # Replace with the port your application actually listens on
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: finance-friend-nodeport-service
+  namespace: dev
+  labels:
+    app: web
+spec:
+  type: NodePort
+  selector:
+    app: web # This links the Service to the Deployment above
+  ports:
+    - port: 80 # The port the service exposes internally within the cluster
+      targetPort: 80 # The port the container is listening on (must match containerPort above)
+      nodePort: 30024 # Optional: Hardcodes the port on the host nodes (must be 30000-32767). Remove this line to let K8s assign a random port.
