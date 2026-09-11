@@ -5,6 +5,7 @@ metadata:
   namespace: dev
   labels:
     app: web
+    exposed: nodeport
 spec:
   replicas: 1
   selector:
