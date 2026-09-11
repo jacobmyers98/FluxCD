@@ -6,3 +6,5 @@ resources:
   - duck-dns-cron.yaml
   - secret.pz.yaml
   - secret.duckdns.yaml
+  - website.yaml
+  - secret.ghcr.yaml
