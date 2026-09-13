@@ -20,12 +20,10 @@ spec:
       - name: ghcr-secret
       containers:
       - name: web
-        image: ghcr.io/jacobmyers98/finance-friend-container:1.0.0 #  {"$imagepolicy": "dev:web-policy"}
+        image: ghcr.io/jacobmyers98/finance-friend-container:1.0.1 #  {"$imagepolicy": "dev:web-policy"}
         ports:
         - containerPort: 8081
-
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
