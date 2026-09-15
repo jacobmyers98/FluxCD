@@ -20,6 +20,7 @@ spec:
     operator:
       scanJobsConcurrentLimit: 2
     trivy:
+      serverURL: "http://trivy-server.trivy-system.svc:4954"
       resources:
         requests:
           cpu: 100m
@@ -54,6 +55,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: aqua
+        namespace: flux-system
   values:
     # Explicitly name the release to ensure the service name is predictable
     fullnameOverride: trivy-server
