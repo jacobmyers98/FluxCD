@@ -37,3 +37,25 @@ spec:
       namespace: trivy-system
       labels:
         release: prometheus-community
+
+---
+
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: trivy-server
+  namespace: trivy-system
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: trivy
+      version: "0.25.0" # You can pin this to a specific chart version if preferred
+      sourceRef:
+        kind: HelmRepository
+        name: aqua
+  values:
+    # Explicitly name the release to ensure the service name is predictable
+    fullnameOverride: trivy-server
+    server:
+      enabled: true
