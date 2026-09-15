@@ -17,7 +17,17 @@ spec:
         name: aqua
         namespace: flux-system
   values:
+    operator:
+      scanJobsConcurrentLimit: 2
     trivy:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 200M
+        limits:
+          cpu: 500m
+          memory: 500M
+      mode: ClientServer
       ignoreUnfixed: true
       image:
         repository: aquasec/trivy
