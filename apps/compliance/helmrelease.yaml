@@ -93,10 +93,5 @@ spec:
     clusterName: "kubernetes" 
     capabilities:
       configurationScan: enable
-      continuousScan: enable
+      continuousScan: disable
       vulnerabilityScan: disable
-    nodeAgent:
-      containerSecurityContext:
-        privileged: true
-        seccompProfile:
-          type: Unconfined
