@@ -95,3 +95,8 @@ spec:
       configurationScan: enable
       continuousScan: enable
       vulnerabilityScan: disable
+    nodeAgent:
+      containerSecurityContext:
+        privileged: true
+        seccompProfile:
+          type: Unconfined
