@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: kubescape-pv
+  labels:
+    app: storage
+    app.kubernetes.io/component: storage
+    app.kubernetes.io/instance: kubescape
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /home/server/docker/kubescape
+  storageClassName: local-storage

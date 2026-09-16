@@ -4,3 +4,4 @@ resources:
   - helmrelease.yaml
   - helmrepo.yaml
   - trivy-pv.yaml
+  - kubescape-pv.yaml
