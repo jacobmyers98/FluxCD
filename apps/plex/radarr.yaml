@@ -37,7 +37,7 @@ spec:
     spec:
       containers:
       - name: radarr
-        image: linuxserver/radarr:6.3.0 #  {"$imagepolicy": "plex:radarr-policy"}
+        image: linuxserver/radarr:6.4.4 #  {"$imagepolicy": "plex:radarr-policy"}
         imagePullPolicy: Always
         env:
         - name: PUID
