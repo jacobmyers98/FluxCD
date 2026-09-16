@@ -42,30 +42,30 @@ spec:
         allowPrivilegeEscalation: false
         capabilities:
           drop:
-            - ALL 
+            - ALL
       containers:
-      - name: sonarr
-        image: linuxserver/sonarr:4.0.19 # {"$imagepolicy": "plex:sonarr-policy"}
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 8989
-        volumeMounts:
-        - mountPath: /config
-          name: sonarr-config
-        - mountPath: /mnt/Media
-          name: movies-shows-raid
-        - mountPath: /downloads
-          name: torrent-downloads
+        - name: sonarr
+          image: linuxserver/sonarr:4.0.20 # {"$imagepolicy": "plex:sonarr-policy"}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8989
+          volumeMounts:
+            - mountPath: /config
+              name: sonarr-config
+            - mountPath: /mnt/Media
+              name: movies-shows-raid
+            - mountPath: /downloads
+              name: torrent-downloads
       volumes:
-      - name: sonarr-config
-        hostPath:
-          path: /home/server/docker/sonarr/config
-          type: Directory
-      - name: movies-shows-raid
-        hostPath:
-          path: /mnt/Media
-          type: Directory
-      - name: torrent-downloads
-        hostPath:
-          path: /mnt/Media/Torrent
-          type: Directory
+        - name: sonarr-config
+          hostPath:
+            path: /home/server/docker/sonarr/config
+            type: Directory
+        - name: movies-shows-raid
+          hostPath:
+            path: /mnt/Media
+            type: Directory
+        - name: torrent-downloads
+          hostPath:
+            path: /mnt/Media/Torrent
+            type: Directory
