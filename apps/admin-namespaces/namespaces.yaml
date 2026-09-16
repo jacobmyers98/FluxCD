@@ -28,9 +28,9 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: trivy-system
+  name: compliance
   labels:
-    app: trivy-system
+    app: compliance
 
 ---
 

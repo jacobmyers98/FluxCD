@@ -6,7 +6,7 @@ metadata:
   annotations:
     image.toolkit.fluxcd.io/image-ref: teslamate
 spec:
-  interval: 15m
+  interval: 1h
   releaseName: teslamate
   chart:
     spec:
@@ -88,7 +88,7 @@ metadata:
   annotations:
     image.toolkit.fluxcd.io/image-ref: mosquitto
 spec:
-  interval: 15m
+  interval: 1h
   releaseName: mosquitto
   chart:
     spec:
@@ -113,7 +113,7 @@ metadata:
   annotations:
     image.toolkit.fluxcd.io/image-ref: loki
 spec:
-  interval: 15m
+  interval: 1h
   chart:
     spec:
       chart: loki
@@ -233,7 +233,7 @@ metadata:
   annotations:
     image.toolkit.fluxcd.io/image-ref: dcgm-exporter
 spec:
-  interval: 15m
+  interval: 1h
   releaseName: dcgm-exporter
   chart:
     spec:
@@ -258,7 +258,7 @@ metadata:
   annotations:
     image.toolkit.fluxcd.io/image-ref: prometheus-community
 spec:
-  interval: 15m
+  interval: 1h
   releaseName: prometheus-community
   chart:
     spec:
@@ -343,7 +343,7 @@ metadata:
   annotations:
     image.toolkit.fluxcd.io/image-ref: prometheus-adapter
 spec:
-  interval: 15m
+  interval: 1h
   releaseName: prometheus-adapter
   chart:
     spec:

@@ -5,7 +5,7 @@ metadata:
   namespace: plex
 spec:
   image: linuxserver/radarr
-  interval: 1h
+  interval: 6h
 
 ---
 apiVersion: image.toolkit.fluxcd.io/v1beta2
@@ -15,7 +15,7 @@ metadata:
   namespace: plex
 spec:
   image: linuxserver/sonarr
-  interval: 1h
+  interval: 6h
 
 ---
 apiVersion: image.toolkit.fluxcd.io/v1beta2
@@ -25,7 +25,7 @@ metadata:
   namespace: plex
 spec:
   image: linuxserver/prowlarr
-  interval: 1h
+  interval: 6h
 
 ---
 apiVersion: image.toolkit.fluxcd.io/v1beta2
@@ -35,7 +35,7 @@ metadata:
   namespace: plex
 spec:
   image: ghcr.io/seerr-team/seerr
-  interval: 1h
+  interval: 6h
 
 ---
 apiVersion: image.toolkit.fluxcd.io/v1beta2
@@ -45,7 +45,7 @@ metadata:
   namespace: plex
 spec:
   image: lscr.io/linuxserver/qbittorrent
-  interval: 1h
+  interval: 6h
 
 ---
 apiVersion: image.toolkit.fluxcd.io/v1beta2
@@ -55,7 +55,7 @@ metadata:
   namespace: plex
 spec:
   image: ghcr.io/haveagitgat/tdarr
-  interval: 1h
+  interval: 6h
 
 ---
 apiVersion: image.toolkit.fluxcd.io/v1beta2
@@ -65,4 +65,4 @@ metadata:
   namespace: plex
 spec:
   image: ghcr.io/haveagitgat/tdarr_node
-  interval: 1h
+  interval: 6h

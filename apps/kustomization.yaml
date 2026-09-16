@@ -6,6 +6,6 @@ resources:
   - ./gaming
   - ./kubevirt
   - ./plex
-  - ./trivy-system
+  - ./compliance
   - ./kube-system
   - ./dev

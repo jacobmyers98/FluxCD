@@ -6,4 +6,4 @@ metadata:
   namespace: monitoring
 spec:
   image: ghcr.io/homarr-labs/homarr
-  interval: 1h
+  interval: 6h

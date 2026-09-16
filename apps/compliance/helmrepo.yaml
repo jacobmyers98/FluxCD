@@ -1,0 +1,19 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: aqua
+  namespace: flux-system
+spec:
+  interval: 6h
+  url: https://aquasecurity.github.io/helm-charts/
+
+---
+
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: kubescape
+  namespace: flux-system
+spec:
+  interval: 6h
+  url: https://kubescape.github.io/helm-charts/
