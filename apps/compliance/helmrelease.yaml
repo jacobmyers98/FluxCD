@@ -85,6 +85,9 @@ spec:
         name: kubescape
         namespace: flux-system
   values:
+    nodeAgent:
+      podLabels:
+        exposed: nodeport
     ksNamespace: compliance
     ksLabel: compliance
     clusterName: "default" 
