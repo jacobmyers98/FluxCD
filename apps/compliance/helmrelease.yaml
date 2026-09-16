@@ -90,7 +90,7 @@ spec:
 #        exposed: nodeport
     ksNamespace: compliance
     ksLabel: compliance
-    clusterName: "default" 
+    clusterName: "kubernetes" 
     capabilities:
       configurationScan: enable
       continuousScan: enable
