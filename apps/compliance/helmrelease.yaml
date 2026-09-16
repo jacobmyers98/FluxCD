@@ -85,6 +85,8 @@ spec:
         name: kubescape
         namespace: flux-system
   values:
+    ksNamespace: compliance
+    ksLabel: compliance
     clusterName: "default" 
     capabilities:
       configurationScan: enable
