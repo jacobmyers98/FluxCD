@@ -88,15 +88,13 @@ spec:
     ksNamespace: compliance
     ksLabel: compliance
     clusterName: "kubernetes" 
-    nodeAgent:
-      enabled: false
     capabilities:
       configurationScan: enable
       continuousScan: disable
       vulnerabilityScan: disable
       runtimeObservability: disable
-      runtimeDetection: disable
       relevancy: disable
-      networkPolicyService: disable
       nodeScan: disable
+      nodeSbomGeneration: disable
+
 
