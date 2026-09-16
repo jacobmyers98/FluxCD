@@ -83,7 +83,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: kubescape
-        namespace: kubescape
+        namespace: flux-system
   values:
     clusterName: "default" 
     capabilities:
