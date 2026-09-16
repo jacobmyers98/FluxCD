@@ -85,15 +85,18 @@ spec:
         name: kubescape
         namespace: flux-system
   values:
-#    nodeAgent:
-#      podLabels:
-#        exposed: nodeport
     ksNamespace: compliance
     ksLabel: compliance
     clusterName: "kubernetes" 
+    nodeAgent:
+      enabled: false
     capabilities:
       configurationScan: enable
       continuousScan: disable
       vulnerabilityScan: disable
       runtimeObservability: disable
+      runtimeDetection: disable
+      relevancy: disable
+      networkPolicyService: disable
+      nodeScan: disable
 
