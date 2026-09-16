@@ -250,6 +250,17 @@ spec:
       - node-agent
   ingress:
   # ----------------------------------------------------
+  # RULE 1: Internal Media Stack Pods MUST use mTLS
+  # ----------------------------------------------------
+  - fromEndpoints:
+    - matchExpressions:
+      - key: "app"
+        operator: In
+        values:
+        - node-agent
+    authentication:
+      mode: "required"
+  # ----------------------------------------------------
   # RULE 2: External LAN traffic (NO mTLS)
   # NOTE: If all these pods have the 'exposed: nodeport' label,
   # your 'allow-external-nodeport' ClusterWide policy already 
