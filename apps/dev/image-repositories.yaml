@@ -6,6 +6,6 @@ metadata:
   namespace: dev
 spec:
   image: ghcr.io/jacobmyers98/finance-friend-container
-  interval: 5m
+  interval: 1m
   secretRef:
     name: ghcr-secret
