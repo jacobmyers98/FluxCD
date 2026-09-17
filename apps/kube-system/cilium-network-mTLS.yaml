@@ -231,6 +231,10 @@ spec:
     - ingress
   - fromEndpoints:
     - matchLabels:
+        k8s:io.kubernetes.pod.namespace: monitoring
+        app: homarr
+  - fromEndpoints:
+    - matchLabels:
         k8s:io.kubernetes.pod.namespace: kube-system
         # NOTE: Verify this label matches your Tailscale pod (e.g., app: tailscale)
         app: tailscale
