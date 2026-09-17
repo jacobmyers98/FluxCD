@@ -12,9 +12,7 @@ spec:
       port: 9696
       targetPort: 9696
       nodePort: 30003
-
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
@@ -28,9 +26,7 @@ spec:
     - name: prowlarr-service
       port: 9696
       targetPort: 9696
-
 ---
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -74,7 +70,7 @@ spec:
           value: "none"
       containers:
       - name: prowlarr
-        image: linuxserver/prowlarr:2.5.2 #  {"$imagepolicy": "plex:prowlarr-policy"}
+        image: linuxserver/prowlarr:2.6.5 #  {"$imagepolicy": "plex:prowlarr-policy"}
         env:
         - name: PUID
           value: "1001"
