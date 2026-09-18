@@ -43,6 +43,8 @@ spec:
     - world
     - host
     - ingress
+    - cluster
+    - kube-apiserver
 # blanket policy to allow nodeport to reach world and host
 
 ---
