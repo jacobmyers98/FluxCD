@@ -73,7 +73,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: kubescape
-  namespace: compliance
+  namespace: kubescape
 spec:
   interval: 1h
   chart:
@@ -85,9 +85,9 @@ spec:
         name: kubescape
         namespace: flux-system
   values:
-    ksNamespace: compliance
-    ksLabel: compliance
-    clusterName: "kubernetes" 
+#    ksNamespace: compliance
+#    ksLabel: compliance
+    clusterName: "kubernetes-admin@kubernetes" 
     capabilities:
       configurationScan: enable
       continuousScan: disable
