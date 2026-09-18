@@ -87,12 +87,15 @@ spec:
   values:
     ksNamespace: compliance
     ksLabel: compliance
-    clusterName: "kubernetes-admin@kubernetes" 
+    clusterName: "kubernetes" 
     capabilities:
       configurationScan: enable
       continuousScan: disable
       vulnerabilityScan: disable
+      # -- Explicitly disable ALL agent-dependent capabilities --
       runtimeObservability: disable
       relevancy: disable
       nodeScan: disable
       nodeSbomGeneration: disable
+      networkPolicyService: disable
+      nodeProfileService: disable
