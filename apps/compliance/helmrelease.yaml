@@ -87,7 +87,7 @@ spec:
   values:
     ksNamespace: compliance
     ksLabel: compliance
-    clusterName: "kubernetes" 
+    clusterName: "kubernetes-admin@kubernetes" 
     capabilities:
       configurationScan: enable
       continuousScan: disable
@@ -96,5 +96,3 @@ spec:
       relevancy: disable
       nodeScan: disable
       nodeSbomGeneration: disable
-
-
