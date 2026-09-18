@@ -85,14 +85,18 @@ spec:
         name: kubescape
         namespace: flux-system
   values:
-#    ksNamespace: compliance
-#    ksLabel: compliance
     clusterName: "kubernetes-admin@kubernetes" 
+    # -- ADD THIS BLOCK --
+    storage:
+      podLabels:
+        exposed: nodeport
+      labels:
+        exposed: nodeport
+    # --------------------
     capabilities:
       configurationScan: enable
       continuousScan: disable
       vulnerabilityScan: disable
-      # -- Explicitly disable ALL agent-dependent capabilities --
       runtimeObservability: disable
       relevancy: disable
       nodeScan: disable
