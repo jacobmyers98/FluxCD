@@ -76,6 +76,10 @@ metadata:
   namespace: kubescape
 spec:
   interval: 1h
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
   chart:
     spec:
       chart: kubescape-operator
