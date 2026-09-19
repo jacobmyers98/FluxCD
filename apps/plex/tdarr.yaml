@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: tdarr-server
-          image: ghcr.io/haveagitgat/tdarr:2.88.01 #  {"$imagepolicy": "plex:tdarr-policy"}
+          image: ghcr.io/haveagitgat/tdarr:2.89.01 #  {"$imagepolicy": "plex:tdarr-policy"}
           env:
             - name: serverIP
               value: "0.0.0.0"
