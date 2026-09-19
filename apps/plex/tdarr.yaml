@@ -118,7 +118,7 @@ spec:
               echo "Tdarr Server is up!"
       containers:
         - name: tdarr-node
-          image: ghcr.io/haveagitgat/tdarr_node:2.88.01 #  {"$imagepolicy": "plex:tdarr-node-policy"}
+          image: ghcr.io/haveagitgat/tdarr_node:2.89.01 #  {"$imagepolicy": "plex:tdarr-node-policy"}
           env:
             - name: nodeID
               value: "k8s-node-1"
