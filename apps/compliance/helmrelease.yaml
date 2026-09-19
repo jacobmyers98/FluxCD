@@ -90,12 +90,6 @@ spec:
         namespace: flux-system
   values:
     clusterName: "kubernetes-admin@kubernetes" 
-    storage:
-      hostNetwork: true
-      podLabels:
-        exposed: nodeport
-      labels:
-        exposed: nodeport
     capabilities:
       configurationScan: enable
       continuousScan: disable
