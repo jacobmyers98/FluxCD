@@ -89,6 +89,8 @@ spec:
         name: kubescape
         namespace: flux-system
   values:
+    certificates:
+      strategy: initContainer
     clusterName: "kubernetes-admin@kubernetes" 
     capabilities:
       configurationScan: enable
