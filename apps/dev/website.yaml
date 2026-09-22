@@ -20,7 +20,7 @@ spec:
       - name: ghcr-secret
       containers:
       - name: web
-        image: ghcr.io/jacobmyers98/finance-friend-container:1.0.23 #  {"$imagepolicy": "dev:web-policy"}
+        image: ghcr.io/jacobmyers98/finance-friend-container:1.0.24 #  {"$imagepolicy": "dev:web-policy"}
         ports:
         - containerPort: 8081
 ---
