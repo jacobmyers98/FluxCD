@@ -37,15 +37,6 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: keda
-  labels:
-    app: keda
-
----
-
-apiVersion: v1
-kind: Namespace
-metadata:
   name: dev
   labels:
     app: dev

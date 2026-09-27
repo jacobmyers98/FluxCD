@@ -14,3 +14,5 @@ resources:
   - grafana-nodeport.yaml
   - secret.grafana.yaml
   - world-monitor.yaml
+  - glances.yaml
+  - snapotter.yaml

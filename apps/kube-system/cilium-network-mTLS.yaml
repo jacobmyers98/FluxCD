@@ -127,6 +127,8 @@ spec:
       - teslamate
       - homarr
       - worldmonitor
+      - snapotter
+      - glances
   ingress:
   - fromEndpoints:
     - matchExpressions:
@@ -137,6 +139,8 @@ spec:
         - teslamate
         - homarr
         - worldmonitor
+        - snapotter
+        - glances
     authentication:
       mode: "required"
   - fromEntities:

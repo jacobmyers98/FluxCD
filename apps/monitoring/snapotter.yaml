@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: snapotter
+  labels:
+    app: snapotter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: snapotter
+  template:
+    metadata:
+      labels:
+        app: snapotter
+    spec:
+      containers:
+      - name: snapotter
+        image: snapotter/snapotter:latest
+        ports:
+        - containerPort: 1349
+        volumeMounts:
+        - name: snapotter-data
+          mountPath: /data
+      volumes:
+      - name: snapotter-data
+        hostPath:
+          path: /home/server/docker/snapotter
+          type: DirectoryOrCreate
+          
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: port=service-snapotter
+spec:
+  type: NodePort
+  selector:
+    app: snapotter
+  ports:
+    - protocol: TCP
+      port: 1349
+      targetPort: 1349
+      nodePort: 30014
