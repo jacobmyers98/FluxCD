@@ -34,7 +34,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: port=service-snapotter
+  name: port-service-snapotter
   namespace: monitoring
 spec:
   type: NodePort
