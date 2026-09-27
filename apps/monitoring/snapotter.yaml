@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: snapotter
+  namespace: monitoring
   labels:
     app: snapotter
 spec:
@@ -27,13 +28,14 @@ spec:
         hostPath:
           path: /home/server/docker/snapotter
           type: DirectoryOrCreate
-          
+
 ---
 
 apiVersion: v1
 kind: Service
 metadata:
   name: port=service-snapotter
+  namespace: monitoring
 spec:
   type: NodePort
   selector:
