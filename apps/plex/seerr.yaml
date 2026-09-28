@@ -12,7 +12,6 @@ spec:
       port: 5055
       targetPort: 5055
       nodePort: 30023
-
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -24,7 +23,7 @@ metadata:
 spec:
   replicas: 1
   strategy:
-    type: Recreate 
+    type: Recreate
   selector:
     matchLabels:
       app: seerr
@@ -40,18 +39,18 @@ spec:
         fsGroup: 1004
       containers:
         - name: seerr
-          image: ghcr.io/seerr-team/seerr:v3.4.1 # {"$imagepolicy": "plex:seerr-policy"}
+          image: ghcr.io/seerr-team/seerr:v3.5.0 # {"$imagepolicy": "plex:seerr-policy"}
           imagePullPolicy: Always
           ports:
             - containerPort: 5055
-          securityContext: 
+          securityContext:
             allowPrivilegeEscalation: false
             capabilities:
               drop:
                 - ALL
           volumeMounts:
             - name: seerr-config
-              mountPath: /app/config 
+              mountPath: /app/config
       volumes:
         - name: seerr-config
           hostPath:
