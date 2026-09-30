@@ -23,7 +23,15 @@ spec:
         image: ghcr.io/jacobmyers98/finance-friend-container:1.0.50 #  {"$imagepolicy": "dev:web-policy"}
         ports:
         - containerPort: 8081
+        env:
+        - name: TWELVE_DATA_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: finance-friend-secret
+              key: TWELVE_DATA_API_KEY
+
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
