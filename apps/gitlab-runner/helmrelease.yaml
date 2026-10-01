@@ -2,7 +2,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: gitlab-runner
-  namespace: kube-system
+  namespace: gitlab-runner
 spec:
   releaseName: gitlab-runner
   chart:
