@@ -9,3 +9,4 @@ resources:
   - ./compliance
   - ./kube-system
   - ./dev
+  - ./gitlab-runner
