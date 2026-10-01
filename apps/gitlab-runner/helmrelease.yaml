@@ -15,3 +15,8 @@ spec:
       version: ">=0.93.0"
   interval: 1h
   values:
+    gitlabUrl: "https://gitlab.com/"
+    rbac:
+      create: true
+    runners:
+      secret: gitlab-runner-secret
