@@ -38,3 +38,5 @@ spec:
   values:
     githubConfigUrl: "https://github.com/jacobmyers98/Finance-Friend"
     githubConfigSecret: github-arc-auth
+    containerMode:
+          type: "dind"
