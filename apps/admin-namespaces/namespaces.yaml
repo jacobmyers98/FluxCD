@@ -40,12 +40,3 @@ metadata:
   name: dev
   labels:
     app: dev
-
----
-
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: gitlab-runner
-  labels:
-    app: gitlab-runner
