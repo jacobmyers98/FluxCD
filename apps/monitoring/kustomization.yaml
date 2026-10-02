@@ -13,6 +13,5 @@ resources:
   - image-update-automation.yaml
   - grafana-nodeport.yaml
   - secret.grafana.yaml
-  - world-monitor.yaml
   - glances.yaml
   - snapotter.yaml
