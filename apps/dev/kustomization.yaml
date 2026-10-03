@@ -4,6 +4,7 @@ resources:
   - secret.ghcr.yaml
   - secret.ff.yaml
   - website.yaml
+  - ollama.yaml
   - image-policies.yaml
   - image-repositories.yaml
   - image-update-automation.yaml
