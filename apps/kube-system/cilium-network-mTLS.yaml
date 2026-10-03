@@ -126,7 +126,6 @@ spec:
       - grafana
       - teslamate
       - homarr
-      - worldmonitor
       - snapotter
       - glances
   ingress:
@@ -138,7 +137,6 @@ spec:
         - grafana
         - teslamate
         - homarr
-        - worldmonitor
         - snapotter
         - glances
     authentication:
@@ -194,6 +192,7 @@ spec:
       operator: In
       values:
       - web
+      - starnet
   ingress:
   - fromEntities:
     - world
