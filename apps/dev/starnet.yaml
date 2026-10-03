@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: starnet-backend
+  namespace: dev
+  labels:
+    app: starnet
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: starnet
+  template:
+    metadata:
+      labels:
+        app: starnet
+    spec:
+      containers:
+      # --- Container 1: StarNet ---
+      - name: starnet-sidecar
+        image: starnet-sidecar:1.0.0
+        imagePullPolicy: Never
+        env:
+        - name: STARNET_WORKSPACE_PATH
+          value: "/app/workspace"
+        - name: HOST
+          value: "0.0.0.0"
+        - name: STARNET_API_KEY
+          value: "sn-ext-9f8e4a2c1b7d3f6a8e0c5b2d1f4a9e3"
+        ports:
+        - containerPort: 8787
+          name: http
+        volumeMounts:
+        - name: workspace-data
+          mountPath: /root/.local/share/StarNet
+
+      # --- Container 2: Ollama ---
+      - name: ollama
+        image: ollama/ollama:latest
+        ports:
+        - containerPort: 11434
+        volumeMounts:
+        - name: ollama-data
+          mountPath: /root/.ollama
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+      
+      volumes:
+      - name: workspace-data
+        hostPath:
+          path: /home/server/docker/starnet
+          type: DirectoryOrCreate
+      - name: ollama-data
+        hostPath:
+          path: /home/server/docker/ollama
+          type: DirectoryOrCreate
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: port-service-starnet
+  namespace: dev
+  labels:
+    app: starnet
+spec:
+  type: NodePort
+  selector:
+    app: starnet
+  ports:
+    - port: 8787
+      targetPort: 8787
+      nodePort: 30019
