@@ -90,10 +90,4 @@ spec:
     capabilities:
       configurationScan: enable
       continuousScan: disable
-      vulnerabilityScan: disable
-      runtimeObservability: disable
-      relevancy: disable
-      nodeScan: disable
-      nodeSbomGeneration: disable
-      networkPolicyService: disable
-      nodeProfileService: disable
+      
