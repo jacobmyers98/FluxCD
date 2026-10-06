@@ -82,7 +82,7 @@ spec:
       version: "1.30.7"
       sourceRef:
         kind: HelmRepository
-        name: compliance
+        name: kubescape
         namespace: flux-system
   values:
     ksNamespace: compliance
