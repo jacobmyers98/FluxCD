@@ -85,6 +85,7 @@ spec:
         name: compliance
         namespace: flux-system
   values:
+    ksNamespace: compliance
     certificates:
       strategy: initContainer
     clusterName: "kubernetes" 
