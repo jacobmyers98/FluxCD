@@ -15,8 +15,6 @@ spec:
       - cilium-spire
       - flux-system
       - kubevirt
-    #temp
-      - kubescape
     - key: "exposed"
       operator: NotIn
       values:
