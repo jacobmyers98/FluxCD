@@ -68,11 +68,12 @@ spec:
 
 
 ---
+
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: kubescape
-  namespace: kubescape
+  namespace: compliance
 spec:
   interval: 1h
   chart:
