@@ -19,6 +19,13 @@ spec:
   values:
     operator:
       scanJobsConcurrentLimit: 2
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
     trivy:
       serverURL: "http://trivy-server.compliance.svc:4954"
       resources:
@@ -38,6 +45,7 @@ spec:
       namespace: compliance
       labels:
         release: prometheus-community
+
 
 ---
 
@@ -60,11 +68,19 @@ spec:
     fullnameOverride: trivy-server
     server:
       enabled: true
+      resources:
+        requests:
+          cpu: 200m
+          memory: 1Gi
+        limits:
+          cpu: 1000m
+          memory: 2Gi
     podSecurityContext:
       runAsUser: 1001
       runAsGroup: 1004
       fsGroup: 1004
       runAsNonRoot: true
+
 
 
 ---
@@ -92,4 +108,21 @@ spec:
     capabilities:
       configurationScan: enable
       continuousScan: disable
-      
+      vulnerabilityScan: disable # ADDED: Stops Kubescape from generating massive SBOM/VEX CRDs
+      runtimeObservability: disable # ADDED: Prevents continuous eBPF behavioral monitoring
+    operator: # ADDED
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 250m
+          memory: 512Mi
+    nodeAgent: # ADDED
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 1Gi
