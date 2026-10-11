@@ -35,6 +35,11 @@ spec:
               value: "1001"
             - name: PGID
               value: "1004"
+            - name: apiKey
+              valueFrom:
+                secretKeyRef:
+                  name: tdarr-api-secret
+                  key: apiKey
           ports:
             - containerPort: 8265
             - containerPort: 8266
@@ -120,6 +125,11 @@ spec:
               value: "1001"
             - name: PGID
               value: "1004"
+            - name: apiKey
+              valueFrom:
+                secretKeyRef:
+                  name: tdarr-api-secret
+                  key: apiKey
           ports:
             - containerPort: 8267
           resources:
