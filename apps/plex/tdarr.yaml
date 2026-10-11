@@ -110,12 +110,10 @@ spec:
         - name: tdarr-node
           image: ghcr.io/haveagitgat/tdarr_node:3.00.00 #  {"$imagepolicy": "plex:tdarr-node-policy"}
           env:
-            - name: nodeID
+            - name: nodeName
               value: "k8s-node-1"
-            - name: serverIP
-              value: "port-service-tdarr-server"
-            - name: serverPort
-              value: "8266"
+            - name: serverURL
+              value: "http://port-service-tdarr-server:8266"
             - name: nodePort
               value: "8267"
             - name: PUID
