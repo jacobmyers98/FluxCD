@@ -9,7 +9,7 @@ spec:
   ports:
     - name: homarr-port
       port: 7575
-      targetPort: 3000
+      targetPort: 7575
       nodePort: 30010
   selector:
     app: homarr
@@ -55,34 +55,22 @@ spec:
           ports:
             - containerPort: 7575
           volumeMounts:
-            - mountPath: /app/data/configs
-              name: homarr-config
-            - mountPath: /app/public/icons
-              name: homarr-icons
-            - mountPath: /data
-              name: homarr-data
-            - mountPath: /app/public/imgs/backgrounds
-              name: homarr-imgs
             - mountPath: /appdata
               name: homarr-data2
+            - mountPath: /app/public/icons
+              name: homarr-icons
+            - mountPath: /app/public/imgs/backgrounds
+              name: homarr-imgs
       volumes:
-        - name: homarr-config
-          hostPath:
-            path: /home/server/docker/homarr/config
-            type: Directory
-        - name: homarr-icons
-          hostPath:
-            path: /home/server/docker/homarr/icons
-            type: Directory
-        - name: homarr-data
-          hostPath:
-            path: /home/server/docker/homarr/data
-            type: Directory
-        - name: homarr-imgs
-          hostPath:
-            path: /home/server/docker/homarr/imgs
-            type: Directory
         - name: homarr-data2
           hostPath:
             path: /home/server/docker/homarr/data2
+            type: DirectoryOrCreate
+        - name: homarr-icons
+          hostPath:
+            path: /home/server/docker/homarr/icons
+            type: DirectoryOrCreate
+        - name: homarr-imgs
+          hostPath:
+            path: /home/server/docker/homarr/imgs
             type: DirectoryOrCreate
