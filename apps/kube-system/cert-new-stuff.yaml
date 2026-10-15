@@ -1,22 +1,70 @@
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
-  name: letsencrypt-prod
+    name: letsencrypt-prod
 spec:
-  acme:
-    # Let's Encrypt Production URL
-    server: https://acme-v02.api.letsencrypt.org/directory
-    # Email address used for ACME registration
-    email: your-email@example.com
-    # Name of a secret used to store the ACME account private key
-    privateKeySecretRef:
-      name: letsencrypt-prod-account-key
-    solvers:
-    - dns01:
-        cloudflare:
-          apiTokenSecretRef:
-            name: cloudflare-api-token-secret
-            key: api-token
+    acme:
+        # Let's Encrypt Production URL
+        server: https://acme-v02.api.letsencrypt.org/directory
+        # Email address used for ACME registration
+        email: ENC[AES256_GCM,data:RJZEKt/xdZF8AfvuZUS3H7nnrQ==,iv:MyoU+xhBMW83vHxt6GBhvIyjMOvqGmavoq2T70ISVnE=,tag:fOMgrY4TX5+zDA5SqrahVQ==,type:str]
+        # Name of a secret used to store the ACME account private key
+        privateKeySecretRef:
+            name: letsencrypt-prod-account-key
+        solvers:
+            - dns01:
+                cloudflare:
+                    apiTokenSecretRef:
+                        name: cloudflare-api-token-secret
+                        key: api-token
+sops:
+    kms: []
+    gcp_kms: []
+    azure_kv: []
+    hc_vault: []
+    age:
+        - recipient: age1frds4dglkf9tsnz00zf3tgyxf9q7xxqaeeh44p9dgjeqqfl35a2qxcjcfm
+          enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBYRndxTTFRZ0hzaUdpeFFR
+            cU00bVZWM3pxM3lpRzdCTi9xUU96bEREdWdvCm9RM1FXR2pTRmhzWEFMOWJBRjZn
+            M3JXbThzYW9qZVhtMXhGcmxkSFBHSjQKLS0tIFd4WXFXeVltbkZkbVFoU1JOWlpD
+            alhNNTVKRUZSZWt0R0ZpbGlqZkdDQmsKVz58hj+KtpmRo650/QK9skbhrQiWC4v/
+            ghlv3ANPUzA7WncZMQGKnfo4+JeBfaZmfM8vEfz5GrLh9NI3JadHHg==
+            -----END AGE ENCRYPTED FILE-----
+    lastmodified: "2026-10-15T14:47:34Z"
+    mac: ENC[AES256_GCM,data:3zXGRGE/c3fsezQc27gd5nFgCLcayoArNx/b2KDAIJ63+ir7yB7iEXDQLGh/3s4fQ6DNtZa5IfPThCv0qZnFjMxaIWDpxbta8JtCxm5wYne9EbQuu4Z93LbAzB80yIXH8IwJAiehcmha73PNEGeDoukVkaDoq5O764/K3CfQpS4=,iv:6RcrXqpb5SVjsT9tK97GAPX9IkqOtMobfCfW0y72fDk=,tag:36+hcKEFbB0Y3CJum2yusg==,type:str]
+"test.yml" 39L, 1811B
+
+---
+apiVersion: v1
+data:
+    api-token: ENC[AES256_GCM,data:QnkFXIsh/5Ci2d4QXDb0/LUEloeuPoaQLMnNcjGQdHpoiwb1V7unZqdpZ5yuksDPLkbSEqmzN4pBCm419USniQvA2XukVtNt,iv:ifY1RQOgH3sR9C4LJ6TkW0EMVmoqjR+eqPlTSYUQ6IA=,tag:HaY5pcnzi0oGIcj/Bt+rJQ==,type:str]
+kind: Secret
+metadata:
+    name: cloudflare-api-token-secret
+    namespace: kube-system
+sops:
+    kms: []
+    gcp_kms: []
+    azure_kv: []
+    hc_vault: []
+    age:
+        - recipient: age1frds4dglkf9tsnz00zf3tgyxf9q7xxqaeeh44p9dgjeqqfl35a2qxcjcfm
+          enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBzSlFpalpiZnNhS1hVUkx1
+            OXZzTE1kWklkVGUwREtxYmdrSXo5RURnbEFnClJ4OUpuRFdPMEZxT29NUTFWNTdy
+            c3ppeEFEbjN5M2xtY20yamFWYndsemsKLS0tIDZqR25xMVBaeXZpRlgyMXRwa3Np
+            a2hDaE1mZDBNOERDVzJUY0RnWEExdVkK/ddijFdboLJlo/QBP2XiLkUu6SI46elK
+            FflpnqLylBDZ4l6veysE3julalc9cTLas11M0pnjiyT927f5kWgcvg==
+            -----END AGE ENCRYPTED FILE-----
+    lastmodified: "2026-10-15T14:50:56Z"
+    mac: ENC[AES256_GCM,data:LoGIDOPgco7rqYY9f7LvYvzSzBhr+HjyqMfKCl3g0q/g5Yp4aodILM3/sdTeEs0UDRx7Bauj4Mzl5YeUDIgLnjzqqvorUG+ae623z0lLw3j2iZQ/q+JiWRtb864E5qyD/LET7IebOK53fklciYQngzG7UU/Nh7BtHiMvlUUhaWI=,iv:GmQu8m3BtMyqWY6SqK3KCY6V736HD8Yh9inin/390Gs=,tag:zSlSyEaf8YDn1nh6hJAHxg==,type:str]
+    pgp: []
+    encrypted_regex: ^(data|stringData|email)$
+    version: 3.9.0
+
 
 ---
 
