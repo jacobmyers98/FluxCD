@@ -4,7 +4,5 @@ resources:
   - minecraft.yaml
   - cloudflare-ddns.yaml
 #  - project-zomboid.yaml
-#  - duck-dns-cron.yaml
 #  - secret.pz.yaml
-#  - secret.duckdns.yaml
   - secret.cloudflare-ddns.yaml
