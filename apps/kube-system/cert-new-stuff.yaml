@@ -7,7 +7,7 @@ spec:
         # Let's Encrypt Production URL
         server: https://acme-v02.api.letsencrypt.org/directory
         # Email address used for ACME registration
-        email: ENC[AES256_GCM,data:RJZEKt/xdZF8AfvuZUS3H7nnrQ==,iv:MyoU+xhBMW83vHxt6GBhvIyjMOvqGmavoq2T70ISVnE=,tag:fOMgrY4TX5+zDA5SqrahVQ==,type:str]
+        email: ENC[AES256_GCM,data:QdzjVnhmgof1qCy/qCWWzKMEDQ==,iv:OI6VilSNBFYzmCmVcmOhrwqM7JLYnYsSrX+Wy7trlDA=,tag:jrf0MRrttG7DqppKf2WZNQ==,type:str]
         # Name of a secret used to store the ACME account private key
         privateKeySecretRef:
             name: letsencrypt-prod-account-key
@@ -26,14 +26,17 @@ sops:
         - recipient: age1frds4dglkf9tsnz00zf3tgyxf9q7xxqaeeh44p9dgjeqqfl35a2qxcjcfm
           enc: |
             -----BEGIN AGE ENCRYPTED FILE-----
-            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBYRndxTTFRZ0hzaUdpeFFR
-            cU00bVZWM3pxM3lpRzdCTi9xUU96bEREdWdvCm9RM1FXR2pTRmhzWEFMOWJBRjZn
-            M3JXbThzYW9qZVhtMXhGcmxkSFBHSjQKLS0tIFd4WXFXeVltbkZkbVFoU1JOWlpD
-            alhNNTVKRUZSZWt0R0ZpbGlqZkdDQmsKVz58hj+KtpmRo650/QK9skbhrQiWC4v/
-            ghlv3ANPUzA7WncZMQGKnfo4+JeBfaZmfM8vEfz5GrLh9NI3JadHHg==
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBmVlNmL1QydzVnY3N0dy9B
+            enpLK1A0eldYVXI2ZHhGazcvVzRsTk1tWDNVCjRHamF2c1hyTllwZm1jNFM0OC9Z
+            bW56Z3pKSDg4UU5RYlAwTllrQU1NS0UKLS0tIG9MZGR6Sm5UUmZkZHVUc3BOTU5w
+            VHc4TGJFV1BPeS9iRGNtVFE1QU1USEUKjd+AdVLAcIChvJuGp3qHfBdsswj1TgMy
+            Fryk3Ok8qBbYkiElS+346xFrCISWSufL8AEFKqvXsC4DcX9N9Hde1A==
             -----END AGE ENCRYPTED FILE-----
-    lastmodified: "2026-10-15T14:47:34Z"
-    mac: ENC[AES256_GCM,data:3zXGRGE/c3fsezQc27gd5nFgCLcayoArNx/b2KDAIJ63+ir7yB7iEXDQLGh/3s4fQ6DNtZa5IfPThCv0qZnFjMxaIWDpxbta8JtCxm5wYne9EbQuu4Z93LbAzB80yIXH8IwJAiehcmha73PNEGeDoukVkaDoq5O764/K3CfQpS4=,iv:6RcrXqpb5SVjsT9tK97GAPX9IkqOtMobfCfW0y72fDk=,tag:36+hcKEFbB0Y3CJum2yusg==,type:str]
+    lastmodified: "2026-10-15T19:30:09Z"
+    mac: ENC[AES256_GCM,data:NHJu+7vU2rwJIxoLuH2h35yDmBq19JoDXj1jCfnxU5W0sxBeDDLAGGTdNY9aEiGyHW3KmA16ZraLYpbawX6DwJi3PCtgh9l3lzVJ5MWkQDSCTrc/qNpsFFVgEag05uJvujWDZbVHnrCfwtD8mBlh5Yz2ZWHA/2qsBrNVHtuKCu4=,iv:q5q688wO+4EX9fmwsbIAaT4iJJ0xYue4jxtjBnJFdoE=,tag:17pX+/qaMtR4vcXf+zlm0g==,type:str]
+    pgp: []
+    encrypted_regex: ^(data|stringData|email)$
+    version: 3.9.0
 
 ---
 apiVersion: v1
