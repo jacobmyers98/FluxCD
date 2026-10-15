@@ -12,8 +12,10 @@ resources:
   - tdarr.yaml
   - prowlarr.yaml
   - requestrr.yaml
+  - cloudflare.yaml
   - seerr.yaml
   - secret.qbit.yaml
   - secret.ghcr.yaml
   - secret.plex.yaml
   - secret.tdarr.yaml
+  - secret.cloudflare.yaml
