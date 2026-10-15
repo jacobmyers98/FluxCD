@@ -43,7 +43,7 @@ spec:
     - "qbit.waffle-k8s.local"
     - "prowlarr.waffle-k8s.local"
     - "requestrr.waffle-k8s.local"
-    - "overseerr.waffle-k8s.local"
+    - "seerr.waffle-k8s.local"
     secretName: wildcard-tls-secret
   rules:
   # --- Sonarr ---
