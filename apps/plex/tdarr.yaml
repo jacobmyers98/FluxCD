@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: tdarr-server
-          image: ghcr.io/haveagitgat/tdarr:3.00.00 #  {"$imagepolicy": "plex:tdarr-policy"}
+          image: ghcr.io/haveagitgat/tdarr:3.01.00 #  {"$imagepolicy": "plex:tdarr-policy"}
           env:
             - name: serverIP
               value: "0.0.0.0"
@@ -57,9 +57,7 @@ spec:
           hostPath:
             path: /mnt/Media
             type: Directory
-            
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
@@ -77,9 +75,7 @@ spec:
     - name: server
       port: 8266
       targetPort: 8266
-
 ---
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -113,7 +109,7 @@ spec:
               echo "Tdarr Server is up!"
       containers:
         - name: tdarr-node
-          image: ghcr.io/haveagitgat/tdarr_node:3.00.00 #  {"$imagepolicy": "plex:tdarr-node-policy"}
+          image: ghcr.io/haveagitgat/tdarr_node:3.01.00 #  {"$imagepolicy": "plex:tdarr-node-policy"}
           env:
             - name: nodeName
               value: "k8s-node-1"
@@ -149,9 +145,7 @@ spec:
           hostPath:
             path: /mnt/Media
             type: Directory
-            
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
