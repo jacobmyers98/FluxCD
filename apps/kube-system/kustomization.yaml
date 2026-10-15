@@ -14,5 +14,3 @@ resources:
   - cert-manager.yaml
   - secret.tailscale.yaml
   - tailscale.yaml
-  - unifi-cert.yaml
-  - unifi-cron.yaml
