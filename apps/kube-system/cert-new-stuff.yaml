@@ -34,7 +34,6 @@ sops:
             -----END AGE ENCRYPTED FILE-----
     lastmodified: "2026-10-15T14:47:34Z"
     mac: ENC[AES256_GCM,data:3zXGRGE/c3fsezQc27gd5nFgCLcayoArNx/b2KDAIJ63+ir7yB7iEXDQLGh/3s4fQ6DNtZa5IfPThCv0qZnFjMxaIWDpxbta8JtCxm5wYne9EbQuu4Z93LbAzB80yIXH8IwJAiehcmha73PNEGeDoukVkaDoq5O764/K3CfQpS4=,iv:6RcrXqpb5SVjsT9tK97GAPX9IkqOtMobfCfW0y72fDk=,tag:36+hcKEFbB0Y3CJum2yusg==,type:str]
-"test.yml" 39L, 1811B
 
 ---
 apiVersion: v1
@@ -65,6 +64,33 @@ sops:
     encrypted_regex: ^(data|stringData|email)$
     version: 3.9.0
 
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hubble-tls 
+  namespace: kube-system
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: cilium
+  tls:
+  - hosts:
+    - hubble.waffle-systems.com
+    # The certificate will be saved to this Secret automatically
+    secretName: hubble-tls 
+  rules:
+  - host: hubble.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: hubble-ui
+            port:
+              number: 80
 
 ---
 
@@ -80,8 +106,14 @@ spec:
   tls:
   - hosts:
     - radarr.waffle-systems.com
+    - sonarr.waffle-systems.com
+    - plex.waffle-systems.com
+    - qbit.waffle-systems.com
+    - seerr.waffle-systems.com
+    - prowlarr.waffle-systems.com
+    - requestrr.waffle-systems.com
     # The certificate will be saved to this Secret automatically
-    secretName: radarr-tls 
+    secretName: plex-tls 
   rules:
   - host: radarr.waffle-systems.com
     http:
@@ -93,3 +125,137 @@ spec:
             name: port-service-radarr
             port:
               number: 7878
+  - host: sonarr.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-sonarr
+            port:
+              number: 8989
+  # --- Plex ---
+  - host: plex.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-plex
+            port:
+              number: 32400
+  # --- Qbittorrent ---
+  - host: qbit.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-qbit
+            port:
+              number: 8080
+  # --- Overseerr ---
+  - host: seerr.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-seerr
+            port:
+              number: 5055
+  # --- Prowlarr ---
+  - host: prowlarr.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-prowlarr
+            port:
+              number: 9696
+  # --- Requestrr ---
+  - host: requestrr.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-requestrr
+            port:
+              number: 4545
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: monitoring-tls 
+  namespace: monitoring
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: cilium
+  tls:
+  - hosts:
+    - homarr.waffle-systems.com
+    - grafana.waffle-systems.com
+    # The certificate will be saved to this Secret automatically
+    secretName: monitoring-tls 
+  rules:
+  # --- Grafana ---
+  - host: grafana.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-grafana
+            port:
+              number: 80
+  # --- Homarr ---
+  - host: homarr.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-homarr
+            port:
+              number: 7575
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dev-tls 
+  namespace: dev
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: cilium
+  tls:
+  - hosts:
+    - finance-friend.waffle-systems.com
+    # The certificate will be saved to this Secret automatically
+    secretName: dev-tls 
+  rules:
+  - host: finance-friend.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-finance-friend
+            port:
+              number: 80
