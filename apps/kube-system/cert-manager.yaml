@@ -1,131 +1,301 @@
-# 1. The Bootstrap Issuer (Allows us to self-sign the Root CA)
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
-  name: selfsigned-issuer
+    name: letsencrypt-prod
 spec:
-  selfSigned: {}
+    acme:
+        # Let's Encrypt Production URL
+        server: https://acme-v02.api.letsencrypt.org/directory
+        # Email address used for ACME registration
+        email: ENC[AES256_GCM,data:QdzjVnhmgof1qCy/qCWWzKMEDQ==,iv:OI6VilSNBFYzmCmVcmOhrwqM7JLYnYsSrX+Wy7trlDA=,tag:jrf0MRrttG7DqppKf2WZNQ==,type:str]
+        # Name of a secret used to store the ACME account private key
+        privateKeySecretRef:
+            name: letsencrypt-prod-account-key
+        solvers:
+            - dns01:
+                cloudflare:
+                    apiTokenSecretRef:
+                        name: cloudflare-api-token-secret
+                        key: api-token
+sops:
+    kms: []
+    gcp_kms: []
+    azure_kv: []
+    hc_vault: []
+    age:
+        - recipient: age1frds4dglkf9tsnz00zf3tgyxf9q7xxqaeeh44p9dgjeqqfl35a2qxcjcfm
+          enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBmVlNmL1QydzVnY3N0dy9B
+            enpLK1A0eldYVXI2ZHhGazcvVzRsTk1tWDNVCjRHamF2c1hyTllwZm1jNFM0OC9Z
+            bW56Z3pKSDg4UU5RYlAwTllrQU1NS0UKLS0tIG9MZGR6Sm5UUmZkZHVUc3BOTU5w
+            VHc4TGJFV1BPeS9iRGNtVFE1QU1USEUKjd+AdVLAcIChvJuGp3qHfBdsswj1TgMy
+            Fryk3Ok8qBbYkiElS+346xFrCISWSufL8AEFKqvXsC4DcX9N9Hde1A==
+            -----END AGE ENCRYPTED FILE-----
+    lastmodified: "2026-10-15T19:30:09Z"
+    mac: ENC[AES256_GCM,data:NHJu+7vU2rwJIxoLuH2h35yDmBq19JoDXj1jCfnxU5W0sxBeDDLAGGTdNY9aEiGyHW3KmA16ZraLYpbawX6DwJi3PCtgh9l3lzVJ5MWkQDSCTrc/qNpsFFVgEag05uJvujWDZbVHnrCfwtD8mBlh5Yz2ZWHA/2qsBrNVHtuKCu4=,iv:q5q688wO+4EX9fmwsbIAaT4iJJ0xYue4jxtjBnJFdoE=,tag:17pX+/qaMtR4vcXf+zlm0g==,type:str]
+    pgp: []
+    encrypted_regex: ^(data|stringData|email)$
+    version: 3.9.0
 
 ---
-# 2. The Root CA Certificate (The "Police Station")
-# This creates the Authority that will sign your other certs.
-apiVersion: cert-manager.io/v1
-kind: Certificate
+apiVersion: v1
+data:
+    api-token: ENC[AES256_GCM,data:QnkFXIsh/5Ci2d4QXDb0/LUEloeuPoaQLMnNcjGQdHpoiwb1V7unZqdpZ5yuksDPLkbSEqmzN4pBCm419USniQvA2XukVtNt,iv:ifY1RQOgH3sR9C4LJ6TkW0EMVmoqjR+eqPlTSYUQ6IA=,tag:HaY5pcnzi0oGIcj/Bt+rJQ==,type:str]
+kind: Secret
 metadata:
-  name: my-root-ca
+    name: cloudflare-api-token-secret
+    namespace: kube-system
+sops:
+    kms: []
+    gcp_kms: []
+    azure_kv: []
+    hc_vault: []
+    age:
+        - recipient: age1frds4dglkf9tsnz00zf3tgyxf9q7xxqaeeh44p9dgjeqqfl35a2qxcjcfm
+          enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBzSlFpalpiZnNhS1hVUkx1
+            OXZzTE1kWklkVGUwREtxYmdrSXo5RURnbEFnClJ4OUpuRFdPMEZxT29NUTFWNTdy
+            c3ppeEFEbjN5M2xtY20yamFWYndsemsKLS0tIDZqR25xMVBaeXZpRlgyMXRwa3Np
+            a2hDaE1mZDBNOERDVzJUY0RnWEExdVkK/ddijFdboLJlo/QBP2XiLkUu6SI46elK
+            FflpnqLylBDZ4l6veysE3julalc9cTLas11M0pnjiyT927f5kWgcvg==
+            -----END AGE ENCRYPTED FILE-----
+    lastmodified: "2026-10-15T14:50:56Z"
+    mac: ENC[AES256_GCM,data:LoGIDOPgco7rqYY9f7LvYvzSzBhr+HjyqMfKCl3g0q/g5Yp4aodILM3/sdTeEs0UDRx7Bauj4Mzl5YeUDIgLnjzqqvorUG+ae623z0lLw3j2iZQ/q+JiWRtb864E5qyD/LET7IebOK53fklciYQngzG7UU/Nh7BtHiMvlUUhaWI=,iv:GmQu8m3BtMyqWY6SqK3KCY6V736HD8Yh9inin/390Gs=,tag:zSlSyEaf8YDn1nh6hJAHxg==,type:str]
+    pgp: []
+    encrypted_regex: ^(data|stringData|email)$
+    version: 3.9.0
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hubble-tls 
   namespace: kube-system
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
-  isCA: true
-  commonName: "Waffle Root CA"
-  secretName: root-ca-secret
-  duration: 87600h
-  renewBefore: 720h
-  privateKey:
-    algorithm: ECDSA
-    size: 256
-  issuerRef:
-    name: selfsigned-issuer # Signed by the bootstrap issuer from Step 1
-    kind: ClusterIssuer
-    group: cert-manager.io
+  ingressClassName: cilium
+  tls:
+  - hosts:
+    - hubble.waffle-systems.com
+    # The certificate will be saved to this Secret automatically
+    secretName: hubble-tls 
+  rules:
+  - host: hubble.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: hubble-ui
+            port:
+              number: 80
 
 ---
-# 3. The CA Issuer (The "Signer")
-# This tells Cert-Manager: "Use the certificate from Step 2 to sign apps."
-apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
-metadata:
-  name: my-internal-ca
-spec:
-  ca:
-    secretName: root-ca-secret # Matches the secret in Step 2
 
----
-# 4. Certificate for the "plex" namespace
-apiVersion: cert-manager.io/v1
-kind: Certificate
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
-  name: wildcard-plex-cert
+  name: plex-tls 
   namespace: plex
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
-  isCA: false
-  commonName: "*.waffle-k8s.local"
-  secretName: wildcard-tls-secret
-  dnsNames:
-  - "sonarr.waffle-k8s.local"
-  - "radarr.waffle-k8s.local"
-  - "plex.waffle-k8s.local"
-  - "qbit.waffle-k8s.local"
-  - "prowlarr.waffle-k8s.local"
-  - "requestrr.waffle-k8s.local"
-  - "seerr.waffle-k8s.local"
-  privateKey:
-    algorithm: ECDSA
-    size: 256
-  issuerRef:
-    name: my-internal-ca
-    kind: ClusterIssuer
-    group: cert-manager.io
+  ingressClassName: cilium
+  tls:
+  - hosts:
+    - radarr.waffle-systems.com
+    - sonarr.waffle-systems.com
+    - plex.waffle-systems.com
+    - qbit.waffle-systems.com
+    - seerr.waffle-systems.com
+    - prowlarr.waffle-systems.com
+    - requestrr.waffle-systems.com
+    - tdarr.waffle-systems.com
+    # The certificate will be saved to this Secret automatically
+    secretName: plex-tls 
+  rules:
+  - host: radarr.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-radarr
+            port:
+              number: 7878
+  - host: sonarr.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-sonarr
+            port:
+              number: 8989
+  # --- Plex ---
+  - host: plex.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-plex
+            port:
+              number: 32400
+  # --- Qbittorrent ---
+  - host: qbit.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-qbit
+            port:
+              number: 8080
+  # --- Overseerr ---
+  - host: seerr.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-seerr
+            port:
+              number: 5055
+  # --- Prowlarr ---
+  - host: prowlarr.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-prowlarr
+            port:
+              number: 9696
+  # --- Requestrr ---
+  - host: requestrr.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-requestrr
+            port:
+              number: 4545
+  # --- Tdarr ---
+  - host: tdarr.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-tdarr-server
+            port:
+              number: 8265
+
 
 ---
-# 4. Certificate for the "kube-system" namespace
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: wildcard-kube-system-cert
-  namespace: kube-system
-spec:
-  isCA: false
-  commonName: "*.waffle-k8s.local"
-  secretName: wildcard-tls-secret
-  dnsNames:
-  - "hubble.waffle-k8s.local"
-  privateKey:
-    algorithm: ECDSA
-    size: 256
-  issuerRef:
-    name: my-internal-ca
-    kind: ClusterIssuer
-    group: cert-manager.io
 
----
-# 4. Certificate for the "monitoring" namespace
-apiVersion: cert-manager.io/v1
-kind: Certificate
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
-  name: wildcard-monitoring-cert
+  name: monitoring-tls 
   namespace: monitoring
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
-  isCA: false
-  commonName: "*.waffle-k8s.local"
-  secretName: wildcard-tls-secret
-  dnsNames:
-  - "homarr.waffle-k8s.local"
-  - "grafana.waffle-k8s.local"
-  privateKey:
-    algorithm: ECDSA
-    size: 256
-  issuerRef:
-    name: my-internal-ca
-    kind: ClusterIssuer
-    group: cert-manager.io
+  ingressClassName: cilium
+  tls:
+  - hosts:
+    - homarr.waffle-systems.com
+    - grafana.waffle-systems.com
+    - snapotter.waffle-systems.com
+    - teslamate.waffle-systems.com
+    # The certificate will be saved to this Secret automatically
+    secretName: monitoring-tls 
+  rules:
+  # --- Grafana ---
+  - host: grafana.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-grafana
+            port:
+              number: 80
+  # --- Homarr ---
+  - host: homarr.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-homarr
+            port:
+              number: 7575
+  # --- Teslamate ---
+  - host: teslamate.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-teslamate
+            port:
+              number: 4000
+  # --- Snapotter ---
+  - host: snapotter.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-snapotter
+            port:
+              number: 1349
 
 ---
-# 4. Certificate for the "dev" namespace
-apiVersion: cert-manager.io/v1
-kind: Certificate
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
-  name: wildcard-dev-cert
+  name: dev-tls 
   namespace: dev
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
-  isCA: false
-  commonName: "*.waffle-k8s.local"
-  secretName: wildcard-tls-secret
-  dnsNames:
-  - "finance-friend.waffle-k8s.local"
-  privateKey:
-    algorithm: ECDSA
-    size: 256
-  issuerRef:
-    name: my-internal-ca
-    kind: ClusterIssuer
-    group: cert-manager.io
+  ingressClassName: cilium
+  tls:
+  - hosts:
+    - finance-friend.waffle-systems.com
+    # The certificate will be saved to this Secret automatically
+    secretName: dev-tls 
+  rules:
+  - host: finance-friend.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-finance-friend
+            port:
+              number: 80

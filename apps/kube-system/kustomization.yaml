@@ -12,9 +12,7 @@ resources:
   - helmrepo.yaml
   - cilium-loadbalancer-config.yaml
   - cert-manager.yaml
-  - cilium-ingress.yaml
   - secret.tailscale.yaml
   - tailscale.yaml
   - unifi-cert.yaml
   - unifi-cron.yaml
-  - cert-new-stuff.yaml
