@@ -10,3 +10,4 @@ resources:
   - ./kube-system
   - ./dev
   - ./arc-runner
+  - ./network

@@ -5,12 +5,6 @@ resources:
   - nvidia-runtime.yaml
   - nvidia-time-slice.yaml
   - etcd-backup.yaml
-  - cilium-nodeport.yaml
-  - cilium-mTLS-pv.yaml
-  - cilium-network-mTLS.yaml
-  - helmrelease.yaml
-  - helmrepo.yaml
-  - cilium-loadbalancer-config.yaml
-  - cert-manager.yaml
   - secret.tailscale.yaml
   - tailscale.yaml
+  - cilium-nodeport.yaml

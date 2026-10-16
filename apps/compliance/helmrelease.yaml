@@ -108,9 +108,9 @@ spec:
     capabilities:
       configurationScan: enable
       continuousScan: disable
-      vulnerabilityScan: disable # ADDED: Stops Kubescape from generating massive SBOM/VEX CRDs
-      runtimeObservability: disable # ADDED: Prevents continuous eBPF behavioral monitoring
-    operator: # ADDED
+      vulnerabilityScan: disable
+      runtimeObservability: disable
+    operator:
       resources:
         requests:
           cpu: 100m
@@ -118,7 +118,7 @@ spec:
         limits:
           cpu: 250m
           memory: 512Mi
-    nodeAgent: # ADDED
+    nodeAgent:
       resources:
         requests:
           cpu: 100m
