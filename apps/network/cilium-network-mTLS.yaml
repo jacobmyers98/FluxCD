@@ -101,6 +101,7 @@ spec:
     - ingress
   - fromCIDR:
     - 100.64.0.0/10
+    - 192.168.1.0/24
   - fromEndpoints:
     - matchLabels:
         k8s:io.kubernetes.pod.namespace: monitoring
@@ -145,6 +146,7 @@ spec:
     - ingress
   - fromCIDR:
     - 100.64.0.0/10
+    - 192.168.1.0/24
   - fromEndpoints:
     - matchLabels:
         k8s:io.kubernetes.pod.namespace: monitoring
@@ -170,6 +172,7 @@ spec:
     # Allow response traffic back to Tailscale clients / router
     - toCIDR:
       - 100.64.0.0/10
+      - 192.168.1.0/24
     - toEndpoints:
       - matchLabels:
           k8s:io.kubernetes.pod.namespace: kube-system
@@ -231,6 +234,7 @@ spec:
           protocol: TCP
   - fromCIDR:
     - 100.64.0.0/10
+    - 192.168.1.0/24
   - fromEndpoints:
     - matchLabels:
         k8s:io.kubernetes.pod.namespace: monitoring
@@ -262,6 +266,7 @@ spec:
       # Allow response traffic back to Tailscale clients / router
     - toCIDR:
       - 100.64.0.0/10
+      - 192.168.1.0/24
     - toEndpoints:
       - matchLabels:
           k8s:io.kubernetes.pod.namespace: kube-system
