@@ -16,6 +16,13 @@ spec:
       containers:
       - name: cloudflare-ddns
         image: oznu/cloudflare-ddns:latest
+        resources:
+          requests:
+            cpu: 5m
+            memory: 16Mi
+          limits:
+            cpu: 100m
+            memory: 64Mi
         env:
         - name: API_KEY
           valueFrom:

@@ -59,6 +59,13 @@ spec:
                   key: ADMIN_PASSWORD
             - name: MEMORY_XMX_GB
               value: "16"
+          resources:
+            requests:
+              cpu: 500m
+              memory: 4Gi
+            limits:
+              cpu: 4
+              memory: 20Gi
           ports:
             - containerPort: 16261
               protocol: UDP

@@ -48,6 +48,13 @@ spec:
           value: "America/Denver"
         ports:
         - containerPort: 7878
+        resources:
+          requests:
+            cpu: 50m
+            memory: 256Mi
+          limits:
+            cpu: 1
+            memory: 1Gi
         volumeMounts:
         - mountPath: /config
           name: radarr-config

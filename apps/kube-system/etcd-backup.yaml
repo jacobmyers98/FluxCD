@@ -30,6 +30,13 @@ spec:
               - /bin/sh
               - -c
               - 'set -x; etcdctl --debug --endpoints=https://127.0.0.1:2379 --cacert=/certs/ca.crt --cert=/certs/client.crt --key=/certs/client.key snapshot save /backup/etcd-$RANDOM.db; exit 0'
+            resources:
+              requests:
+                cpu: 50m
+                memory: 64Mi
+              limits:
+                cpu: 500m
+                memory: 512Mi
             volumeMounts:
             - name: etcd-certs
               mountPath: /certs

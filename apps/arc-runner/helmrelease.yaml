@@ -15,6 +15,14 @@ spec:
         kind: HelmRepository
         name: arc
         namespace: flux-system
+  values:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        cpu: 500m
+        memory: 256Mi
 
 ---
 
@@ -38,5 +46,16 @@ spec:
   values:
     githubConfigUrl: "https://github.com/jacobmyers98/Finance-Friend"
     githubConfigSecret: github-arc-auth
+    listenerTemplate:
+      spec:
+        containers:
+        - name: listener
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
     containerMode:
           type: "dind"

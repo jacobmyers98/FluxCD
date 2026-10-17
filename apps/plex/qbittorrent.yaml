@@ -81,6 +81,13 @@ spec:
         - containerPort: 34567
           name: torrent-udp
           protocol: UDP
+        resources:
+          requests:
+            cpu: 25m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
         volumeMounts:
         - name: wireguard-config
           mountPath: /gluetun/wireguard/wg0.conf
@@ -96,6 +103,13 @@ spec:
         - '-c'
         # Tries to hit an external IP checker. Loops until successful.
         - 'until wget -qO- https://ifconfig.me; do echo "Waiting for VPN connectivity..."; sleep 2; done; echo " VPN is up!"'
+        resources:
+          requests:
+            cpu: 10m
+            memory: 16Mi
+          limits:
+            cpu: 100m
+            memory: 64Mi
       containers:
       # ---------------------------------------------------------
       # MAIN CONTAINER: LINUXSERVER QBITTORRENT (The App)
@@ -113,6 +127,13 @@ spec:
           value: "America/Denver"
         - name: WEBUI_PORT
           value: "8080"
+        resources:
+          requests:
+            cpu: 50m
+            memory: 256Mi
+          limits:
+            cpu: 2
+            memory: 2Gi
         volumeMounts:
         - name: qbit-config
           mountPath: /config

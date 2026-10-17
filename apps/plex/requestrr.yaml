@@ -49,6 +49,13 @@ spec:
             - containerPort: 4545
               name: webui
               protocol: TCP
+          resources:
+            requests:
+              cpu: 25m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
           volumeMounts:
             - name: requestrr-config
               mountPath: /root/config

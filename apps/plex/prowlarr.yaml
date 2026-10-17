@@ -63,6 +63,13 @@ spec:
           runAsUser: 0
         ports:
         - containerPort: 8191
+        resources:
+          requests:
+            cpu: 50m
+            memory: 512Mi
+          limits:
+            cpu: 1
+            memory: 2Gi
         env:
         - name: LOG_LEVEL
           value: "info"
@@ -80,6 +87,13 @@ spec:
           value: "Etc/UTC"
         ports:
         - containerPort: 9696
+        resources:
+          requests:
+            cpu: 50m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
         volumeMounts:
         - name: config
           mountPath: /config

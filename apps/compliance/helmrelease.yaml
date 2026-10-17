@@ -19,13 +19,13 @@ spec:
   values:
     operator:
       scanJobsConcurrentLimit: 2
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: 500m
-          memory: 512Mi
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        cpu: 1
+        memory: 1536Mi
     trivy:
       serverURL: "http://trivy-server.compliance.svc:4954"
       resources:
@@ -68,13 +68,13 @@ spec:
     fullnameOverride: trivy-server
     server:
       enabled: true
-      resources:
-        requests:
-          cpu: 200m
-          memory: 1Gi
-        limits:
-          cpu: 1000m
-          memory: 2Gi
+    resources:
+      requests:
+        cpu: 200m
+        memory: 1Gi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
     podSecurityContext:
       runAsUser: 1001
       runAsGroup: 1004
