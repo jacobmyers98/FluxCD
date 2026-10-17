@@ -37,10 +37,6 @@ spec:
         runAsUser: 1001
         runAsGroup: 1004
         fsGroup: 1004
-        allowPrivilegeEscalation: false
-        capabilities:
-          drop:
-            - ALL 
       containers:
         - name: requestrr
           image: darkalfx/requestrr:latest
@@ -49,6 +45,11 @@ spec:
             - containerPort: 4545
               name: webui
               protocol: TCP
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           resources:
             requests:
               cpu: 25m
