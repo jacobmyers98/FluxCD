@@ -195,6 +195,8 @@ spec:
           protocol: TCP
         - port: "61208" # Glances
           protocol: TCP
+        - port: "3000" # Grafana
+          protocol: TCP
 
 ---
 
