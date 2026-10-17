@@ -140,8 +140,8 @@ spec:
     authentication:
       mode: "required"
   - fromEntities:
-    - world
-    - host
+#    - world
+#    - host
     - ingress
   - fromEndpoints:
     - matchLabels:
@@ -168,7 +168,7 @@ spec:
   ingress:
   - fromEntities:
     - world
-    - host
+#    - host
     - ingress
     toPorts:
       - ports:
