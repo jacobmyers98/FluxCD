@@ -149,9 +149,6 @@ spec:
     - matchLabels:
         k8s:io.kubernetes.pod.namespace: monitoring
         app: homarr
-    - matchLabels:
-        k8s:io.kubernetes.pod.namespace: kube-system
-        app: tailscale
   egress:
     - toEndpoints:
       - matchLabels:
@@ -170,6 +167,14 @@ spec:
           protocol: TCP
         - port: "3100" # Loki
           protocol: TCP
+    # Allow response traffic back to Tailscale clients / router
+    - toCIDR:
+      - 100.64.0.0/10
+    - toEndpoints:
+      - matchLabels:
+          k8s:io.kubernetes.pod.namespace: kube-system
+          app: tailscale
+
 
     # 3. Homarr API / Dashboard Connections
     - toEntities:
@@ -254,7 +259,13 @@ spec:
           protocol: TCP
         - port: "80" 
           protocol: TCP
-
+      # Allow response traffic back to Tailscale clients / router
+    - toCIDR:
+      - 100.64.0.0/10
+    - toEndpoints:
+      - matchLabels:
+          k8s:io.kubernetes.pod.namespace: kube-system
+          app: tailscale
 
 ---
 
@@ -276,13 +287,13 @@ spec:
     - world
     - host
     - ingress
-  - fromCIDR:
-    - 100.64.0.0/10
   - fromEndpoints:
     - matchLabels:
         k8s:io.kubernetes.pod.namespace: monitoring
         app: homarr
+    # Allow response traffic back to Tailscale clients / router
   - fromEndpoints:
     - matchLabels:
         k8s:io.kubernetes.pod.namespace: kube-system
         app: tailscale
+
