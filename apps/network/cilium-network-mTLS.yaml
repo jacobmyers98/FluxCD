@@ -99,6 +99,8 @@ spec:
     - world
     - host
     - ingress
+  - fromCIDR:
+    - 100.64.0.0/10
   - fromEndpoints:
     - matchLabels:
         k8s:io.kubernetes.pod.namespace: monitoring
@@ -141,6 +143,8 @@ spec:
       mode: "required"
   - fromEntities:
     - ingress
+  - fromCIDR:
+    - 100.64.0.0/10
   - fromEndpoints:
     - matchLabels:
         k8s:io.kubernetes.pod.namespace: monitoring
@@ -220,6 +224,8 @@ spec:
       - ports:
         - port: "25565"
           protocol: TCP
+  - fromCIDR:
+    - 100.64.0.0/10
   - fromEndpoints:
     - matchLabels:
         k8s:io.kubernetes.pod.namespace: monitoring
@@ -270,6 +276,8 @@ spec:
     - world
     - host
     - ingress
+  - fromCIDR:
+    - 100.64.0.0/10
   - fromEndpoints:
     - matchLabels:
         k8s:io.kubernetes.pod.namespace: monitoring
