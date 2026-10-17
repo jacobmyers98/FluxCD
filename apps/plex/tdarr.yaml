@@ -43,6 +43,13 @@ spec:
           ports:
             - containerPort: 8265
             - containerPort: 8266
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 2
+              memory: 1Gi
           volumeMounts:
             - name: tdarr-config
               mountPath: /app/server
@@ -107,6 +114,13 @@ spec:
                 sleep 2
               done
               echo "Tdarr Server is up!"
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
       containers:
         - name: tdarr-node
           image: ghcr.io/haveagitgat/tdarr_node:3.01.00 #  {"$imagepolicy": "plex:tdarr-node-policy"}
@@ -129,7 +143,12 @@ spec:
           ports:
             - containerPort: 8267
           resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
             limits:
+              cpu: "4"
+              memory: 4Gi
               nvidia.com/gpu: 1
           volumeMounts:
             - name: tdarr-config

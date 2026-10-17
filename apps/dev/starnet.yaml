@@ -32,6 +32,13 @@ spec:
         ports:
         - containerPort: 8787
           name: http
+        resources:
+          requests:
+            cpu: 25m
+            memory: 128Mi
+          limits:
+            cpu: 1
+            memory: 512Mi
         volumeMounts:
         - name: workspace-data
           mountPath: /root/.local/share/StarNet
@@ -45,7 +52,12 @@ spec:
         - name: ollama-data
           mountPath: /root/.ollama
         resources:
+          requests:
+            cpu: 100m
+            memory: 1Gi
           limits:
+            cpu: "4"
+            memory: 8Gi
             nvidia.com/gpu: 1
       
       volumes:

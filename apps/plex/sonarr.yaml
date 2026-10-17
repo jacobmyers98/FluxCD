@@ -39,16 +39,24 @@ spec:
         runAsUser: 1001
         runAsGroup: 1004
         fsGroup: 1004
-        allowPrivilegeEscalation: false
-        capabilities:
-          drop:
-            - ALL
       containers:
         - name: sonarr
           image: linuxserver/sonarr:4.0.20 # {"$imagepolicy": "plex:sonarr-policy"}
           imagePullPolicy: Always
           ports:
             - containerPort: 8989
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+            limits:
+              cpu: 1
+              memory: 1Gi
           volumeMounts:
             - mountPath: /config
               name: sonarr-config

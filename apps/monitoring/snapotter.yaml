@@ -20,6 +20,13 @@ spec:
         image: snapotter/snapotter:latest
         ports:
         - containerPort: 1349
+        resources:
+          requests:
+            cpu: 50m
+            memory: 1Gi
+          limits:
+            cpu: 1
+            memory: 2Gi
         volumeMounts:
         - name: snapotter-data
           mountPath: /data

@@ -48,6 +48,13 @@ spec:
               value: "3378b3035eedd9ee2b167720139477ace39ec8117adda382c3acfde5246e63c7"
           ports:
             - containerPort: 7575
+          resources:
+            requests:
+              cpu: 50m
+              memory: 512Mi
+            limits:
+              cpu: 1
+              memory: 1536Mi
           volumeMounts:
             - mountPath: /appdata
               name: homarr-data2

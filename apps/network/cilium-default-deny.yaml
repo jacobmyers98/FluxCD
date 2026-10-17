@@ -1,0 +1,41 @@
+# empty rules put every pod in the namespace into default-deny with nothing allowed
+
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: deny-all
+  namespace: default
+spec:
+  endpointSelector: {}
+  ingress:
+  - {}
+  egress:
+  - {}
+
+---
+
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: deny-all
+  namespace: kube-public
+spec:
+  endpointSelector: {}
+  ingress:
+  - {}
+  egress:
+  - {}
+
+---
+
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: deny-all
+  namespace: kube-node-lease
+spec:
+  endpointSelector: {}
+  ingress:
+  - {}
+  egress:
+  - {}

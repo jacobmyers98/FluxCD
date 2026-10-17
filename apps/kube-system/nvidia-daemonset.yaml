@@ -29,7 +29,13 @@ spec:
         image: nvcr.io/nvidia/k8s-device-plugin:v0.18.0
         imagePullPolicy: IfNotPresent
         name: nvidia-device-plugin-ctr
-        resources: {}
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:

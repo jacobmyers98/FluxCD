@@ -49,4 +49,11 @@ spec:
             - /bin/sh
             - -c
             - kubectl rollout restart deployment -l app=qbittorrent -n plex
+            resources:
+              requests:
+                cpu: 10m
+                memory: 32Mi
+              limits:
+                cpu: 200m
+                memory: 128Mi
           restartPolicy: OnFailure

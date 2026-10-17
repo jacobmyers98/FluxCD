@@ -38,7 +38,11 @@ spec:
       - name: mc
         image: itzg/minecraft-server:java21
         resources:
+          requests:
+            cpu: "1"
+            memory: "16000Mi"
           limits:
+            cpu: "6"
             memory: "16000Mi"
         ports:
         - containerPort: 25565

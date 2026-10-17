@@ -39,15 +39,16 @@ spec:
         runAsUser: 1001
         runAsGroup: 1004
         fsGroup: 1004
-        allowPrivilegeEscalation: false
-        capabilities:
-          drop:
-            - ALL 
       containers:
         - name: plex
           image: lscr.io/linuxserver/plex:1.43.3
           ports:
             - containerPort: 32400
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           env:
             - name: PUID
               value: "1001"
@@ -60,6 +61,13 @@ spec:
                 secretKeyRef:
                   name: plex-secret
                   key: claim-token
+          resources:
+            requests:
+              cpu: 250m
+              memory: 1Gi
+            limits:
+              cpu: 4
+              memory: 6Gi
           volumeMounts:
             - mountPath: /config
               name: plex-config

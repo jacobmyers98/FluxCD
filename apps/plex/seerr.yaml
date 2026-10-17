@@ -43,6 +43,13 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 5055
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+            limits:
+              cpu: 1
+              memory: 1Gi
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
