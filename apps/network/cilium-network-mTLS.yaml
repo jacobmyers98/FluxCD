@@ -170,10 +170,38 @@ spec:
     - world
     - host
     - ingress
+    toPorts:
+      - ports:
+        - port: "25565"
+          protocol: TCP
   - fromEndpoints:
     - matchLabels:
         k8s:io.kubernetes.pod.namespace: monitoring
         app: homarr
+    toPorts:
+      - ports:
+        - port: "25565" 
+          protocol: ANY
+        - port: "25575" # RCON port
+          protocol: TCP
+  egress:
+    - toEndpoints:
+      - matchLabels:
+          k8s:io.kubernetes.pod.namespace: kube-system
+          k8s-app: kube-dns
+      toPorts:
+      - ports:
+        - port: "53"
+          protocol: ANY   
+    # Allow outbound to Mojang for player authentication
+    - toEntities:
+      - world
+      toPorts:
+      - ports:
+        - port: "443"
+          protocol: TCP
+        - port: "80" 
+          protocol: TCP
 
 
 ---
