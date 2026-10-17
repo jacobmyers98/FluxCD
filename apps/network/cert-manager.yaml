@@ -224,6 +224,7 @@ spec:
     - grafana.waffle-systems.com
     - snapotter.waffle-systems.com
     - teslamate.waffle-systems.com
+    - glances.waffle-systems.com
     # The certificate will be saved to this Secret automatically
     secretName: monitoring-tls 
   rules:
@@ -271,6 +272,17 @@ spec:
             name: port-service-snapotter
             port:
               number: 1349
+  # --- Glances ---
+  - host: glances.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-glances
+            port:
+              number: 61208
 
 ---
 

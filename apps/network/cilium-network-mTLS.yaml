@@ -140,8 +140,6 @@ spec:
     authentication:
       mode: "required"
   - fromEntities:
-#    - world
-#    - host
     - ingress
   - fromEndpoints:
     - matchLabels:
@@ -150,6 +148,51 @@ spec:
     - matchLabels:
         k8s:io.kubernetes.pod.namespace: kube-system
         app: tailscale
+  egress:
+    - toEndpoints:
+      - matchLabels:
+          k8s:io.kubernetes.pod.namespace: kube-system
+          k8s-app: kube-dns
+      toPorts:
+      - ports:
+        - port: "53"
+          protocol: ANY
+    - toEndpoints:
+      - matchLabels:
+          k8s:io.kubernetes.pod.namespace: monitoring
+      toPorts:
+      - ports:
+        - port: "9090" # Prometheus
+          protocol: TCP
+        - port: "3100" # Loki
+          protocol: TCP
+
+    # 3. Homarr API / Dashboard Connections
+    - toEntities:
+      - cluster # Allows traffic to other namespaces (e.g., your 'gaming' namespace)
+      - world   # Allows traffic to the internet AND your local external LAN (192.168.x.x)
+      toPorts:
+      - ports:
+        - port: "80"
+          protocol: TCP
+        - port: "443"
+          protocol: TCP
+        - port: "25575" # minecraft
+          protocol: TCP
+        - port: "25565" # minecraft
+          protocol: TCP
+        - port: "8989" # Sonarr
+          protocol: TCP
+        - port: "7878" # Radarr
+          protocol: TCP
+        - port: "32400" # Plex
+          protocol: TCP
+        - port: "8080" # Qbit
+          protocol: TCP
+        - port: "9696" # Prowlar
+          protocol: TCP
+        - port: "8265" # Tdarr
+          protocol: TCP
 
 ---
 
@@ -168,7 +211,6 @@ spec:
   ingress:
   - fromEntities:
     - world
-#    - host
     - ingress
     toPorts:
       - ports:
