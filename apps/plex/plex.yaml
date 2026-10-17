@@ -44,11 +44,6 @@ spec:
           image: lscr.io/linuxserver/plex:1.43.3
           ports:
             - containerPort: 32400
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
           env:
             - name: PUID
               value: "1001"
