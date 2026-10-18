@@ -30,7 +30,10 @@ spec:
                 # Run rsync
                 echo "Starting rsync from $SRC to $DEST..."
                 rsync -a --delete "$SRC/" "$DEST/"
-                
+
+                echo "Cleaning up backups older than 30 days..."
+                find /mnt/backup -maxdepth 1 -type d -name "server-backup-*" -mtime +30 -exec rm -rf {} +
+
                 # Log the backup time
                 echo "Backup completed on $(date)" >> /var/log/weekly-backup.log
             volumeMounts:

@@ -5,7 +5,8 @@ resources:
   - nvidia-runtime.yaml
   - nvidia-time-slice.yaml
   - etcd-backup.yaml
-  - secret.tailscale.yaml
   - tailscale.yaml
   - cilium-nodeport.yaml
   - server-backup-cron.yaml
+  - secret.tailscale.yaml
+  - secret.etcd-backup.yaml
