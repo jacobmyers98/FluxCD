@@ -65,7 +65,6 @@ spec:
       - sonarr
       - tdarr-node
       - tdarr-server
-      - overseerr
       - requestrr
       - seerr
   ingress:
@@ -97,6 +96,39 @@ spec:
     - matchLabels:
         k8s:io.kubernetes.pod.namespace: kube-system
         app: tailscale
+  egress:
+    - toEndpoints:
+      - matchExpressions:
+        - key: "app"
+          operator: In
+          values:
+          - plex
+          - qbittorrent
+          - prowlarr
+          - radarr
+          - sonarr
+          - tdarr-node
+          - tdarr-server
+          - requestrr
+          - seerr
+    - toEndpoints:
+      - matchLabels:
+          k8s:io.kubernetes.pod.namespace: kube-system
+          k8s-app: kube-dns
+      toPorts:
+      - ports:
+        - port: "53"
+          protocol: ANY
+    - toEndpoints:
+      - matchLabels:
+          k8s:io.kubernetes.pod.namespace: monitoring
+          app: homarr
+    - toEndpoints:
+      - matchLabels:
+          k8s:io.kubernetes.pod.namespace: kube-system
+          app: tailscale
+    - toEntities:
+      - world
 
 ---
 
@@ -283,4 +315,3 @@ spec:
     - matchLabels:
         k8s:io.kubernetes.pod.namespace: kube-system
         app: tailscale
-
