@@ -20,7 +20,7 @@ spec:
       containers:
       # --- Container 1: StarNet ---
       - name: starnet-sidecar
-        image: starnet-sidecar:1.0.0
+        image: starnet-sidecar:1.0.1
         imagePullPolicy: Never
         env:
         - name: STARNET_WORKSPACE_PATH
