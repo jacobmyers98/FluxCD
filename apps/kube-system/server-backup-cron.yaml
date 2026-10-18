@@ -1,0 +1,57 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: weekly-server-backup
+  namespace: kube-system
+spec:
+  schedule: "0 2 * * 0"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: backup-runner
+            image: alpine:latest
+            command: ["/bin/sh", "-c"]
+            args:
+              - |
+                # Install rsync on the fly
+                apk add --no-cache rsync && \
+                
+                SRC="/home/server"
+                DEST="/mnt/backup/server-backup-$(date +%F)"
+                
+                # Create destination folder
+                mkdir -p "$DEST"
+                
+                # Run rsync
+                echo "Starting rsync from $SRC to $DEST..."
+                rsync -a --delete "$SRC/" "$DEST/"
+                
+                # Log the backup time
+                echo "Backup completed on $(date)" >> /var/log/weekly-backup.log
+            volumeMounts:
+            - name: source-data
+              mountPath: /home/server
+              readOnly: true
+            - name: backup-storage
+              mountPath: /mnt/backup
+            - name: log-storage
+              mountPath: /var/log
+          restartPolicy: OnFailure
+          volumes:
+          - name: source-data
+            hostPath:
+              path: /home/server
+              type: DirectoryOrCreate
+          - name: backup-storage
+            hostPath:
+              path: /mnt/backup
+              type: DirectoryOrCreate
+          - name: log-storage
+            hostPath:
+              path: /var/log
+              type: DirectoryOrCreate

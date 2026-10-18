@@ -8,3 +8,4 @@ resources:
   - secret.tailscale.yaml
   - tailscale.yaml
   - cilium-nodeport.yaml
+  - server-backup-cron.yaml
