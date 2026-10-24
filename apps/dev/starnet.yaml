@@ -96,9 +96,11 @@ spec:
   selector:
     app: starnet
   ports:
-    - port: 8787
+    - name: starnet
+      port: 8787
       targetPort: 8787
       nodePort: 30019
-    - port: 5678
+    - name: n8n
+      port: 5678
       targetPort: 5678
       nodePort: 30018
