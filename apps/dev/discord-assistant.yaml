@@ -175,7 +175,7 @@ spec:
       labels:
         app: discord-assistant
       annotations:
-        relay-version: "1" # Bump to restart the pod after editing relay.mjs
+        relay-version: "2" # Bump to restart the pod after editing relay.mjs
     spec:
       containers:
       - name: relay
