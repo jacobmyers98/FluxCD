@@ -5,6 +5,8 @@ resources:
   - n8n.yaml
   - n8n-sandbox.yaml
   - searxng.yaml
+  - mongodb.yaml
+  - secret.mongodb.yaml
   - dev-box.yaml
   - secret.cloud-init.yaml
   - secret.ghcr.yaml

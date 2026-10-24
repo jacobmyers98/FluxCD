@@ -1,0 +1,88 @@
+---
+# Creates the n8n user on first start (only runs when the data dir is empty)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mongodb-init
+  namespace: dev
+data:
+  create-n8n-user.js: |
+    db.getSiblingDB(process.env.MONGO_N8N_DATABASE).createUser({
+      user: process.env.MONGO_N8N_USERNAME,
+      pwd: process.env.MONGO_N8N_PASSWORD,
+      roles: [{ role: "readWrite", db: process.env.MONGO_N8N_DATABASE }],
+    });
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb
+  namespace: dev
+  labels:
+    app: mongodb
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate # Only one mongod may own the data dir
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+      - name: mongodb
+        image: mongo:8.0.34
+        args: ["--wiredTigerCacheSizeGB", "1"]
+        envFrom:
+        - secretRef:
+            name: mongodb-secret
+        ports:
+        - containerPort: 27017
+        readinessProbe:
+          exec:
+            command: ["mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        resources:
+          requests:
+            cpu: 100m
+            memory: 512Mi
+          limits:
+            memory: 2Gi
+        volumeMounts:
+        - name: mongodb-data
+          mountPath: /data/db
+        - name: mongodb-init
+          mountPath: /docker-entrypoint-initdb.d
+          readOnly: true
+      volumes:
+      - name: mongodb-data
+        hostPath:
+          path: /home/server/docker/mongodb
+          type: DirectoryOrCreate
+      - name: mongodb-init
+        configMap:
+          name: mongodb-init
+
+---
+
+# n8n connects via mongodb:27017, external clients via <server-ip>:30027
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+  namespace: dev
+spec:
+  type: NodePort
+  selector:
+    app: mongodb
+  ports:
+    - protocol: TCP
+      port: 27017
+      targetPort: 27017
+      nodePort: 30027
