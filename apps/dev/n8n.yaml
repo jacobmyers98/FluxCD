@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: n8n
+  namespace: dev
   labels:
     app: n8n
 spec:

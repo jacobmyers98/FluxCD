@@ -300,8 +300,8 @@ spec:
     - key: "app"
       operator: In
       values:
-      - web
       - starnet
+      - n8n
   ingress:
   - fromEntities:
     - world
