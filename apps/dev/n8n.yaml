@@ -23,11 +23,6 @@ spec:
         volumeMounts:
         - name: n8n-data
           mountPath: /home/node/.n8n
-      volumes:
-      - name: n8n-data
-        hostPath:
-          path: /home/server/docker/n8n
-          type: DirectoryOrCreate
 
       # --- Container 2: Ollama ---
       - name: ollama
