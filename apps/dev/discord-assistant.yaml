@@ -1,0 +1,212 @@
+---
+# Discord -> n8n relay for the "Discord Assistant" workflow. n8n has no built-in trigger for
+# Discord messages, so this keeps the bot's gateway connection open, forwards DMs, @mentions
+# and messages in ASSISTANT_CHANNEL_IDS to the n8n webhook, and posts the reply back.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: discord-assistant-relay
+  namespace: dev
+data:
+  relay.mjs: |
+    const TOKEN = process.env.DISCORD_BOT_TOKEN || '';
+    const WEBHOOK = process.env.N8N_WEBHOOK_URL;
+    const SECRET = process.env.RELAY_SECRET || '';
+    const list = (v) => (v || '').split(',').map((s) => s.trim()).filter(Boolean);
+    const ALLOWED_USERS = list(process.env.ALLOWED_USER_IDS); // empty = anyone who can message the bot
+    const CHANNELS = list(process.env.ASSISTANT_CHANNEL_IDS); // channels where every message is answered
+    const API = 'https://discord.com/api/v10';
+    const INTENTS = 1 | 512 | 4096 | 32768; // GUILDS, GUILD_MESSAGES, DIRECT_MESSAGES, MESSAGE_CONTENT
+    const FATAL = { 4004: 'bad bot token', 4013: 'invalid intents',
+      4014: 'Message Content intent is off - enable it in the Developer Portal (Bot page)' };
+
+    let ws, seq = null, sessionId = null, resumeUrl = null, botId = null, heartbeat = null, acked = true;
+    const log = (...a) => console.log(new Date().toISOString(), ...a);
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+    async function discord(method, path, body) {
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const res = await fetch(API + path, {
+          method,
+          headers: { Authorization: `Bot ${TOKEN}`, 'Content-Type': 'application/json' },
+          body: body ? JSON.stringify(body) : undefined,
+        });
+        if (res.status !== 429) {
+          if (!res.ok) log(`discord ${method} ${path} -> ${res.status} ${await res.text()}`);
+          return res;
+        }
+        const wait = ((await res.json()).retry_after || 1) * 1000;
+        await sleep(wait);
+      }
+    }
+
+    // Discord caps a message at 2000 characters: split on line breaks where possible.
+    function chunks(text, max = 1900) {
+      const out = [];
+      let rest = text;
+      while (rest.length > max) {
+        let cut = rest.lastIndexOf('\n', max);
+        if (cut < max / 2) cut = rest.lastIndexOf(' ', max);
+        if (cut < max / 2) cut = max;
+        out.push(rest.slice(0, cut));
+        rest = rest.slice(cut).replace(/^\s+/, '');
+      }
+      if (rest) out.push(rest);
+      return out;
+    }
+
+    async function handle(m) {
+      if (m.author.bot) return;
+      const isDM = !m.guild_id;
+      const mentioned = (m.mentions || []).some((u) => u.id === botId);
+      if (!isDM && !mentioned && !CHANNELS.includes(m.channel_id)) return;
+      if (ALLOWED_USERS.length && !ALLOWED_USERS.includes(m.author.id)) return;
+      const text = m.content.replace(new RegExp(`<@!?${botId}>`, 'g'), '').trim();
+      if (!text) return;
+
+      log(`message from ${m.author.username} in ${isDM ? 'DM' : m.channel_id}`);
+      discord('POST', `/channels/${m.channel_id}/typing`);
+      const typing = setInterval(() => discord('POST', `/channels/${m.channel_id}/typing`), 8000);
+      let reply;
+      try {
+        const res = await fetch(WEBHOOK, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Relay-Secret': SECRET },
+          body: JSON.stringify({
+            text, isDM,
+            userId: m.author.id,
+            username: m.author.global_name || m.author.username,
+            channelId: m.channel_id,
+            guildId: m.guild_id || null,
+            messageId: m.id,
+          }),
+          signal: AbortSignal.timeout(5 * 60 * 1000), // the local model can be slow
+        });
+        if (!res.ok) throw new Error(`n8n returned ${res.status}: ${(await res.text()).slice(0, 200)}`);
+        reply = (await res.json()).reply;
+      } catch (err) {
+        log('n8n request failed:', err.message);
+        reply = "Sorry, I couldn't get an answer just now (the n8n workflow failed or timed out).";
+      } finally {
+        clearInterval(typing);
+      }
+      const parts = chunks(String(reply || "I don't have an answer for that."));
+      for (let i = 0; i < parts.length; i++) {
+        await discord('POST', `/channels/${m.channel_id}/messages`, {
+          content: parts[i],
+          allowed_mentions: { parse: [], replied_user: false }, // never ping @everyone or roles
+          message_reference: i === 0 ? { message_id: m.id, fail_if_not_exists: false } : undefined,
+        });
+      }
+    }
+
+    function send(op, d) {
+      if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ op, d }));
+    }
+
+    function connect() {
+      ws = new WebSocket(`${resumeUrl && sessionId ? resumeUrl : 'wss://gateway.discord.gg'}/?v=10&encoding=json`);
+      ws.onmessage = (ev) => {
+        const p = JSON.parse(ev.data);
+        if (p.s != null) seq = p.s;
+        if (p.op === 10) { // Hello: start heartbeating, then identify or resume
+          clearInterval(heartbeat);
+          acked = true;
+          heartbeat = setInterval(() => {
+            if (!acked) return ws.close(4000); // zombie connection: reconnect and resume
+            acked = false;
+            send(1, seq);
+          }, p.d.heartbeat_interval);
+          if (sessionId) send(6, { token: TOKEN, session_id: sessionId, seq });
+          else send(2, { token: TOKEN, intents: INTENTS, properties: { os: 'linux', browser: 'n8n-relay', device: 'n8n-relay' } });
+        } else if (p.op === 11) acked = true;
+        else if (p.op === 1) send(1, seq);
+        else if (p.op === 7) ws.close(4000); // server asks us to reconnect
+        else if (p.op === 9) { // invalid session
+          if (!p.d) { sessionId = null; seq = null; }
+          setTimeout(() => ws.close(4000), 1000 + Math.random() * 4000);
+        } else if (p.op === 0 && p.t === 'READY') {
+          sessionId = p.d.session_id;
+          resumeUrl = p.d.resume_gateway_url;
+          botId = p.d.user.id;
+          log(`connected as ${p.d.user.username} (${botId}) in ${p.d.guilds.length} server(s)`);
+        } else if (p.op === 0 && p.t === 'MESSAGE_CREATE') {
+          handle(p.d).catch((err) => log('handle failed:', err.message));
+        }
+      };
+      ws.onclose = (ev) => {
+        clearInterval(heartbeat);
+        if (FATAL[ev.code]) {
+          log(`gateway closed ${ev.code}: ${FATAL[ev.code]}`);
+          process.exit(1);
+        }
+        if (ev.code === 4007 || ev.code === 4009) { sessionId = null; seq = null; }
+        log(`gateway closed ${ev.code}, reconnecting`);
+        setTimeout(connect, 2000 + Math.random() * 3000);
+      };
+      ws.onerror = () => {}; // onclose follows and reconnects
+    }
+
+    if (!TOKEN || TOKEN.startsWith('REPLACE')) {
+      log('DISCORD_BOT_TOKEN is not set in secret discord-assistant - idling');
+      setInterval(() => {}, 1 << 30);
+    } else {
+      connect();
+    }
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: discord-assistant
+  namespace: dev
+  labels:
+    app: discord-assistant
+spec:
+  replicas: 1 # One gateway connection per bot, or every message gets answered twice
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: discord-assistant
+  template:
+    metadata:
+      labels:
+        app: discord-assistant
+      annotations:
+        relay-version: "1" # Bump to restart the pod after editing relay.mjs
+    spec:
+      containers:
+      - name: relay
+        image: node:22.21.1-alpine
+        command: ["node", "/app/relay.mjs"]
+        env:
+        - name: N8N_WEBHOOK_URL
+          value: "http://port-service-n8n:5678/webhook/discord-assistant"
+        - name: ALLOWED_USER_IDS
+          value: "" # Comma-separated Discord user IDs; empty = anyone in your servers
+        - name: ASSISTANT_CHANNEL_IDS
+          value: "" # Comma-separated channel IDs where the bot answers without an @mention
+        envFrom:
+        - secretRef:
+            name: discord-assistant # DISCORD_BOT_TOKEN, RELAY_SECRET
+        securityContext:
+          runAsUser: 1000
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+        resources:
+          requests:
+            cpu: 10m
+            memory: 48Mi
+          limits:
+            memory: 128Mi
+        volumeMounts:
+        - name: relay
+          mountPath: /app
+          readOnly: true
+      volumes:
+      - name: relay
+        configMap:
+          name: discord-assistant-relay
