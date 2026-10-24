@@ -65,7 +65,6 @@ spec:
       - sonarr
       - tdarr-node
       - tdarr-server
-      - requestrr
       - seerr
   ingress:
   - fromEndpoints:
@@ -80,7 +79,6 @@ spec:
         - sonarr
         - tdarr-node
         - tdarr-server
-        - requestrr
         - seerr
     authentication:
       mode: "required"
@@ -109,7 +107,6 @@ spec:
           - sonarr
           - tdarr-node
           - tdarr-server
-          - requestrr
           - seerr
     - toEndpoints:
       - matchLabels:

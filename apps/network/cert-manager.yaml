@@ -114,7 +114,6 @@ spec:
     - qbit.waffle-systems.com
     - seerr.waffle-systems.com
     - prowlarr.waffle-systems.com
-    - requestrr.waffle-systems.com
     - tdarr.waffle-systems.com
     # The certificate will be saved to this Secret automatically
     secretName: plex-tls 
@@ -183,17 +182,6 @@ spec:
             name: port-service-prowlarr
             port:
               number: 9696
-  # --- Requestrr ---
-  - host: requestrr.waffle-systems.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: port-service-requestrr
-            port:
-              number: 4545
   # --- Tdarr ---
   - host: tdarr.waffle-systems.com
     http:
