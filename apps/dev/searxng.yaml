@@ -1,0 +1,88 @@
+---
+# SearXNG metasearch engine: web search backend for n8n (Instance AI + SearXNG tool node)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: searxng-config
+  namespace: dev
+data:
+  settings.yml: |
+    use_default_settings: true
+    general:
+      instance_name: "searxng"
+    server:
+      limiter: false # Only reachable inside the cluster, no bot protection needed
+      image_proxy: false
+    search:
+      safe_search: 0
+      formats:
+        - html
+        - json # n8n queries /search?format=json
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: searxng
+  namespace: dev
+  labels:
+    app: searxng
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: searxng
+  template:
+    metadata:
+      labels:
+        app: searxng
+    spec:
+      containers:
+      - name: searxng
+        image: searxng/searxng:2026.10.19-81371861f
+        env:
+        - name: SEARXNG_SECRET
+          value: "9954ccecadf6dd4702947960de1a471aef3cdd18499f0d03225c3c3c9994f6fd"
+        - name: FORCE_OWNERSHIP
+          value: "false" # Config is a read-only ConfigMap mount
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          periodSeconds: 10
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            memory: 512Mi
+        volumeMounts:
+        - name: config
+          mountPath: /etc/searxng
+          readOnly: true
+        - name: cache
+          mountPath: /var/cache/searxng
+      volumes:
+      - name: config
+        configMap:
+          name: searxng-config
+      - name: cache
+        emptyDir: {}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: searxng
+  namespace: dev
+spec:
+  selector:
+    app: searxng
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080

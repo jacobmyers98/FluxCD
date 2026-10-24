@@ -34,6 +34,8 @@ spec:
           value: "n8n-sandbox"
         - name: N8N_SANDBOX_SERVICE_URL
           value: "http://sandbox-api:8080"
+        - name: N8N_INSTANCE_AI_SEARXNG_URL
+          value: "http://searxng:8080" # Web search for the Instance AI agent
         - name: N8N_SANDBOX_SERVICE_API_KEY
           value: "my-sandbox-secret-key"
         volumeMounts:

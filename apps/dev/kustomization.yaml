@@ -4,6 +4,7 @@ resources:
 #  - starnet.yaml
   - n8n.yaml
   - n8n-sandbox.yaml
+  - searxng.yaml
   - dev-box.yaml
   - secret.cloud-init.yaml
   - secret.ghcr.yaml
