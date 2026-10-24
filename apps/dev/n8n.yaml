@@ -28,6 +28,34 @@ spec:
         hostPath:
           path: /home/server/docker/n8n
           type: DirectoryOrCreate
+
+      # --- Container 2: Ollama ---
+      - name: ollama
+        image: ollama/ollama:latest
+        ports:
+        - containerPort: 11434
+        volumeMounts:
+        - name: ollama-data
+          mountPath: /root/.ollama
+        resources:
+          requests:
+            cpu: 100m
+            memory: 1Gi
+          limits:
+            cpu: "4"
+            memory: 8Gi
+            nvidia.com/gpu: 1
+      volumes:
+      - name: workspace-data
+        hostPath:
+          path: /home/server/docker/starnet
+          type: DirectoryOrCreate
+      - name: ollama-data
+        hostPath:
+          path: /home/server/docker/ollama
+          type: DirectoryOrCreate
+      - name: n8n-data
+
 ---
 apiVersion: v1
 kind: Service
