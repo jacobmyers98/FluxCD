@@ -28,6 +28,14 @@ spec:
           value: "0.0.0.0"
         - name: N8N_RUNNERS_AUTH_TOKEN
           value: "my-secure-random-token" # Must match the runner token
+        - name: N8N_INSTANCE_AI_SANDBOX_ENABLED
+          value: "true"
+        - name: N8N_INSTANCE_AI_SANDBOX_PROVIDER
+          value: "n8n-sandbox"
+        - name: N8N_SANDBOX_SERVICE_URL
+          value: "http://n8n-sandbox:8080"
+        - name: N8N_SANDBOX_SERVICE_API_KEY
+          value: "my-sandbox-secret-key"
         volumeMounts:
         - name: n8n-data
           mountPath: /home/node/.n8n
