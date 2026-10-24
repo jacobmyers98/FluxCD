@@ -36,32 +36,52 @@ spec:
         app: n8n-sandbox-api
     spec:
       initContainers:
+      # Generates the API <-> runner mTLS material once (skips if already present)
       - name: generate-certs
-        image: ghcr.io/n8n-io/n8n-sandbox-service-api:latest
-        user: '0:0' # Run as root to generate and permission certs
+        image: n8nio/n8n-sandbox-service-api:1.11.0
+        securityContext:
+          runAsUser: 0 # Run as root to write into the root-owned hostPath
         command:
         - sh
         - -c
-        - "bootstrap-mtls.sh --out-dir /tls --api-san sandbox-api --control-san-prefix sandbox-runner --world-readable && chmod -R 777 /tls"
+        - "bootstrap-mtls.sh --out-dir /tls --api-san sandbox-api --control-san-prefix sandbox-runner --runners 1 --world-readable"
         volumeMounts:
         - name: tls-data
           mountPath: /tls
       containers:
       - name: api
-        image: ghcr.io/n8n-io/n8n-sandbox-service-api:latest
+        image: n8nio/n8n-sandbox-service-api:1.11.0
         env:
         - name: SANDBOX_API_KEYS
-          value: "my-sandbox-secret-key"
+          value: "my-sandbox-secret-key" # Must match N8N_SANDBOX_SERVICE_API_KEY in n8n
         - name: SANDBOX_API_RUNNER_REGISTRATION_TOKEN
           value: "my-reg-token"
         - name: SANDBOX_API_RUNNER_API_KEY
           value: "my-runner-key"
+        - name: SANDBOX_API_GRPC_TLS_CERT_FILE
+          value: /tls/api/grpc-server.crt
+        - name: SANDBOX_API_GRPC_TLS_KEY_FILE
+          value: /tls/api/grpc-server.key
+        - name: SANDBOX_API_GRPC_TLS_CLIENT_CA_FILE
+          value: /tls/api/ca.crt
+        - name: SANDBOX_API_RUNNER_CONTROL_GRPC_TLS_CA_FILE
+          value: /tls/api/ca.crt
+        - name: SANDBOX_API_RUNNER_CONTROL_GRPC_TLS_CERT_FILE
+          value: /tls/api/control-grpc-api-client.crt
+        - name: SANDBOX_API_RUNNER_CONTROL_GRPC_TLS_KEY_FILE
+          value: /tls/api/control-grpc-api-client.key
         ports:
         - containerPort: 8080
         - containerPort: 9090
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          periodSeconds: 5
         volumeMounts:
         - name: tls-data
           mountPath: /tls
+          readOnly: true
       volumes:
       - name: tls-data
         hostPath:
@@ -79,9 +99,14 @@ spec:
   selector:
     app: n8n-sandbox-runner
   ports:
-    - protocol: TCP
+    - name: https
+      protocol: TCP
       port: 8080
       targetPort: 8080
+    - name: control-grpc
+      protocol: TCP
+      port: 9091
+      targetPort: 9091
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -90,6 +115,8 @@ metadata:
   namespace: dev
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: n8n-sandbox-runner
@@ -98,25 +125,87 @@ spec:
       labels:
         app: n8n-sandbox-runner
     spec:
+      # The runner drains requests and removes its sandboxes before dockerd stops
+      terminationGracePeriodSeconds: 90
+      initContainers:
+      # The runner refuses to start without br_netfilter loaded on the node
+      - name: load-br-netfilter
+        image: busybox:1.37
+        securityContext:
+          privileged: true
+        command: ["sh", "-c", "modprobe br_netfilter && echo br_netfilter loaded"]
+        volumeMounts:
+        - name: modules
+          mountPath: /lib/modules
+          readOnly: true
+      # Wait for the API pod to generate the mTLS material
+      - name: wait-for-certs
+        image: busybox:1.37
+        command: ["sh", "-c", "until [ -f /tls/runner/control-grpc-server.key ]; do echo waiting for certs; sleep 2; done"]
+        volumeMounts:
+        - name: tls-data
+          mountPath: /tls
+          readOnly: true
       containers:
       - name: runner
-        image: ghcr.io/n8n-io/n8n-sandbox-service-runner-dind:latest
+        image: n8nio/n8n-sandbox-service-runner-dind:1.11.0
         securityContext:
           privileged: true  # Absolutely required for Docker-in-Docker
         env:
+        - name: SANDBOX_RUNNER_ID
+          value: "sandbox-runner-1"
+        - name: SANDBOX_RUNNER_DOCKER_SANDBOX_IMAGE
+          value: "n8nio/n8n-sandbox-service-sandbox:1.11.0"
         - name: SANDBOX_RUNNER_API_GRPC_ADDR
           value: "sandbox-api:9090"
         - name: SANDBOX_RUNNER_HTTP_BASE_URL
           value: "https://sandbox-runner-1:8080"
+        - name: SANDBOX_RUNNER_CONTROL_GRPC_LISTEN_ADDR
+          value: ":9091"
+        - name: SANDBOX_RUNNER_CONTROL_GRPC_ADVERTISE_ADDR
+          value: "sandbox-runner-1:9091"
         - name: SANDBOX_RUNNER_REGISTRATION_TOKEN
-          value: "my-reg-token"
-        - name: SANDBOX_API_KEY
-          value: "my-runner-key"
+          value: "my-reg-token" # Matches SANDBOX_API_RUNNER_REGISTRATION_TOKEN
+        - name: SANDBOX_RUNNER_API_KEYS
+          value: "my-runner-key" # Matches SANDBOX_API_RUNNER_API_KEY
+        - name: SANDBOX_RUNNER_REGISTRATION_GRPC_CA_FILE
+          value: /tls/runner/ca.crt
+        - name: SANDBOX_RUNNER_REGISTRATION_GRPC_CERT_FILE
+          value: /tls/runner/grpc-client.crt
+        - name: SANDBOX_RUNNER_REGISTRATION_GRPC_KEY_FILE
+          value: /tls/runner/grpc-client.key
+        - name: SANDBOX_RUNNER_REGISTRATION_GRPC_SERVER_NAME
+          value: "sandbox-api" # Matches --api-san
+        - name: SANDBOX_RUNNER_CONTROL_GRPC_TLS_CERT_FILE
+          value: /tls/runner/control-grpc-server.crt
+        - name: SANDBOX_RUNNER_CONTROL_GRPC_TLS_KEY_FILE
+          value: /tls/runner/control-grpc-server.key
+        - name: SANDBOX_RUNNER_CONTROL_GRPC_TLS_CLIENT_CA_FILE
+          value: /tls/runner/ca.crt
+        ports:
+        - containerPort: 8080
+        - containerPort: 9091
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8080
+            scheme: HTTPS
+          initialDelaySeconds: 5
+          periodSeconds: 5
         volumeMounts:
         - name: tls-data
           mountPath: /tls
+          readOnly: true
+        - name: docker-data
+          mountPath: /var/lib/docker
       volumes:
       - name: tls-data
         hostPath:
           path: /home/server/docker/sandbox-tls
           type: DirectoryOrCreate
+      - name: modules
+        hostPath:
+          path: /lib/modules
+          type: Directory
+      - name: docker-data
+        emptyDir: {}
