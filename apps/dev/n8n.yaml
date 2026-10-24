@@ -46,15 +46,14 @@ spec:
             memory: 8Gi
             nvidia.com/gpu: 1
       volumes:
-      - name: workspace-data
-        hostPath:
-          path: /home/server/docker/starnet
-          type: DirectoryOrCreate
       - name: ollama-data
         hostPath:
           path: /home/server/docker/ollama
           type: DirectoryOrCreate
       - name: n8n-data
+        hostPath:
+          path: /home/server/docker/n8n
+          type: DirectoryOrCreate
 
 ---
 apiVersion: v1
