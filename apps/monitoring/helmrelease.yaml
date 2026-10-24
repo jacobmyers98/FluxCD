@@ -199,6 +199,10 @@ spec:
               period: 24h
     gateway:
       enabled: true
+      # Single node + pod anti-affinity: a rolling update's new pod can't schedule next to the
+      # old one and sits Pending, so replace the pod instead.
+      deploymentStrategy:
+        type: Recreate
       resources:
         requests:
           cpu: 10m
