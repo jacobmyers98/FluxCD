@@ -59,7 +59,15 @@ spec:
             cpu: "4"
             memory: 8Gi
             nvidia.com/gpu: 1
-      
+
+      - name: n8n
+        image: docker.n8n.io/n8nio/n8n:latest
+        ports:
+        - containerPort: 5678
+        volumeMounts:
+        - name: n8n-data
+          mountPath: /home/node/.n8n
+
       volumes:
       - name: workspace-data
         hostPath:
@@ -68,6 +76,10 @@ spec:
       - name: ollama-data
         hostPath:
           path: /home/server/docker/ollama
+          type: DirectoryOrCreate
+      - name: n8n-data
+        hostPath:
+          path: /home/server/docker/n8n
           type: DirectoryOrCreate
 
 ---
@@ -87,3 +99,19 @@ spec:
     - port: 8787
       targetPort: 8787
       nodePort: 30019
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: n8n-service
+spec:
+  type: NodePort
+  selector:
+    app: starnet
+  ports:
+    - protocol: TCP
+      port: 5678
+      targetPort: 5678
+      nodePort: 30018
