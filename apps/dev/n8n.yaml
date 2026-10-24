@@ -42,7 +42,7 @@ spec:
           
       # 2. Python/JavaScript Sandbox (Task Runner)
       - name: n8n-task-runner
-        image: docker.n8n.io/n8nio/runners:latest
+        image: docker.n8n.io/n8nio/runners:nightly-3c7a553-distroless
         env:
         - name: N8N_RUNNERS_AUTH_TOKEN
           value: "my-secure-random-token" # Matches the n8n token
