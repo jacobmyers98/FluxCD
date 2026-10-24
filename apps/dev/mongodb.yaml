@@ -25,7 +25,7 @@ metadata:
 spec:
   replicas: 1
   strategy:
-    type: Recreate # Only one mongod may own the data dir
+    type: Recreate
   selector:
     matchLabels:
       app: mongodb

@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: snapotter
-        image: snapotter/snapotter:latest
+        image: snapotter/snapotter:2
         ports:
         - containerPort: 1349
         resources:

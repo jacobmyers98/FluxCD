@@ -53,7 +53,7 @@ spec:
         image: n8nio/n8n-sandbox-service-api:1.11.0
         env:
         - name: SANDBOX_API_KEYS
-          value: "my-sandbox-secret-key" # Must match N8N_SANDBOX_SERVICE_API_KEY in n8n
+          value: "my-sandbox-secret-key"
         - name: SANDBOX_API_RUNNER_REGISTRATION_TOKEN
           value: "my-reg-token"
         - name: SANDBOX_API_RUNNER_API_KEY

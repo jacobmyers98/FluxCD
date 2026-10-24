@@ -11,4 +11,3 @@ resources:
   - secret.discord-assistant.yaml
   - dev-box.yaml
   - secret.cloud-init.yaml
-  - secret.ghcr.yaml

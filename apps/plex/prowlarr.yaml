@@ -56,7 +56,7 @@ spec:
         fsGroup: 1004
       initContainers:
       - name: flaresolverr
-        image: ghcr.io/flaresolverr/flaresolverr:v3.4.6
+        image: ghcr.io/flaresolverr/flaresolverr:v3.5.2
         imagePullPolicy: Always
         restartPolicy: Always
         securityContext:
