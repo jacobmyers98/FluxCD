@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: n8n
+  labels:
+    app: n8n
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: n8n
+  template:
+    metadata:
+      labels:
+        app: n8n
+    spec:
+      containers:
+      - name: n8n
+        image: docker.n8n.io/n8nio/n8n:latest
+        ports:
+        - containerPort: 5678
+        volumeMounts:
+        - name: n8n-data
+          mountPath: /home/node/.n8n
+      volumes:
+      - name: n8n-data
+        hostPath:
+          path: /home/server/docker/n8n
+          type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: n8n-service
+spec:
+  type: NodePort
+  selector:
+    app: n8n
+  ports:
+    - protocol: TCP
+      port: 5678
+      targetPort: 5678
+      nodePort: 30018
