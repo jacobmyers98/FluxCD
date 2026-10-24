@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: sandbox
-        image: docker.n8n.io/n8nio/n8n-sandbox:latest
+        image: n8nio/n8n-sandbox-service-sandbox:latest
         securityContext:
           privileged: true
         env:
