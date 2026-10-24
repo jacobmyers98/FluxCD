@@ -1,40 +1,122 @@
+---
+# 1. Sandbox API Service (What n8n talks to)
+apiVersion: v1
+kind: Service
+metadata:
+  name: sandbox-api
+  namespace: dev
+spec:
+  selector:
+    app: n8n-sandbox-api
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+    - name: grpc
+      protocol: TCP
+      port: 9090
+      targetPort: 9090
+
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: n8n-sandbox
+  name: n8n-sandbox-api
   namespace: dev
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: n8n-sandbox
+      app: n8n-sandbox-api
   template:
     metadata:
       labels:
-        app: n8n-sandbox
+        app: n8n-sandbox-api
     spec:
+      initContainers:
+      - name: generate-certs
+        image: ghcr.io/n8n-io/n8n-sandbox-service-api:latest
+        user: '0:0' # Run as root to generate and permission certs
+        command:
+        - sh
+        - -c
+        - "bootstrap-mtls.sh --out-dir /tls --api-san sandbox-api --control-san-prefix sandbox-runner --world-readable && chmod -R 777 /tls"
+        volumeMounts:
+        - name: tls-data
+          mountPath: /tls
       containers:
-      - name: sandbox
-        image: n8nio/n8n-sandbox-service-sandbox:latest
-        securityContext:
-          privileged: true
+      - name: api
+        image: ghcr.io/n8n-io/n8n-sandbox-service-api:latest
         env:
-        - name: N8N_SANDBOX_SERVICE_API_KEY
+        - name: SANDBOX_API_KEYS
           value: "my-sandbox-secret-key"
+        - name: SANDBOX_API_RUNNER_REGISTRATION_TOKEN
+          value: "my-reg-token"
+        - name: SANDBOX_API_RUNNER_API_KEY
+          value: "my-runner-key"
         ports:
         - containerPort: 8080
+        - containerPort: 9090
+        volumeMounts:
+        - name: tls-data
+          mountPath: /tls
+      volumes:
+      - name: tls-data
+        hostPath:
+          path: /home/server/docker/sandbox-tls
+          type: DirectoryOrCreate
 
 ---
-
+# 2. Sandbox Docker-in-Docker Runner (Spins up the isolated micro-environments)
 apiVersion: v1
 kind: Service
 metadata:
-  name: n8n-sandbox
+  name: sandbox-runner-1
   namespace: dev
 spec:
   selector:
-    app: n8n-sandbox
+    app: n8n-sandbox-runner
   ports:
     - protocol: TCP
       port: 8080
       targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: n8n-sandbox-runner
+  namespace: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: n8n-sandbox-runner
+  template:
+    metadata:
+      labels:
+        app: n8n-sandbox-runner
+    spec:
+      containers:
+      - name: runner
+        image: ghcr.io/n8n-io/n8n-sandbox-service-runner-dind:latest
+        securityContext:
+          privileged: true  # Absolutely required for Docker-in-Docker
+        env:
+        - name: SANDBOX_RUNNER_API_GRPC_ADDR
+          value: "sandbox-api:9090"
+        - name: SANDBOX_RUNNER_HTTP_BASE_URL
+          value: "https://sandbox-runner-1:8080"
+        - name: SANDBOX_RUNNER_REGISTRATION_TOKEN
+          value: "my-reg-token"
+        - name: SANDBOX_API_KEY
+          value: "my-runner-key"
+        volumeMounts:
+        - name: tls-data
+          mountPath: /tls
+      volumes:
+      - name: tls-data
+        hostPath:
+          path: /home/server/docker/sandbox-tls
+          type: DirectoryOrCreate

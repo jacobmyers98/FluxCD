@@ -33,7 +33,7 @@ spec:
         - name: N8N_INSTANCE_AI_SANDBOX_PROVIDER
           value: "n8n-sandbox"
         - name: N8N_SANDBOX_SERVICE_URL
-          value: "http://n8n-sandbox:8080"
+          value: "http://sandbox-api:8080"
         - name: N8N_SANDBOX_SERVICE_API_KEY
           value: "my-sandbox-secret-key"
         volumeMounts:
