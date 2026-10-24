@@ -32,7 +32,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: n8n-service
+  name: port-service-n8n
   namespace: dev
 spec:
   type: NodePort

@@ -297,17 +297,17 @@ spec:
   ingressClassName: cilium
   tls:
   - hosts:
-    - finance-friend.waffle-systems.com
+    - n8n.waffle-systems.com
     # The certificate will be saved to this Secret automatically
     secretName: dev-tls 
   rules:
-  - host: finance-friend.waffle-systems.com
+  - host: n8n.waffle-systems.com
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: port-service-finance-friend
+            name: port-service-n8n
             port:
-              number: 80
+              number: 5678
