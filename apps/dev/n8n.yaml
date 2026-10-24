@@ -27,6 +27,9 @@ spec:
       # --- Container 2: Ollama ---
       - name: ollama
         image: ollama/ollama:latest
+        env:
+        - name: OLLAMA_HOST
+          value: "0.0.0.0"
         ports:
         - containerPort: 11434
         volumeMounts:
