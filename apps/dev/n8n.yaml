@@ -20,9 +20,26 @@ spec:
         image: docker.n8n.io/n8nio/n8n:latest
         ports:
         - containerPort: 5678
+        - containerPort: 5679 # Opens port for the Task Broker
+        env:
+        - name: N8N_RUNNERS_MODE
+          value: "external"
+        - name: N8N_RUNNERS_BROKER_LISTEN_ADDRESS
+          value: "0.0.0.0"
+        - name: N8N_RUNNERS_AUTH_TOKEN
+          value: "my-secure-random-token" # Must match the runner token
         volumeMounts:
         - name: n8n-data
           mountPath: /home/node/.n8n
+          
+      # 2. Python/JavaScript Sandbox (Task Runner)
+      - name: n8n-task-runner
+        image: docker.n8n.io/n8nio/runners:latest
+        env:
+        - name: N8N_RUNNERS_AUTH_TOKEN
+          value: "my-secure-random-token" # Matches the n8n token
+        - name: N8N_RUNNERS_TASK_BROKER_URI
+          value: "http://127.0.0.1:5679"
 
       # --- Container 2: Ollama ---
       - name: ollama
@@ -69,18 +86,3 @@ spec:
       port: 5678
       targetPort: 5678
       nodePort: 30018
-
----
-
-apiVersion: v1
-kind: Service
-metadata:
-  name: ollama-service
-  namespace: dev
-spec:
-  selector:
-    app: n8n
-  ports:
-    - protocol: TCP
-      port: 11434
-      targetPort: 11434

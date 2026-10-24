@@ -300,7 +300,6 @@ spec:
     - key: "app"
       operator: In
       values:
-      - starnet
       - n8n
   ingress:
   - fromEntities:
