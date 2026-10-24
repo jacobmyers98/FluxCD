@@ -168,6 +168,10 @@ spec:
     - matchLabels:
         k8s:io.kubernetes.pod.namespace: kube-system
         app: tailscale
+  - fromEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: dev
+        app: n8n
   egress:
     - toEndpoints:
       - matchLabels:
@@ -185,6 +189,13 @@ spec:
         - port: "9090" # Prometheus
           protocol: TCP
         - port: "3100" # Loki
+          protocol: TCP
+    - toEndpoints:
+      - matchLabels:
+          k8s:io.kubernetes.pod.namespace: dev
+      toPorts:
+      - ports:
+        - port: "11434" # ollama
           protocol: TCP
     - toEndpoints:
       - matchLabels:
