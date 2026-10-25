@@ -1,5 +1,6 @@
 ---
-# ComfyUI: local image generation (Qwen-Image-2512 + Real-ESRGAN upscaling) for the n8n "Image Studio" workflows.
+# ComfyUI: local image generation (Z-Image-Turbo, Apache 2.0, + Real-ESRGAN upscaling) for the n8n "Image Studio" workflows.
+# Qwen-Image-2512 files are also downloaded as a possible upgrade. Jobs run overnight so the GPU is free for Ollama by day.
 # Ollama can't generate images on Linux yet, so this runs the diffusion models instead.
 # Models live in hostPath /home/server/docker/comfyui/models (fetched by download-models.sh in that folder).
 apiVersion: v1
@@ -101,7 +102,7 @@ spec:
             memory: 4Gi
           limits:
             cpu: "8"
-            memory: 40Gi # the 20 GB diffusion model is partly offloaded to RAM on the 12 GB GPU
+            memory: 32Gi # models that don't fit the 12 GB GPU are partly offloaded to RAM
             nvidia.com/gpu: 1
       volumes:
       - name: config
