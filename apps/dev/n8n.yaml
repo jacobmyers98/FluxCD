@@ -37,7 +37,7 @@ spec:
         - name: N8N_SANDBOX_SERVICE_URL
           value: "http://sandbox-api:8080"
         - name: WEBHOOK_URL
-          value: "http://192.168.1.200:30018/" # Base URL for webhook and review-form links (LAN + Tailscale subnet route)
+          value: "https://n8n.waffle-systems.com/" # Base URL for webhook, form and review links (cilium ingress + dev-tls cert; the name resolves on the home network)
         - name: N8N_INSTANCE_AI_SEARXNG_URL
           value: "http://searxng:8080" # Web search for the Instance AI agent
         - name: N8N_SANDBOX_SERVICE_API_KEY
