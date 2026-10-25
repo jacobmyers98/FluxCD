@@ -7,6 +7,8 @@ metadata:
     app: n8n
 spec:
   replicas: 1
+  strategy:
+    type: Recreate # SQLite: never two n8n pods on one database
   selector:
     matchLabels:
       app: n8n
@@ -43,6 +45,8 @@ spec:
         volumeMounts:
         - name: n8n-data
           mountPath: /home/node/.n8n
+        - name: n8n-files
+          mountPath: /home/node/.n8n-files # n8n's default allowed folder for file nodes (generated shop images live in images/)
           
       # 2. Python/JavaScript Sandbox (Task Runner)
       - name: n8n-task-runner
@@ -80,6 +84,10 @@ spec:
       - name: n8n-data
         hostPath:
           path: /home/server/docker/n8n
+          type: DirectoryOrCreate
+      - name: n8n-files
+        hostPath:
+          path: /home/server/docker/n8n-files
           type: DirectoryOrCreate
 
 ---
