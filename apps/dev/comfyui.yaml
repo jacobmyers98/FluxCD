@@ -1,0 +1,142 @@
+---
+# ComfyUI: local image generation (Qwen-Image-2512 + Real-ESRGAN upscaling) for the n8n "Image Studio" workflows.
+# Ollama can't generate images on Linux yet, so this runs the diffusion models instead.
+# Models live in hostPath /home/server/docker/comfyui/models (fetched by download-models.sh in that folder).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: comfyui-config
+  namespace: dev
+data:
+  extra_model_paths.yaml: |
+    host:
+      base_path: /models
+      diffusion_models: diffusion_models
+      text_encoders: text_encoders
+      vae: vae
+      loras: loras
+      upscale_models: upscale_models
+  start.sh: |
+    #!/bin/bash
+    # Installs the pinned ComfyUI release into /app on first boot (or after a version bump), then starts it.
+    set -e
+    APP=/app/ComfyUI-$COMFYUI_VERSION
+    VENV=/app/venv-$COMFYUI_VERSION
+    if [ ! -f "$APP/main.py" ]; then
+      echo "Installing ComfyUI $COMFYUI_VERSION"
+      mkdir -p "$APP"
+      python -c "import urllib.request,sys; urllib.request.urlretrieve(sys.argv[1], '/tmp/comfyui.tar.gz')" \
+        "https://github.com/Comfy-Org/ComfyUI/archive/refs/tags/$COMFYUI_VERSION.tar.gz"
+      tar -xzf /tmp/comfyui.tar.gz -C "$APP" --strip-components=1
+      rm /tmp/comfyui.tar.gz
+    fi
+    if [ ! -f "$VENV/.installed" ]; then
+      python -m venv --system-site-packages "$VENV"
+      # Keep the image's CUDA build of torch: don't let pip replace it.
+      grep -vE '^(torch|torchvision|torchaudio)([<>=~! ]|$)' "$APP/requirements.txt" > /tmp/requirements.txt
+      "$VENV/bin/pip" install --no-cache-dir -r /tmp/requirements.txt
+      touch "$VENV/.installed"
+    fi
+    cd "$APP"
+    exec "$VENV/bin/python" main.py --listen 0.0.0.0 --port 8188 \
+      --extra-model-paths-config /config/extra_model_paths.yaml \
+      --output-directory /output --input-directory /input \
+      --disable-auto-launch
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: comfyui
+  namespace: dev
+  labels:
+    app: comfyui
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate # GPU + hostPath: never two pods at once
+  selector:
+    matchLabels:
+      app: comfyui
+  template:
+    metadata:
+      labels:
+        app: comfyui
+    spec:
+      containers:
+      - name: comfyui
+        image: pytorch/pytorch:2.14.1-cuda13.0-cudnn9-runtime
+        command: ["bash", "/config/start.sh"]
+        env:
+        - name: COMFYUI_VERSION
+          value: "v0.42.1"
+        ports:
+        - containerPort: 8188
+        startupProbe: # first boot installs Python packages
+          httpGet:
+            path: /system_stats
+            port: 8188
+          periodSeconds: 10
+          failureThreshold: 90
+        readinessProbe:
+          httpGet:
+            path: /system_stats
+            port: 8188
+          periodSeconds: 15
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: app
+          mountPath: /app
+        - name: models
+          mountPath: /models
+        - name: output
+          mountPath: /output
+        - name: input
+          mountPath: /input
+        resources:
+          requests:
+            cpu: 250m
+            memory: 4Gi
+          limits:
+            cpu: "8"
+            memory: 40Gi # the 20 GB diffusion model is partly offloaded to RAM on the 12 GB GPU
+            nvidia.com/gpu: 1
+      volumes:
+      - name: config
+        configMap:
+          name: comfyui-config
+      - name: app
+        hostPath:
+          path: /home/server/docker/comfyui/app
+          type: DirectoryOrCreate
+      - name: models
+        hostPath:
+          path: /home/server/docker/comfyui/models
+          type: DirectoryOrCreate
+      - name: output
+        hostPath:
+          path: /home/server/docker/comfyui/output
+          type: DirectoryOrCreate
+      - name: input
+        hostPath:
+          path: /home/server/docker/comfyui/input
+          type: DirectoryOrCreate
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: comfyui
+  namespace: dev
+spec:
+  type: NodePort # n8n uses http://comfyui:8188; the LAN uses :30020 for the UI and image links
+  selector:
+    app: comfyui
+  ports:
+    - protocol: TCP
+      port: 8188
+      targetPort: 8188
+      nodePort: 30020
