@@ -309,6 +309,7 @@ spec:
       operator: In
       values:
       - n8n
+      - comfyui # UI + image links on NodePort 30020
   ingress:
   - fromEntities:
     - world
