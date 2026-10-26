@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: tdarr-server
-          image: ghcr.io/haveagitgat/tdarr:3.02.00 #  {"$imagepolicy": "plex:tdarr-policy"}
+          image: ghcr.io/haveagitgat/tdarr:3.03.00 #  {"$imagepolicy": "plex:tdarr-policy"}
           env:
             - name: serverIP
               value: "0.0.0.0"
@@ -123,7 +123,7 @@ spec:
               memory: 64Mi
       containers:
         - name: tdarr-node
-          image: ghcr.io/haveagitgat/tdarr_node:3.02.00 #  {"$imagepolicy": "plex:tdarr-node-policy"}
+          image: ghcr.io/haveagitgat/tdarr_node:3.03.00 #  {"$imagepolicy": "plex:tdarr-node-policy"}
           env:
             - name: nodeName
               value: "k8s-node-1"
