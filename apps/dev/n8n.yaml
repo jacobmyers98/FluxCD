@@ -28,6 +28,8 @@ spec:
           value: "external"
         - name: N8N_RUNNERS_BROKER_LISTEN_ADDRESS
           value: "0.0.0.0"
+        - name: N8N_RUNNERS_TASK_TIMEOUT
+          value: "600" # seconds per Code node run (default 60); Job Scout's Collect/Score Jobs need several minutes
         - name: N8N_RUNNERS_AUTH_TOKEN
           value: "my-secure-random-token" # Must match the runner token
         - name: N8N_INSTANCE_AI_SANDBOX_ENABLED
@@ -56,6 +58,8 @@ spec:
           value: "my-secure-random-token" # Matches the n8n token
         - name: N8N_RUNNERS_TASK_BROKER_URI
           value: "http://127.0.0.1:5679"
+        - name: N8N_RUNNERS_TASK_TIMEOUT
+          value: "600" # must match the n8n container
 
       # --- Container 2: Ollama ---
       - name: ollama
