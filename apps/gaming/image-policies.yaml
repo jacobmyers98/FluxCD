@@ -1,0 +1,21 @@
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: cloudflare-ddns
+  namespace: gaming
+spec:
+  image: favonia/cloudflare-ddns
+  interval: 6h
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: cloudflare-ddns-policy
+  namespace: gaming
+spec:
+  imageRepositoryRef:
+    name: cloudflare-ddns
+  policy:
+    semver:
+      range: ">=1.18.0"

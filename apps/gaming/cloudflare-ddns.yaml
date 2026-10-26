@@ -13,9 +13,17 @@ spec:
       labels:
         app: cloudflare-ddns
     spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
       containers:
       - name: cloudflare-ddns
-        image: oznu/cloudflare-ddns:latest
+        image: favonia/cloudflare-ddns:1.18.0 # {"$imagepolicy": "gaming:cloudflare-ddns-policy"}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: ["ALL"]
         resources:
           requests:
             cpu: 5m
@@ -24,14 +32,14 @@ spec:
             cpu: 100m
             memory: 64Mi
         env:
-        - name: API_KEY
+        - name: CLOUDFLARE_API_TOKEN
           valueFrom:
             secretKeyRef:
               name: cloudflare-ddns
               key: token
-        - name: ZONE
-          value: "waffle-systems.com"
-        - name: SUBDOMAIN
-          value: "minecraft"
+        - name: DOMAINS
+          value: "minecraft.waffle-systems.com"
         - name: PROXIED
           value: "false"
+        - name: IP6_PROVIDER
+          value: "none"

@@ -66,3 +66,13 @@ metadata:
 spec:
   image: ghcr.io/haveagitgat/tdarr_node
   interval: 6h
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: cloudflared
+  namespace: plex
+spec:
+  image: cloudflare/cloudflared
+  interval: 6h
