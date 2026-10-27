@@ -64,9 +64,7 @@ spec:
           hostPath:
             path: /mnt/Media
             type: Directory
-
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
@@ -84,9 +82,7 @@ spec:
     - name: server
       port: 8266
       targetPort: 8266
-
 ---
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -127,7 +123,7 @@ spec:
               memory: 64Mi
       containers:
         - name: tdarr-node
-          image: ghcr.io/haveagitgat/tdarr_node:3.03.00 #  {"$imagepolicy": "plex:tdarr-node-policy"}
+          image: ghcr.io/haveagitgat/tdarr_node:3.04.00 #  {"$imagepolicy": "plex:tdarr-node-policy"}
           env:
             - name: nodeName
               value: "k8s-node-1"
@@ -168,9 +164,7 @@ spec:
           hostPath:
             path: /mnt/Media
             type: Directory
-
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
