@@ -10,3 +10,4 @@ resources:
   - server-backup-cron.yaml
   - secret.tailscale.yaml
   - secret.etcd-backup.yaml
+  - vault-warden.yaml

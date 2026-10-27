@@ -6,7 +6,7 @@ metadata:
 spec:
   replicas: 1
   strategy:
-    type: Recreate
+    type: Recreate # SQLite db in /data, never run two pods on it
   selector:
     matchLabels:
       app: vaultwarden-server
@@ -17,63 +17,50 @@ spec:
         exposed: nodeport
     spec:
       containers:
-        - name: plex
-          image: vaultwarden/server:1.37.4
+        - name: vaultwarden
+          image: vaultwarden/server:1.37.4 # web vault is bundled in this image
+          env:
+            - name: DOMAIN
+              value: "https://vault.waffle-systems.com"
+            - name: SIGNUPS_ALLOWED
+              value: "true" # set to "false" after creating your account
           ports:
             - containerPort: 80
+          livenessProbe:
+            httpGet:
+              path: /alive
+              port: 80
+            initialDelaySeconds: 15
+            periodSeconds: 30
           resources:
             requests:
-              cpu: 250m
-              memory: 1Gi
+              cpu: 50m
+              memory: 128Mi
             limits:
-              cpu: 2
-              memory: 2Gi
+              cpu: 1
+              memory: 512Mi
           volumeMounts:
-            - mountPath: /config
-              name: config
+            - mountPath: /data
+              name: data
       volumes:
-        - name: config
+        - name: data
           hostPath:
             path: /home/server/docker/vaultwarden-server
             type: DirectoryOrCreate
 
 ---
 
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Service
 metadata:
-  name: vaultwarden-web
+  name: port-service-vaultwarden
   namespace: kube-system
 spec:
-  replicas: 1
-  strategy:
-    type: Recreate
+  type: NodePort
   selector:
-    matchLabels:
-      app: vaultwarden-web
-  template:
-    metadata:
-      labels:
-        app: vaultwarden-web
-        exposed: nodeport
-    spec:
-      containers:
-        - name: plex
-          image: vaultwarden/web-vault:v2026.8.0
-          ports:
-            - containerPort: 80
-          resources:
-            requests:
-              cpu: 250m
-              memory: 1Gi
-            limits:
-              cpu: 2
-              memory: 2Gi
-          volumeMounts:
-            - mountPath: /config
-              name: config
-      volumes:
-        - name: config
-          hostPath:
-            path: /home/server/docker/vaultwarden-web
-            type: DirectoryOrCreate
+    app: vaultwarden-server
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 30009
