@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: vaultwarden-server
-  namespace: vaultwarden-server
+  namespace: kube-system
 spec:
   replicas: 1
   strategy:
@@ -20,7 +20,7 @@ spec:
         - name: plex
           image: vaultwarden/server:1.37.4
           ports:
-            - 80
+            - containerPort: 80
           resources:
             requests:
               cpu: 250m
@@ -43,7 +43,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: vaultwarden-web
-  namespace: vaultwarden-web
+  namespace: kube-system
 spec:
   replicas: 1
   strategy:
@@ -61,7 +61,7 @@ spec:
         - name: plex
           image: vaultwarden/web-vault:v2026.8.0
           ports:
-            - 80
+            - containerPort: 80
           resources:
             requests:
               cpu: 250m
