@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vaultwarden-server
+  namespace: vaultwarden-server
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: vaultwarden-server
+  template:
+    metadata:
+      labels:
+        app: vaultwarden-server
+        exposed: nodeport
+    spec:
+      containers:
+        - name: plex
+          image: vaultwarden/server:1.37.4
+          ports:
+            - 80
+          resources:
+            requests:
+              cpu: 250m
+              memory: 1Gi
+            limits:
+              cpu: 2
+              memory: 2Gi
+          volumeMounts:
+            - mountPath: /config
+              name: config
+      volumes:
+        - name: config
+          hostPath:
+            path: /home/server/docker/vaultwarden-server
+            type: DirectoryOrCreate
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vaultwarden-web
+  namespace: vaultwarden-web
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: vaultwarden-web
+  template:
+    metadata:
+      labels:
+        app: vaultwarden-web
+        exposed: nodeport
+    spec:
+      containers:
+        - name: plex
+          image: vaultwarden/web-vault:v2026.8.0
+          ports:
+            - 80
+          resources:
+            requests:
+              cpu: 250m
+              memory: 1Gi
+            limits:
+              cpu: 2
+              memory: 2Gi
+          volumeMounts:
+            - mountPath: /config
+              name: config
+      volumes:
+        - name: config
+          hostPath:
+            path: /home/server/docker/vaultwarden-web
+            type: DirectoryOrCreate

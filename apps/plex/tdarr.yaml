@@ -64,7 +64,9 @@ spec:
           hostPath:
             path: /mnt/Media
             type: Directory
+
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -82,7 +84,9 @@ spec:
     - name: server
       port: 8266
       targetPort: 8266
+
 ---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -164,7 +168,9 @@ spec:
           hostPath:
             path: /mnt/Media
             type: Directory
+
 ---
+
 apiVersion: v1
 kind: Service
 metadata:

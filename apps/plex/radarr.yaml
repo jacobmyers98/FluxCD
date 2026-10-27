@@ -14,7 +14,9 @@ spec:
   selector:
     app: radarr
   type: NodePort
+
 ---
+
 apiVersion: apps/v1 #kubectl api-resources | grep {kind}
 kind: Deployment
 metadata:

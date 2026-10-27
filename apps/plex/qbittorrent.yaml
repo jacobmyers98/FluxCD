@@ -25,7 +25,9 @@ spec:
   selector:
     app: qbittorrent
   type: NodePort
+
 ---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
