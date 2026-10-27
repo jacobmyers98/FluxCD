@@ -6,7 +6,7 @@ metadata:
 spec:
   replicas: 1
   strategy:
-    type: Recreate # SQLite db in /data, never run two pods on it
+    type: Recreate
   selector:
     matchLabels:
       app: vaultwarden-server
@@ -18,12 +18,12 @@ spec:
     spec:
       containers:
         - name: vaultwarden
-          image: vaultwarden/server:1.37.4 # web vault is bundled in this image
+          image: vaultwarden/server:1.37.4
           env:
             - name: DOMAIN
               value: "https://vault.waffle-systems.com"
             - name: SIGNUPS_ALLOWED
-              value: "true" # set to "false" after creating your account
+              value: "false" # set to "false" after creating your account
           ports:
             - containerPort: 80
           livenessProbe:
