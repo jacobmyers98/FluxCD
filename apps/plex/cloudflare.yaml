@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: cloudflared
-        image: cloudflare/cloudflared:2026.10.6 #  {"$imagepolicy": "plex:cloudflared-policy"}
+        image: cloudflare/cloudflared:2026.10.7 #  {"$imagepolicy": "plex:cloudflared-policy"}
         resources:
           requests:
             cpu: 25m
