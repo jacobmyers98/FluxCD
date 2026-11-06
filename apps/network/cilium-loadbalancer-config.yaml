@@ -1,13 +1,33 @@
 apiVersion: "cilium.io/v2alpha1"
+kind: CiliumBGPPeeringPolicy
+metadata:
+name: "unifi-peering"
+spec:
+nodeSelector:
+matchLabels:
+  kubernetes.io/os: "linux"
+virtualRouters:
+- localASN: 64512
+exportPodCIDR: false
+neighbors:
+- peerAddress: "192.168.1.1/32"
+  peerASN: 65000
+serviceAdvertisements:
+- matchLoadBalancerIPs: true
+
+---
+
+apiVersion: "cilium.io/v2alpha1"
 kind: CiliumLoadBalancerIPPool
 metadata:
   name: waffle-lb-pool
-  namespace: kube-system
 spec:
   blocks:
   - start: "192.168.1.254"
     stop: "192.168.1.254"
+
 ---
+
 apiVersion: "cilium.io/v2alpha1"
 kind: CiliumL2AnnouncementPolicy
 metadata:
