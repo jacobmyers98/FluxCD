@@ -1,7 +1,7 @@
 apiVersion: "cilium.io/v2alpha1"
 kind: CiliumBGPPeeringPolicy
 metadata:
-name: "unifi-peering"
+  name: "unifi-peering"
 spec:
 nodeSelector:
 matchLabels:
