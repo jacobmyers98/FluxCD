@@ -1,3 +1,14 @@
+apiVersion: "cilium.io/v2alpha1"
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: waffle-lb-pool
+spec:
+  blocks:
+  - start: "192.168.1.248"
+    stop: "192.168.1.255"
+
+---
+
 # 1. Define WHAT to advertise (Your LoadBalancer VIPs)
 apiVersion: cilium.io/v2
 kind: CiliumBGPAdvertisement

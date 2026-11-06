@@ -3,7 +3,6 @@ kind: Kustomization
 resources:
   - cilium-mTLS-pv.yaml
   - cilium-network-mTLS.yaml
-  - cilium-loadbalancer-config.yaml
   - cilium-bgp-setup.yaml
   - cert-manager.yaml
   - helmrelease.yaml
