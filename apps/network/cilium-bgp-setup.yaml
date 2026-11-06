@@ -10,8 +10,8 @@ spec:
     - advertisementType: Service
       service:
         addresses:
-          - 192.168.1.254
-          
+          - LoadBalancerIP
+
 ---
 
 # 2. Define HOW to peer (Links the advertisement via label selector)
