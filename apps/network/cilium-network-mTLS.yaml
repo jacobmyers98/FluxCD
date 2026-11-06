@@ -1,4 +1,46 @@
 apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: deny-all
+  namespace: default
+spec:
+  endpointSelector: {}
+  ingress:
+  - {}
+  egress:
+  - {}
+
+---
+
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: deny-all
+  namespace: kube-public
+spec:
+  endpointSelector: {}
+  ingress:
+  - {}
+  egress:
+  - {}
+
+---
+
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: deny-all
+  namespace: kube-node-lease
+spec:
+  endpointSelector: {}
+  ingress:
+  - {}
+  egress:
+  - {}
+
+---
+
+apiVersion: "cilium.io/v2"
 kind: CiliumClusterwideNetworkPolicy
 metadata:
   name: "default-require-mtls"
