@@ -41,6 +41,8 @@ spec:
         - containerPort: 5678
         - containerPort: 5679 # Opens port for the Task Broker
         env:
+        - name: HOME
+          value: /home/node # uid 1001 has no passwd entry; n8n keeps its data in $HOME/.n8n
         - name: N8N_RUNNERS_MODE
           value: "external"
         - name: N8N_RUNNERS_BROKER_LISTEN_ADDRESS
