@@ -68,6 +68,8 @@ spec:
           mountPath: /home/node/.n8n
         - name: n8n-files
           mountPath: /home/node/.n8n-files # n8n's default allowed folder for file nodes (generated shop images live in images/)
+        - name: n8n-cache
+          mountPath: /home/node/.cache # image's /home/node is owned by uid 1000; n8n writes static assets here at startup
           
       # 2. Python/JavaScript Sandbox (Task Runner)
       - name: n8n-task-runner
@@ -117,6 +119,8 @@ spec:
         hostPath:
           path: /home/server/docker/n8n-files
           type: DirectoryOrCreate
+      - name: n8n-cache
+        emptyDir: {}
 
 ---
 
