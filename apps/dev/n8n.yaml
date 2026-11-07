@@ -33,7 +33,7 @@ spec:
           mountPath: /ollama
       containers:
       - name: n8n
-        image: n8nio/n8n:stable@sha256:80e23ced901f0e22597d4f3464e3aaf9d835372262ea6f08ef760d8ca35df25c # {"$imagepolicy": "dev:n8n-policy"}
+        image: n8nio/n8n:stable@sha256:8602f5dfacbe2c931eeafd010de0e68182310e9f309921e780ab69182e92b3ae # {"$imagepolicy": "dev:n8n-policy"}
         securityContext:
           runAsUser: 1001 # container_user
           runAsGroup: 1004
@@ -70,11 +70,10 @@ spec:
           mountPath: /home/node/.n8n-files # n8n's default allowed folder for file nodes (generated shop images live in images/)
         - name: n8n-cache
           mountPath: /home/node/.cache # image's /home/node is owned by uid 1000; n8n writes static assets here at startup
-          
       # 2. Python/JavaScript Sandbox (Task Runner)
       # Version must match n8n: both images follow the "stable" tag (image-policies.yaml)
       - name: n8n-task-runner
-        image: n8nio/runners:stable@sha256:168fa154306a2b53436e30c1c7b386a37c880cbabd65f0d01e41d11e3c8ea3ce # {"$imagepolicy": "dev:n8n-runners-policy"}
+        image: n8nio/runners:stable@sha256:b1fe87a59b712a03e5a4fbb46a18ea5ca9487add602f8749941a69f4ab322612 # {"$imagepolicy": "dev:n8n-runners-policy"}
         env:
         - name: N8N_RUNNERS_AUTH_TOKEN
           value: "my-secure-random-token" # Matches the n8n token
@@ -82,7 +81,6 @@ spec:
           value: "http://127.0.0.1:5679"
         - name: N8N_RUNNERS_TASK_TIMEOUT
           value: "600" # must match the n8n container
-
       # --- Container 2: Ollama ---
       - name: ollama
         image: ollama/ollama:latest
@@ -122,9 +120,7 @@ spec:
           type: DirectoryOrCreate
       - name: n8n-cache
         emptyDir: {}
-
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
@@ -139,9 +135,7 @@ spec:
       port: 5678
       targetPort: 5678
       nodePort: 30018
-
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
