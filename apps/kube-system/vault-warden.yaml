@@ -16,20 +16,34 @@ spec:
         app: vaultwarden-server
         exposed: nodeport
     spec:
+      initContainers:
+        - name: fix-perms # hands the data dir to container_user (1001:1004)
+          image: busybox:1.37
+          securityContext:
+            runAsUser: 0
+          command: ["sh", "-c", "chown -R 1001:1004 /data"]
+          volumeMounts:
+            - mountPath: /data
+              name: data
       containers:
         - name: vaultwarden
           image: vaultwarden/server:1.37.4
+          securityContext:
+            runAsUser: 1001 # container_user
+            runAsGroup: 1004
           env:
+            - name: ROCKET_PORT
+              value: "8080" # non-root can't bind port 80
             - name: DOMAIN
               value: "https://vault.waffle-systems.com"
             - name: SIGNUPS_ALLOWED
               value: "false" # set to "false" after creating your account
           ports:
-            - containerPort: 80
+            - containerPort: 8080
           livenessProbe:
             httpGet:
               path: /alive
-              port: 80
+              port: 8080
             initialDelaySeconds: 15
             periodSeconds: 30
           resources:
@@ -62,5 +76,5 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 80
+      targetPort: 8080
       nodePort: 30009

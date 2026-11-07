@@ -34,9 +34,21 @@ spec:
       labels:
         app: mongodb
     spec:
+      initContainers:
+      - name: fix-perms # hands the data dir to container_user (1001:1004)
+        image: busybox:1.37
+        securityContext:
+          runAsUser: 0
+        command: ["sh", "-c", "chown -R 1001:1004 /data/db"]
+        volumeMounts:
+        - name: mongodb-data
+          mountPath: /data/db
       containers:
       - name: mongodb
         image: mongo:8.0.34
+        securityContext:
+          runAsUser: 1001 # container_user
+          runAsGroup: 1004
         args: ["--wiredTigerCacheSizeGB", "1"]
         envFrom:
         - secretRef:

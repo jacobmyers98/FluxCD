@@ -17,9 +17,26 @@ spec:
       labels:
         app: n8n
     spec:
+      initContainers:
+      # Hands the host volumes to container_user (1001:1004); group-writable so user server (in group 1004) keeps write access
+      - name: fix-perms
+        image: busybox:1.37
+        securityContext:
+          runAsUser: 0
+        command: ["sh", "-c", "chown -R 1001:1004 /n8n /files /ollama && chmod -R g+rwX /n8n /files"]
+        volumeMounts:
+        - name: n8n-data
+          mountPath: /n8n
+        - name: n8n-files
+          mountPath: /files
+        - name: ollama-data
+          mountPath: /ollama
       containers:
       - name: n8n
         image: n8nio/n8n:2.44.6
+        securityContext:
+          runAsUser: 1001 # container_user
+          runAsGroup: 1004
         ports:
         - containerPort: 5678
         - containerPort: 5679 # Opens port for the Task Broker
@@ -64,14 +81,19 @@ spec:
       # --- Container 2: Ollama ---
       - name: ollama
         image: ollama/ollama:latest
+        securityContext:
+          runAsUser: 1001 # container_user
+          runAsGroup: 1004
         env:
         - name: OLLAMA_HOST
           value: "0.0.0.0"
+        - name: HOME
+          value: /home/ollama # non-root: models and key live in $HOME/.ollama
         ports:
         - containerPort: 11434
         volumeMounts:
         - name: ollama-data
-          mountPath: /root/.ollama
+          mountPath: /home/ollama/.ollama
         resources:
           requests:
             cpu: 100m
