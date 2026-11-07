@@ -4,8 +4,8 @@ metadata:
   name: waffle-lb-pool
 spec:
   blocks:
-  - start: "192.168.1.254"
-    stop: "192.168.1.254"
+  - start: "192.168.100.1"
+    stop: "192.168.100.1"
 
 ---
 
@@ -27,7 +27,7 @@ spec:
           - key: somekey
             operator: NotIn
             values: ["never-used-value"]
-            
+
 ---
 
 # 2. Define HOW to peer (Links the advertisement via label selector)
