@@ -6,5 +6,6 @@ resources:
   - cilium-bgp-setup.yaml
   - cilium-l2-setup.yaml
   - cert-manager.yaml
+  - unifi-cert.yaml
   - helmrelease.yaml
   - helmrepo.yaml

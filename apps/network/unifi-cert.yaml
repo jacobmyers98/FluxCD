@@ -1,0 +1,75 @@
+# Let's Encrypt cert for the UDM Pro web UI.
+# cert-manager issues/renews it (DNS-01 via Cloudflare); the CronJob copies it to
+# the router over SSH and restarts unifi-core only when the cert changed.
+# Needs secret "udm-ssh" (keys: id_ed25519, known_hosts) in kube-system.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: udm-tls
+  namespace: kube-system
+spec:
+  secretName: udm-tls
+  dnsNames:
+    - unifi.waffle-systems.com
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  privateKey:
+    algorithm: RSA
+    size: 2048
+    rotationPolicy: Always
+
+---
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: udm-cert-push
+  namespace: kube-system
+spec:
+  schedule: "0 4 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: push
+              image: alpine:3.20
+              env:
+                - name: UDM
+                  value: "192.168.1.1"
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -eu
+                  apk add --no-cache openssh-client >/dev/null
+                  D=/data/unifi-core/config
+                  S="ssh -i /ssh/id_ed25519 -o UserKnownHostsFile=/ssh/known_hosts -o StrictHostKeyChecking=yes root@$UDM"
+                  new=$(sha256sum /tls/tls.crt | cut -d' ' -f1)
+                  old=$($S "sha256sum $D/unifi-core.crt 2>/dev/null" | cut -d' ' -f1 || true)
+                  [ "$new" = "$old" ] && { echo "cert unchanged"; exit 0; }
+                  $S "cp $D/unifi-core.crt $D/unifi-core.crt.bak; cp $D/unifi-core.key $D/unifi-core.key.bak" || true
+                  $S "cat > $D/unifi-core.crt" < /tls/tls.crt
+                  $S "cat > $D/unifi-core.key && chmod 600 $D/unifi-core.key" < /tls/tls.key
+                  $S "systemctl restart unifi-core"
+                  echo "installed new cert"
+              volumeMounts:
+                - name: tls
+                  mountPath: /tls
+                  readOnly: true
+                - name: ssh
+                  mountPath: /ssh
+                  readOnly: true
+          volumes:
+            - name: tls
+              secret:
+                secretName: udm-tls
+            - name: ssh
+              secret:
+                secretName: udm-ssh
+                defaultMode: 0400
