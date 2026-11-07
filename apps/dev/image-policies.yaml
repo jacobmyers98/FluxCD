@@ -1,0 +1,61 @@
+# n8n publishes betas as plain semver tags (e.g. 2.46.0 = "next"), so a semver range would pull betas.
+# Instead follow n8n's "stable" tag by digest; n8n and runners move their "stable" tags together,
+# which keeps the two containers on the same version.
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: n8n-policy
+  namespace: dev
+spec:
+  imageRepositoryRef:
+    name: n8n
+  filterTags:
+    pattern: '^stable$'
+  policy:
+    alphabetical:
+      order: asc
+  digestReflectionPolicy: Always
+  interval: 1h
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: n8n-runners-policy
+  namespace: dev
+spec:
+  imageRepositoryRef:
+    name: n8n-runners
+  filterTags:
+    pattern: '^stable$' # there is no stable-distroless tag
+  policy:
+    alphabetical:
+      order: asc
+  digestReflectionPolicy: Always
+  interval: 1h
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: n8n-sandbox-api-policy
+  namespace: dev
+spec:
+  imageRepositoryRef:
+    name: n8n-sandbox-api
+  policy:
+    semver:
+      range: ">=1.11.0 <2.0.0"
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: n8n-sandbox-runner-policy
+  namespace: dev
+spec:
+  imageRepositoryRef:
+    name: n8n-sandbox-runner
+  policy:
+    semver:
+      range: ">=1.11.0 <2.0.0"

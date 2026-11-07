@@ -4,6 +4,9 @@ resources:
 #  - starnet.yaml
   - n8n.yaml
   - n8n-sandbox.yaml
+  - image-repositories.yaml
+  - image-policies.yaml
+  - image-update-automation.yaml
   - searxng.yaml
   - mongodb.yaml
   - secret.mongodb.yaml

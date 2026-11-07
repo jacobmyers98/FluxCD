@@ -38,7 +38,7 @@ spec:
       initContainers:
       # Generates the API <-> runner mTLS material once (skips if already present)
       - name: generate-certs
-        image: n8nio/n8n-sandbox-service-api:1.11.0
+        image: n8nio/n8n-sandbox-service-api:1.11.0 # {"$imagepolicy": "dev:n8n-sandbox-api-policy"}
         securityContext:
           runAsUser: 0 # Run as root to write into the root-owned hostPath
         command:
@@ -50,7 +50,7 @@ spec:
           mountPath: /tls
       containers:
       - name: api
-        image: n8nio/n8n-sandbox-service-api:1.11.0
+        image: n8nio/n8n-sandbox-service-api:1.11.0 # {"$imagepolicy": "dev:n8n-sandbox-api-policy"}
         env:
         - name: SANDBOX_API_KEYS
           value: "my-sandbox-secret-key"
@@ -146,7 +146,7 @@ spec:
           readOnly: true
       containers:
       - name: runner
-        image: n8nio/n8n-sandbox-service-runner-dind:1.11.0
+        image: n8nio/n8n-sandbox-service-runner-dind:1.11.0 # {"$imagepolicy": "dev:n8n-sandbox-runner-policy"}
         securityContext:
           privileged: true  # Absolutely required for Docker-in-Docker
         env:
