@@ -9,3 +9,4 @@ resources:
   - unifi-cert.yaml
   - helmrelease.yaml
   - helmrepo.yaml
+  - secret.udm-ssh.yaml
