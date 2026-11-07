@@ -4,6 +4,7 @@ resources:
   - cilium-mTLS-pv.yaml
   - cilium-network-mTLS.yaml
   - cilium-bgp-setup.yaml
+  - cilium-l2-setup.yaml
   - cert-manager.yaml
   - helmrelease.yaml
   - helmrepo.yaml
