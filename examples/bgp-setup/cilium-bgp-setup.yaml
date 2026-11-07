@@ -1,0 +1,70 @@
+apiVersion: "cilium.io/v2alpha1"
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: waffle-lb-pool
+spec:
+  blocks:
+  - start: "192.168.1.254"
+    stop: "192.168.1.254"
+
+---
+
+# 1. Define WHAT to advertise (Your LoadBalancer VIPs)
+apiVersion: cilium.io/v2
+kind: CiliumBGPAdvertisement
+metadata:
+  name: unifi-bgp-advertisement
+  labels:
+    advertise: loadbalancer
+spec:
+  advertisements:
+    - advertisementType: Service
+      service:
+        addresses:
+          - LoadBalancerIP
+      selector:
+        matchExpressions:
+          - key: somekey
+            operator: NotIn
+            values: ["never-used-value"]
+
+---
+
+# 2. Define HOW to peer (Links the advertisement via label selector)
+apiVersion: cilium.io/v2
+kind: CiliumBGPPeerConfig
+metadata:
+  name: unifi-peer-config
+spec:
+  families:
+    - afi: ipv4
+      safi: unicast
+      advertisements:
+        matchLabels:
+          advertise: loadbalancer
+
+---
+
+# 3. Define WHO to peer with (Your UniFi Router)
+apiVersion: cilium.io/v2
+kind: CiliumBGPClusterConfig
+metadata:
+  name: unifi-bgp-config
+spec:
+  nodeSelector:
+    matchLabels:
+      kubernetes.io/os: "linux"
+  bgpInstances:
+    - name: "unifi-instance"
+      localASN: 64512
+      peers:
+        - name: "unifi-router"
+          peerAddress: "192.168.1.1"
+          peerASN: 65000
+          peerConfigRef:
+            name: "unifi-peer-config"
+
+  # ensure you have the following on your cilium values
+  # --set bgpControlPlane.enabled=true 
+  # --set ingressController.service.externalTrafficPolicy=Local
+  # --set kubeProxyReplacement=true
