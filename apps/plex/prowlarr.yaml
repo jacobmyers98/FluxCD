@@ -68,7 +68,7 @@ spec:
             cpu: 50m
             memory: 512Mi
           limits:
-            cpu: 1
+            cpu: 2
             memory: 2Gi
         env:
         - name: LOG_LEVEL
@@ -89,10 +89,10 @@ spec:
         - containerPort: 9696
         resources:
           requests:
-            cpu: 100m
+            cpu: 50m
             memory: 256Mi
           limits:
-            cpu: 500m
+            cpu: 800m
             memory: 1Gi
         volumeMounts:
         - name: config
