@@ -49,6 +49,8 @@ spec:
           value: "0.0.0.0"
         - name: N8N_RUNNERS_TASK_TIMEOUT
           value: "600" # seconds per Code node run (default 60); Job Scout's Collect/Score Jobs need several minutes
+        - name: N8N_SCHEDULER_ENABLED
+          value: "false" # 2.46+ durable scheduler fired Schedule Triggers without starting executions; use the legacy in-memory engine
         - name: N8N_RUNNERS_AUTH_TOKEN
           value: "my-secure-random-token" # Must match the runner token
         - name: N8N_INSTANCE_AI_SANDBOX_ENABLED
