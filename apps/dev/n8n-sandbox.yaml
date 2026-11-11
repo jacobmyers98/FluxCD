@@ -142,7 +142,7 @@ spec:
           readOnly: true
       containers:
       - name: runner
-        image: n8nio/n8n-sandbox-service-runner-dind:1.14.0 # {"$imagepolicy": "dev:n8n-sandbox-runner-policy"}
+        image: n8nio/n8n-sandbox-service-runner-dind:1.15.0 # {"$imagepolicy": "dev:n8n-sandbox-runner-policy"}
         securityContext:
           privileged: true # Absolutely required for Docker-in-Docker
         env:
