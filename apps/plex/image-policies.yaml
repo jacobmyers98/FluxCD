@@ -1,4 +1,4 @@
-apiVersion: image.toolkit.fluxcd.io/v1beta2
+apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
   name: radarr-policy
@@ -11,7 +11,7 @@ spec:
       range: ">=5.27.0"
 
 ---
-apiVersion: image.toolkit.fluxcd.io/v1beta2
+apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
   name: sonarr-policy
@@ -24,7 +24,7 @@ spec:
       range: ">=4.0.14"
 
 ---
-apiVersion: image.toolkit.fluxcd.io/v1beta2
+apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
   name: prowlarr-policy
@@ -37,7 +37,7 @@ spec:
       range: ">=2.3.0"
 
 ---
-apiVersion: image.toolkit.fluxcd.io/v1beta2
+apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
   name: seerr-policy
@@ -50,7 +50,7 @@ spec:
       range: ">=v3.4.1"
 
 ---
-apiVersion: image.toolkit.fluxcd.io/v1beta2
+apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
   name: qbittorrent-policy
@@ -63,7 +63,7 @@ spec:
       range: ">=5.2.3 <9.0.0"
 
 ---
-apiVersion: image.toolkit.fluxcd.io/v1beta2
+apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
   name: tdarr-policy
@@ -76,7 +76,7 @@ spec:
       range: ">=2.86.01"
 
 ---
-apiVersion: image.toolkit.fluxcd.io/v1beta2
+apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
   name: tdarr-node-policy
@@ -89,7 +89,7 @@ spec:
       range: ">=2.86.01"
 
 ---
-apiVersion: image.toolkit.fluxcd.io/v1beta2
+apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
   name: cloudflared-policy
