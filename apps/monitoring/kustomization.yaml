@@ -9,7 +9,6 @@ resources:
   - secret.postgresql.yaml
   - homarr.yaml
   - image-policies.yaml
-  - image-repositories.yaml
   - image-update-automation.yaml
   - grafana-nodeport.yaml
   - secret.grafana.yaml

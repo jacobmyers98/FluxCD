@@ -1,9 +1,0 @@
----
-apiVersion: image.toolkit.fluxcd.io/v1beta2
-kind: ImageRepository
-metadata:
-  name: homarr
-  namespace: monitoring
-spec:
-  image: ghcr.io/homarr-labs/homarr
-  interval: 6h
