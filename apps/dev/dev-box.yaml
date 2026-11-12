@@ -16,10 +16,10 @@ spec:
         resources:
           requests:
             cpu: 500m
-            memory: 4Gi
+            memory: 1Gi
           limits:
             cpu: "2"
-            memory: 4Gi
+            memory: 2Gi
         devices:
           autoattachSerialConsole: false
           interfaces:
@@ -32,13 +32,17 @@ spec:
           - name: cloudinitdisk
             disk:
               bus: virtio
+        firmware:
+          bootloader:
+            efi:
+              secureBoot: true
       networks:
       - name: default
         pod: {}
       volumes:
       - name: containerdisk
         containerDisk:
-          image: quay.io/containerdisks/fedora:42
+          image: quay.io/containerdisks/fedora:45
       - name: cloudinitdisk
         cloudInitNoCloud:
           secretRef:
