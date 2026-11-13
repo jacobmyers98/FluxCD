@@ -18,3 +18,8 @@ prop:
   sims: 1000
   block_len: 5
 walk_forward: {in_sample_end: 2021-12-31}
+# sweep grid (sweep command only): each list may be overridden; null in stops = no stop
+sweep:
+  ema_lengths: [5, 7, 9, 12, 15, 21]
+  timeframes: [1, 2, 3, 5, 15]
+  stops: [null, 0.3, 0.5]

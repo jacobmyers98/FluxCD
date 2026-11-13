@@ -8,6 +8,7 @@ resources:
   - networkpolicies.yaml
   - cronjob-data-update.yaml
   - report-web.yaml
+  - api.yaml
 configMapGenerator:
   - name: backtest-config
     files: [default.yaml]   # keep in sync with config/default.yaml

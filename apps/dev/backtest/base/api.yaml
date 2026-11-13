@@ -1,0 +1,63 @@
+# Backtest API: n8n queues backtests/sweeps here (app/api.py). Runs one at a time, each in a child process.
+# Token: secret `backtest-api` key API_TOKEN (created by hand, like alpaca-creds):
+#   kubectl -n dev create secret generic backtest-api --from-literal=API_TOKEN="$(openssl rand -hex 32)"
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backtest-api
+spec:
+  replicas: 1
+  strategy: {type: Recreate}      # one worker queue; never two pods writing run records
+  selector:
+    matchLabels: {app.kubernetes.io/name: backtester, app.kubernetes.io/component: api}
+  template:
+    metadata:
+      labels: {app.kubernetes.io/name: backtester, app.kubernetes.io/component: api}
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: api
+          image: ghcr.io/jacobmyers98/backtester:0.2.0
+          command: [python, -m, app.api]
+          ports: [{name: http, containerPort: 8000}]
+          env:
+            - {name: BACKTEST_CONFIG, value: /etc/backtest/default.yaml}
+            - {name: REPORT_BASE_URL, value: "https://backtest.waffle-systems.com"}
+            - {name: CALLBACK_PREFIX, value: "http://port-service-n8n.dev.svc.cluster.local:5678/webhook/"}
+            - {name: MAX_COMBINATIONS, value: "400"}
+            - name: API_TOKEN
+              valueFrom: {secretKeyRef: {name: backtest-api, key: API_TOKEN}}
+          readinessProbe: {httpGet: {path: /healthz, port: 8000}, periodSeconds: 10}
+          livenessProbe: {httpGet: {path: /healthz, port: 8000}, periodSeconds: 30}
+          resources:
+            requests: {cpu: 250m, memory: 512Mi}
+            limits: {cpu: "2", memory: 4Gi}     # includes the running backtest/sweep child process
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          volumeMounts:
+            - {name: data, mountPath: /data}
+            - {name: config, mountPath: /etc/backtest, readOnly: true}
+            - {name: tmp, mountPath: /tmp}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: backtest-data}
+        - name: config
+          configMap: {name: backtest-config}
+        - name: tmp
+          emptyDir: {sizeLimit: 1Gi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backtest-api
+spec:
+  selector: {app.kubernetes.io/name: backtester, app.kubernetes.io/component: api}
+  ports: [{name: http, port: 8000, targetPort: 8000}]

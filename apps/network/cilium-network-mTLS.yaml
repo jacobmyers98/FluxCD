@@ -364,3 +364,13 @@ spec:
     - matchLabels:
         k8s:io.kubernetes.pod.namespace: kube-system
         app: tailscale
+  # backtest-api posts finished runs to n8n's webhooks
+  - fromEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: dev
+        app.kubernetes.io/name: backtester
+        app.kubernetes.io/component: api
+    toPorts:
+    - ports:
+      - port: "5678"
+        protocol: TCP

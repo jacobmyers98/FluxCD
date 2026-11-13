@@ -45,3 +45,33 @@ spec:
   ingress:
     - ports:
         - {protocol: TCP, port: 8080}
+---
+# API: only n8n may call it; it may only call back to n8n's webhooks (plus DNS).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backtester-api
+spec:
+  podSelector:
+    matchLabels: {app.kubernetes.io/name: backtester, app.kubernetes.io/component: api}
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels: {app: n8n}
+      ports:
+        - {protocol: TCP, port: 8000}
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels: {kubernetes.io/metadata.name: kube-system}
+          podSelector:
+            matchLabels: {k8s-app: kube-dns}
+      ports:
+        - {protocol: UDP, port: 53}
+        - {protocol: TCP, port: 53}
+    - to:
+        - podSelector:
+            matchLabels: {app: n8n}
+      ports:
+        - {protocol: TCP, port: 5678}
