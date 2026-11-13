@@ -32,6 +32,9 @@ spec:
           - name: cloudinitdisk
             disk:
               bus: virtio
+        features:
+          smm:
+            enabled: true     # required by KubeVirt for EFI SecureBoot
         firmware:
           bootloader:
             efi:
