@@ -1,0 +1,22 @@
+# local-storage has no provisioner. A `local` PV (not hostPath) carries nodeAffinity, so every
+# pod that mounts the RWO claim (jobs, cronjob, report-web) is scheduled onto this node.
+# Create the directory first, owned by the app UID (kubelet does NOT apply fsGroup to local volumes):
+#   sudo install -d -o 10001 -g 10001 -m 0755 /home/server/docker/backtest
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: backtest-data-pv
+  labels: {app.kubernetes.io/part-of: backtester}
+spec:
+  capacity: {storage: 20Gi}
+  accessModes: [ReadWriteOnce]
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  claimRef: {namespace: dev, name: backtest-data}
+  local:
+    path: /home/server/docker/backtest
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - {key: kubernetes.io/hostname, operator: In, values: [gameserver]}

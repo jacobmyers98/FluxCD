@@ -1,0 +1,47 @@
+# Shares namespace `dev` with other apps, so "default deny" is scoped to backtester pods only.
+# Every backtester pod is denied unless a policy below allows it.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backtester-default-deny
+spec:
+  podSelector:
+    matchLabels: {app.kubernetes.io/name: backtester}
+  policyTypes: [Ingress, Egress]
+---
+# Downloader pods: DNS + HTTPS (Alpaca market data) only.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backtester-downloader-egress
+spec:
+  podSelector:
+    matchLabels: {app.kubernetes.io/name: backtester, app.kubernetes.io/component: downloader}
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels: {kubernetes.io/metadata.name: kube-system}
+          podSelector:
+            matchLabels: {k8s-app: kube-dns}
+      ports:
+        - {protocol: UDP, port: 53}
+        - {protocol: TCP, port: 53}
+    - to:
+        - ipBlock: {cidr: 0.0.0.0/0}
+      ports:
+        - {protocol: TCP, port: 443}
+---
+# Backtest / sweep pods get no policy here, so default-deny leaves them with no egress.
+# Report web: ingress on 8080 only.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backtester-report-web-ingress
+spec:
+  podSelector:
+    matchLabels: {app.kubernetes.io/name: backtester, app.kubernetes.io/component: report-web}
+  policyTypes: [Ingress]
+  ingress:
+    - ports:
+        - {protocol: TCP, port: 8080}

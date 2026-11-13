@@ -1,0 +1,52 @@
+# One-time full download. kubectl create -f k8s/jobs/data-backfill.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: data-backfill
+  namespace: dev
+  labels: {app.kubernetes.io/name: backtester, app.kubernetes.io/component: downloader}
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 21600
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels: {app.kubernetes.io/name: backtester, app.kubernetes.io/component: downloader}
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      imagePullSecrets: [{name: ghcr-pull}]
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: downloader
+          image: ghcr.io/jacobmyers98/backtester:0.1.0
+          args: [download]
+          env:
+            - {name: BACKTEST_CONFIG, value: /etc/backtest/default.yaml}
+            - name: RUN_ID
+              valueFrom: {fieldRef: {fieldPath: "metadata.labels['batch.kubernetes.io/job-name']"}}
+          envFrom:
+            - secretRef: {name: alpaca-creds}
+          resources:
+            requests: {cpu: "250m", memory: 512Mi}
+            limits: {cpu: "1", memory: 1536Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          volumeMounts:
+            - {name: data, mountPath: /data}
+            - {name: config, mountPath: /etc/backtest, readOnly: true}
+            - {name: tmp, mountPath: /tmp}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: backtest-data}
+        - name: config
+          configMap: {name: backtest-config}
+        - name: tmp
+          emptyDir: {sizeLimit: 1Gi}

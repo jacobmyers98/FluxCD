@@ -1,0 +1,20 @@
+symbols: [QQQ, SPY]
+start: 2016-01-01
+timeframe_min: 5
+ema_length: 9
+trade_window: {start: "09:30", end: "15:55"}
+reverse_on_opposite: true
+fixed_stop_pct: null
+sizing: {mode: fixed_notional, notional: 50000}
+costs: {commission_per_share: 0.005, min_commission: 1.0, slippage_bps: 1.0}
+prop:
+  account: 50000
+  profit_target: 3000
+  daily_loss_limit: 1000
+  max_loss_trailing_eod: 2000
+  min_days: 1
+  max_calendar_days: null
+  prop_scale: 1.0
+  sims: 1000
+  block_len: 5
+walk_forward: {in_sample_end: 2021-12-31}
