@@ -4,5 +4,6 @@ resources:
   - helmrelease.yaml
   - helmrepo.yaml
   - trivy-pv.yaml
-  - kubescape-pv.yaml
-  - kubescape-servicemonitor.yaml
+  # Kubescape disabled 2026-11-14 (see helmrelease.yaml):
+  # - kubescape-pv.yaml
+  # - kubescape-servicemonitor.yaml

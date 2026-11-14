@@ -1,4 +1,4 @@
-# Headlamp: Kubernetes web UI, used to browse Trivy and Kubescape findings.
+# Headlamp: Kubernetes web UI, used to browse Trivy findings (Kubescape plugin commented out).
 # Plugins are installed at startup by the chart's plugin manager sidecar.
 # Login: paste the token from secret monitoring/headlamp-viewer-token
 #   kubectl -n monitoring get secret headlamp-viewer-token -o jsonpath='{.data.token}' | base64 -d
@@ -65,9 +65,10 @@ spec:
           - name: headlamp_trivy
             source: https://artifacthub.io/packages/headlamp/headlamp-trivy/headlamp_trivy
             version: 0.3.2
-          - name: headlamp_kubescape
-            source: https://artifacthub.io/packages/headlamp/kubescape-headlamp-plugin/headlamp_kubescape
-            version: 0.11.2
+          # Kubescape disabled 2026-11-14 (see apps/compliance/helmrelease.yaml):
+          # - name: headlamp_kubescape
+          #   source: https://artifacthub.io/packages/headlamp/kubescape-headlamp-plugin/headlamp_kubescape
+          #   version: 0.11.2
         installOptions:
           parallel: true
           maxConcurrent: 2

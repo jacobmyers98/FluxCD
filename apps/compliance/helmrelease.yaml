@@ -88,57 +88,60 @@ spec:
 
 ---
 
-apiVersion: helm.toolkit.fluxcd.io/v2
-kind: HelmRelease
-metadata:
-  name: kubescape
-  namespace: compliance
-spec:
-  interval: 1h
-  chart:
-    spec:
-      chart: kubescape-operator
-      version: "1.30.7"
-      sourceRef:
-        kind: HelmRepository
-        name: kubescape
-        namespace: flux-system
-  values:
-    ksNamespace: compliance
-    certificates:
-      strategy: initContainer
-    clusterName: "kubernetes" 
-    capabilities:
-      configurationScan: enable
-      continuousScan: disable
-      vulnerabilityScan: disable
-      runtimeObservability: disable
-      # Config scanning only. Trivy already does SBOMs and vulnerabilities;
-      # these extras cost ~340 MB/min of disk writes and nothing used them.
-      relevancy: disable
-      nodeSbomGeneration: disable
-      networkPolicyService: disable
-      nodeProfileService: disable
-      seccompProfileService: disable
-      httpDetection: disable
-      networkEventsStreaming: disable
-      # Light exporter that reads stored scan results (no scanning) for Grafana.
-      prometheusExporter: enable
-    prometheusExporter:
-      enableWorkloadMetrics: true
-    operator:
-      resources:
-        requests:
-          cpu: 100m
-          memory: 128Mi
-        limits:
-          cpu: 250m
-          memory: 512Mi
-    nodeAgent:
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: 500m
-          memory: 1Gi
+# Kubescape disabled 2026-11-14: Trivy covers images + config. To re-enable, uncomment this block,
+# the kubescape HelmRepository (helmrepo.yaml), kubescape-pv.yaml + kubescape-servicemonitor.yaml in
+# kustomization.yaml, and the headlamp_kubescape plugin in apps/monitoring/headlamp.yaml.
+# apiVersion: helm.toolkit.fluxcd.io/v2
+# kind: HelmRelease
+# metadata:
+#   name: kubescape
+#   namespace: compliance
+# spec:
+#   interval: 1h
+#   chart:
+#     spec:
+#       chart: kubescape-operator
+#       version: "1.30.7"
+#       sourceRef:
+#         kind: HelmRepository
+#         name: kubescape
+#         namespace: flux-system
+#   values:
+#     ksNamespace: compliance
+#     certificates:
+#       strategy: initContainer
+#     clusterName: "kubernetes" 
+#     capabilities:
+#       configurationScan: enable
+#       continuousScan: disable
+#       vulnerabilityScan: disable
+#       runtimeObservability: disable
+#       # Config scanning only. Trivy already does SBOMs and vulnerabilities;
+#       # these extras cost ~340 MB/min of disk writes and nothing used them.
+#       relevancy: disable
+#       nodeSbomGeneration: disable
+#       networkPolicyService: disable
+#       nodeProfileService: disable
+#       seccompProfileService: disable
+#       httpDetection: disable
+#       networkEventsStreaming: disable
+#       # Light exporter that reads stored scan results (no scanning) for Grafana.
+#       prometheusExporter: enable
+#     prometheusExporter:
+#       enableWorkloadMetrics: true
+#     operator:
+#       resources:
+#         requests:
+#           cpu: 100m
+#           memory: 128Mi
+#         limits:
+#           cpu: 250m
+#           memory: 512Mi
+#     nodeAgent:
+#       resources:
+#         requests:
+#           cpu: 100m
+#           memory: 256Mi
+#         limits:
+#           cpu: 500m
+#           memory: 1Gi
