@@ -113,6 +113,15 @@ spec:
       continuousScan: disable
       vulnerabilityScan: disable
       runtimeObservability: disable
+      # Config scanning only. Trivy already does SBOMs and vulnerabilities;
+      # these extras cost ~340 MB/min of disk writes and nothing used them.
+      relevancy: disable
+      nodeSbomGeneration: disable
+      networkPolicyService: disable
+      nodeProfileService: disable
+      seccompProfileService: disable
+      httpDetection: disable
+      networkEventsStreaming: disable
     operator:
       resources:
         requests:
