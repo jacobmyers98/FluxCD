@@ -14,4 +14,3 @@ resources:
   - secret.grafana.yaml
   - glances.yaml
   - snapotter.yaml
-  - headlamp.yaml

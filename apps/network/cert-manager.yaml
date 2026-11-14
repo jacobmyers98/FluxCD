@@ -226,7 +226,6 @@ spec:
     - snapotter.waffle-systems.com
     - teslamate.waffle-systems.com
     - glances.waffle-systems.com
-    - headlamp.waffle-systems.com
     # The certificate will be saved to this Secret automatically
     secretName: monitoring-tls 
   rules:
@@ -285,17 +284,6 @@ spec:
             name: port-service-glances
             port:
               number: 61208
-  # --- Headlamp ---
-  - host: headlamp.waffle-systems.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: headlamp
-            port:
-              number: 80
 
 ---
 
@@ -324,3 +312,32 @@ spec:
             name: port-service-n8n
             port:
               number: 5678
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: compliance-tls
+  namespace: compliance
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: cilium
+  tls:
+  - hosts:
+    - headlamp.waffle-systems.com
+    # The certificate will be saved to this Secret automatically
+    secretName: compliance-tls
+  rules:
+  # --- Headlamp ---
+  - host: headlamp.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: headlamp
+            port:
+              number: 80

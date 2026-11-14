@@ -1,7 +1,7 @@
 # Headlamp: Kubernetes web UI, used to browse Trivy findings (Kubescape plugin commented out).
 # Plugins are installed at startup by the chart's plugin manager sidecar.
-# Login: paste the token from secret monitoring/headlamp-viewer-token
-#   kubectl -n monitoring get secret headlamp-viewer-token -o jsonpath='{.data.token}' | base64 -d
+# Login: paste the token from secret compliance/headlamp-viewer-token
+#   kubectl -n compliance get secret headlamp-viewer-token -o jsonpath='{.data.token}' | base64 -d
 # The token is read-only (view + security reports), and cannot read Secrets.
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
@@ -18,7 +18,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: headlamp
-  namespace: monitoring
+  namespace: compliance
 spec:
   interval: 1h
   chart:
@@ -96,7 +96,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: headlamp-viewer
-  namespace: monitoring
+  namespace: compliance
 
 ---
 
@@ -104,7 +104,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: headlamp-viewer-token
-  namespace: monitoring
+  namespace: compliance
   annotations:
     kubernetes.io/service-account.name: headlamp-viewer
 type: kubernetes.io/service-account-token
@@ -148,7 +148,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: headlamp-viewer
-    namespace: monitoring
+    namespace: compliance
 
 ---
 
@@ -163,7 +163,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: headlamp-viewer
-    namespace: monitoring
+    namespace: compliance
 
 ---
 
@@ -173,7 +173,7 @@ apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
   name: headlamp
-  namespace: monitoring
+  namespace: compliance
 spec:
   endpointSelector:
     matchLabels:

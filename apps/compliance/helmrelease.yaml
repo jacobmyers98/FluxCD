@@ -93,7 +93,7 @@ spec:
 
 # Kubescape disabled 2026-11-14: Trivy covers images + config. To re-enable, uncomment this block,
 # the kubescape HelmRepository (helmrepo.yaml), kubescape-pv.yaml + kubescape-servicemonitor.yaml in
-# kustomization.yaml, and the headlamp_kubescape plugin in apps/monitoring/headlamp.yaml.
+# kustomization.yaml, and the headlamp_kubescape plugin in apps/compliance/headlamp.yaml.
 # apiVersion: helm.toolkit.fluxcd.io/v2
 # kind: HelmRelease
 # metadata:
