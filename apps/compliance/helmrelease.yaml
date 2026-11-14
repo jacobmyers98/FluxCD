@@ -18,7 +18,10 @@ spec:
         namespace: flux-system
   values:
     operator:
-      scanJobsConcurrentLimit: 2
+      # One scan at a time and weekly rescans: each scan downloads and unpacks
+      # the whole image, which caused heavy IO wait on the root SSD.
+      scanJobsConcurrentLimit: 1
+      scannerReportTTL: 168h
     resources:
       requests:
         cpu: 100m
