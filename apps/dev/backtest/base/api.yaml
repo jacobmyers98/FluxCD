@@ -23,7 +23,7 @@ spec:
         seccompProfile: {type: RuntimeDefault}
       containers:
         - name: api
-          image: ghcr.io/jacobmyers98/backtester:0.2.0
+          image: ghcr.io/jacobmyers98/backtester:0.3.0
           command: [python, -m, app.api]
           ports: [{name: http, containerPort: 8000}]
           env:
@@ -31,13 +31,14 @@ spec:
             - {name: REPORT_BASE_URL, value: "https://backtest.waffle-systems.com"}
             - {name: CALLBACK_PREFIX, value: "http://port-service-n8n.dev.svc.cluster.local:5678/webhook/"}
             - {name: MAX_COMBINATIONS, value: "400"}
+            - {name: LAB_WORKERS, value: "3"}          # parallel processes for Strategy Lab video-strategy runs
             - name: API_TOKEN
               valueFrom: {secretKeyRef: {name: backtest-api, key: API_TOKEN}}
           readinessProbe: {httpGet: {path: /healthz, port: 8000}, periodSeconds: 10}
           livenessProbe: {httpGet: {path: /healthz, port: 8000}, periodSeconds: 30}
           resources:
             requests: {cpu: 250m, memory: 512Mi}
-            limits: {cpu: "2", memory: 4Gi}     # includes the running backtest/sweep child process
+            limits: {cpu: "4", memory: 6Gi}     # includes the running run's child process (+3 lab workers)
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
