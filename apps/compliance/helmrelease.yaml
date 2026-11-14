@@ -22,12 +22,9 @@ spec:
       # the whole image, which caused heavy IO wait on the root SSD.
       scanJobsConcurrentLimit: 1
       scannerReportTTL: 168h
-    # Store the failing resources in the compliance reports (CIS/NSA/PSS), not
-    # just counts, so Headlamp can list them. failEntriesLimit does not cap
-    # this list. Sizes on 2026-11-14: CIS ~700 KB, NSA ~350 KB (etcd max ~1.5 MB);
-    # if workloads roughly double, switch back to reportType: summary.
-    compliance:
-      reportType: all
+    # Compliance reports stay on reportType: summary (chart default). The Headlamp
+    # Trivy plugin reads failure counts only from status.summaryReport; with
+    # "all" it shows 0 everywhere (tried 2026-11-14).
     resources:
       requests:
         cpu: 100m
