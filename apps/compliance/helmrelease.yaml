@@ -122,6 +122,10 @@ spec:
       seccompProfileService: disable
       httpDetection: disable
       networkEventsStreaming: disable
+      # Light exporter that reads stored scan results (no scanning) for Grafana.
+      prometheusExporter: enable
+    prometheusExporter:
+      enableWorkloadMetrics: true
     operator:
       resources:
         requests:

@@ -1,0 +1,23 @@
+# Scrapes kubescape's prometheus-exporter (posture results from the last scan).
+# The chart's Service has an unnamed port, so the endpoint uses targetPort.
+# Don't scrape the kubescape pod itself: each scrape of it runs a full scan.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: kubescape-prometheus-exporter
+  namespace: compliance
+  labels:
+    release: prometheus-community
+spec:
+  namespaceSelector:
+    matchNames:
+      - compliance
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: kubescape
+      app.kubernetes.io/component: prometheus-exporter
+  endpoints:
+    - targetPort: 8080
+      path: /metrics
+      interval: 5m
+      scrapeTimeout: 30s
