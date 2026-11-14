@@ -23,11 +23,11 @@ spec:
       scanJobsConcurrentLimit: 1
       scannerReportTTL: 168h
     # Store the failing resources in the compliance reports (CIS/NSA/PSS), not
-    # just counts, so Headlamp can list them. Capped per check to keep the
-    # objects small in etcd.
+    # just counts, so Headlamp can list them. failEntriesLimit does not cap
+    # this list. Sizes on 2026-11-14: CIS ~700 KB, NSA ~350 KB (etcd max ~1.5 MB);
+    # if workloads roughly double, switch back to reportType: summary.
     compliance:
       reportType: all
-      failEntriesLimit: 50
     resources:
       requests:
         cpu: 100m
