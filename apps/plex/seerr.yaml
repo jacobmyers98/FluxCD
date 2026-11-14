@@ -12,9 +12,7 @@ spec:
       port: 5055
       targetPort: 5055
       nodePort: 30023
-
 ---
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -41,7 +39,7 @@ spec:
         fsGroup: 1004
       containers:
         - name: seerr
-          image: ghcr.io/seerr-team/seerr:v3.5.1 # {"$imagepolicy": "plex:seerr-policy"}
+          image: ghcr.io/seerr-team/seerr:v3.5.2 # {"$imagepolicy": "plex:seerr-policy"}
           imagePullPolicy: Always
           ports:
             - containerPort: 5055
