@@ -19,5 +19,8 @@ spec:
   endpoints:
     - targetPort: 8080
       path: /metrics
+      # Keep the exporter's own namespace label (the scanned namespace)
+      # instead of renaming it to exported_namespace.
+      honorLabels: true
       interval: 5m
       scrapeTimeout: 30s
