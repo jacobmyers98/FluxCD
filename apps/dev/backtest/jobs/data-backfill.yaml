@@ -23,7 +23,7 @@ spec:
         seccompProfile: {type: RuntimeDefault}
       containers:
         - name: downloader
-          image: ghcr.io/jacobmyers98/backtester:0.5.0
+          image: ghcr.io/jacobmyers98/backtester:0.5.1
           args: [download]
           env:
             - {name: BACKTEST_CONFIG, value: /etc/backtest/default.yaml}
