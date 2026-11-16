@@ -46,7 +46,7 @@ spec:
     - ports:
         - {protocol: TCP, port: 8080}
 ---
-# API: only n8n may call it; it may only call back to n8n's webhooks (plus DNS).
+# API: only n8n may call the machine API (:8000); the web UI (:8080, own login) is reachable via the ingress; it may only call back to n8n's webhooks (plus DNS).
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -61,6 +61,8 @@ spec:
             matchLabels: {app: n8n}
       ports:
         - {protocol: TCP, port: 8000}
+    - ports:
+        - {protocol: TCP, port: 8080}
   egress:
     - to:
         - namespaceSelector:

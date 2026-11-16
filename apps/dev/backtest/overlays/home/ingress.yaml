@@ -14,7 +14,11 @@ spec:
     - host: backtest.waffle-systems.com
       http:
         paths:
-          - path: /
+          - path: /reports
             pathType: Prefix
             backend:
               service: {name: report-web, port: {number: 8080}}
+          - path: /
+            pathType: Prefix
+            backend:
+              service: {name: backtest-api, port: {number: 8080}}   # web UI
