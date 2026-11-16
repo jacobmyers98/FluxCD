@@ -14,9 +14,7 @@ spec:
   selector:
     app: radarr
   type: NodePort
-
 ---
-
 apiVersion: apps/v1 #kubectl api-resources | grep {kind}
 kind: Deployment
 metadata:
@@ -39,7 +37,7 @@ spec:
     spec:
       containers:
       - name: radarr
-        image: linuxserver/radarr:6.4.4 #  {"$imagepolicy": "plex:radarr-policy"}
+        image: linuxserver/radarr:7.0.3 #  {"$imagepolicy": "plex:radarr-policy"}
         imagePullPolicy: Always
         env:
         - name: PUID
