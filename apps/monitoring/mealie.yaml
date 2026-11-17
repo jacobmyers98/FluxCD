@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mealie
+  namespace: monitoring
+  labels:
+    app: mealie
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate # SQLite on a hostPath: never run two pods at once
+  selector:
+    matchLabels:
+      app: mealie
+  template:
+    metadata:
+      labels:
+        app: mealie
+    spec:
+      containers:
+      - name: mealie
+        image: ghcr.io/mealie-recipes/mealie:v3.31.0 # {"$imagepolicy": "monitoring:mealie-policy"}
+        ports:
+        - containerPort: 9000
+        env:
+        - name: BASE_URL
+          value: https://mealie.waffle-systems.com
+        - name: ALLOW_SIGNUP
+          value: "false"
+        - name: TZ
+          value: America/Denver
+        - name: PUID
+          value: "1001"
+        - name: PGID
+          value: "1004"
+        - name: MAX_WORKERS
+          value: "1"
+        - name: WEB_CONCURRENCY
+          value: "1"
+        resources:
+          requests:
+            cpu: 50m
+            memory: 256Mi
+          limits:
+            cpu: "2"
+            memory: 1Gi
+        readinessProbe:
+          httpGet:
+            path: /api/app/about
+            port: 9000
+          initialDelaySeconds: 20
+          periodSeconds: 15
+        volumeMounts:
+        - name: mealie-data
+          mountPath: /app/data
+      volumes:
+      - name: mealie-data
+        hostPath:
+          path: /home/server/docker/mealie
+          type: DirectoryOrCreate
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: port-service-mealie
+  namespace: monitoring
+spec:
+  type: ClusterIP
+  selector:
+    app: mealie
+  ports:
+    - protocol: TCP
+      port: 9000
+      targetPort: 9000

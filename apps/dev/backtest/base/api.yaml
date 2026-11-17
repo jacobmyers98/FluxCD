@@ -1,5 +1,5 @@
 # Backtest API: n8n queues backtests/sweeps here (app/api.py, :8000). Runs one at a time, each in a child process.
-# Web UI (app/webui.py, :8080) runs in the same process: https://backtest.waffle-systems.com/ (login = API_TOKEN).
+# Web UI (app/webui.py, :8080) runs in the same process: https://backtest.waffle-systems.com/ (no login; LAN / Tailscale only).
 # Token: secret `backtest-api` key API_TOKEN (created by hand, like alpaca-creds):
 #   kubectl -n dev create secret generic backtest-api --from-literal=API_TOKEN="$(openssl rand -hex 32)"
 apiVersion: apps/v1
@@ -24,7 +24,7 @@ spec:
         seccompProfile: {type: RuntimeDefault}
       containers:
         - name: api
-          image: ghcr.io/jacobmyers98/backtester:0.7.2
+          image: ghcr.io/jacobmyers98/backtester:0.7.3
           command: [python, -m, app.api]
           ports: [{name: http, containerPort: 8000}, {name: ui, containerPort: 8080}]
           env:

@@ -20,3 +20,28 @@ metadata:
 spec:
   image: ghcr.io/homarr-labs/homarr
   interval: 6h
+
+---
+
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: mealie-policy
+  namespace: monitoring
+spec:
+  imageRepositoryRef:
+    name: mealie
+  policy:
+    semver:
+      range: ">=3.31.0 <4.0.0"
+
+---
+
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: mealie
+  namespace: monitoring
+spec:
+  image: ghcr.io/mealie-recipes/mealie
+  interval: 6h

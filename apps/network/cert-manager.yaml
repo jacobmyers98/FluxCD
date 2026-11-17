@@ -226,6 +226,7 @@ spec:
     - snapotter.waffle-systems.com
     - teslamate.waffle-systems.com
     - glances.waffle-systems.com
+    - mealie.waffle-systems.com
     # The certificate will be saved to this Secret automatically
     secretName: monitoring-tls 
   rules:
@@ -284,6 +285,17 @@ spec:
             name: port-service-glances
             port:
               number: 61208
+  # --- Mealie ---
+  - host: mealie.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-mealie
+            port:
+              number: 9000
 
 ---
 
