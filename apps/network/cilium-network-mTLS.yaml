@@ -245,6 +245,10 @@ spec:
       - matchLabels:
           k8s:io.kubernetes.pod.namespace: kube-system
           app: tailscale
+    - toEndpoints:
+      - matchLabels:
+          k8s:io.kubernetes.pod.namespace: dev
+          app: n8n
     # Homarr API / Dashboard Connections
     - toEntities:
       - cluster # Allows traffic to other namespaces (e.g., your 'gaming' namespace)
@@ -362,6 +366,10 @@ spec:
     - matchLabels:
         k8s:io.kubernetes.pod.namespace: monitoring
         app: homarr
+  - fromEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: monitoring
+        app: mealie
   - fromEndpoints:
     - matchLabels:
         k8s:io.kubernetes.pod.namespace: kube-system
