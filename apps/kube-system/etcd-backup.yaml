@@ -3,66 +3,109 @@
 # restored (`etcdutl snapshot restore`) if etcd is ever corrupted. It does NOT back up app
 # data on hostPath folders; the weekly-server-backup CronJob covers /home/server.
 #
-# How it works: a pod on the host network (etcd only listens on 127.0.0.1:2379) runs
-# `etcdctl snapshot save` with an etcd client certificate and writes the file to the HDD.
+# How it works (one pod, three steps that run in order; if a step fails, the later ones
+# don't run, the pod fails and the Job retries / shows as Failed):
+#   1. snapshot (init): `etcdctl snapshot save` over 127.0.0.1:2379 (host network) into
+#      /mnt/backup/etcd/incoming.db. etcdctl writes incoming.db.part first and only renames
+#      it when the whole snapshot arrived and its checksum matched.
+#   2. verify (init): `etcdutl snapshot status` opens the file and prints its hash, revision,
+#      key count and size; a damaged file makes it fail.
+#   3. rotate (main): renames incoming.db to etcd-YYYY-MM-DD_HHMM.db, deletes leftover *.part
+#      files from failed runs, then deletes snapshots older than 56 days (~8 weekly copies,
+#      ~0.8 GB each). Old files are only deleted after a new snapshot succeeded.
+# The etcd image has no shell (distroless), so steps 1 and 2 run the binaries directly and
+# the file handling runs in Alpine.
 #
-# Known issues (see /home/server/FLUX_TODO.md):
-#   - the script ends in `exit 0`, so a failed snapshot still shows as a successful Job;
-#     /mnt/backup/etcd has several half-written *.db.part files from such runs
-#   - file names use $RANDOM instead of a date, and nothing deletes old snapshots
-#   - the etcd-certs Secret (SOPS-encrypted in secret.etcd-backup.yaml) holds copies of the
-#     etcd client cert; when kubeadm renews certificates, update it too
+# The etcd-certs Secret (SOPS-encrypted in secret.etcd-backup.yaml) holds copies of the etcd
+# client cert (kube-etcd-healthcheck-client, expires 2027-09-09); when kubeadm renews
+# certificates, update it too.
+#
+# Restore test / manual run:
+#   kubectl -n kube-system create job --from=cronjob/etcd-backup etcd-backup-manual
+#   kubectl -n kube-system logs job/etcd-backup-manual --all-containers
 apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: etcd-backup
   namespace: kube-system
 spec:
-  schedule: "0 3 * * 0"  # Every 7 days at 03:00 AM (Sunday). No timeZone set, so it's the node's/controller's time zone
+  schedule: "0 3 * * 0"  # Sundays 03:00. No timeZone set, so it's the controller's time zone (UTC)
+  concurrencyPolicy: Forbid        # never two snapshots at once (both would write incoming.db)
   successfulJobsHistoryLimit: 1    # keep only the last successful Job (and its logs)
-  failedJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1        # a failed Job stays visible: `kubectl -n kube-system get jobs`
   jobTemplate:
     spec:
-      completions: 1
-      parallelism: 1
-      backoffLimit: 6              # retry a failing pod up to 6 times
-      activeDeadlineSeconds: 300   # kill the Job after 5 minutes (a slow snapshot on the SATA SSD can hit this)
+      backoffLimit: 3              # retry a failing pod up to 3 times, then mark the Job Failed
+      activeDeadlineSeconds: 1800  # whole Job incl. retries; a snapshot normally takes ~30 s
       template:
         spec:
+          restartPolicy: Never     # a failed step = a new pod (counts against backoffLimit)
           securityContext:
-            runAsUser: 0           # root, to read the client key and write to the HDD
+            runAsUser: 0           # root, to read the client key and write to the root-owned HDD folder
           nodeSelector:
             kubernetes.io/hostname: gameserver   # the control-plane node, where etcd runs
           hostNetwork: true        # share the node's network so 127.0.0.1:2379 is etcd
-          containers:
-          - name: etcd-backup
-            image: registry.k8s.io/etcd:3.6.4-0  # official etcd image (contains etcdctl); keep near the cluster's etcd version
-            env:
-              - name: ETCDCTL_API
-                value: "3"
+          initContainers:
+          - name: snapshot
+            # Keep the same version as the cluster's etcd
+            # (kubectl -n kube-system get pod -l component=etcd -o jsonpath='{..image}').
+            image: registry.k8s.io/etcd:3.7.0-0
             command:
-              - /bin/sh
-              - -c
-              - 'set -x; etcdctl --debug --endpoints=https://127.0.0.1:2379 --cacert=/certs/ca.crt --cert=/certs/client.crt --key=/certs/client.key snapshot save /backup/etcd-$RANDOM.db; exit 0'
+              - etcdctl
+              - --endpoints=https://127.0.0.1:2379
+              - --cacert=/certs/ca.crt
+              - --cert=/certs/client.crt
+              - --key=/certs/client.key
+              - --command-timeout=10m
+              - snapshot
+              - save
+              - /backup/incoming.db
             resources:
-              requests:
-                cpu: 50m
-                memory: 64Mi
-              limits:
-                cpu: 500m
-                memory: 512Mi
+              requests: { cpu: 50m, memory: 64Mi }
+              limits: { cpu: 500m, memory: 512Mi }
             volumeMounts:
             - name: etcd-certs
               mountPath: /certs      # ca.crt, client.crt, client.key
               readOnly: true
             - name: backup-storage
               mountPath: /backup
-          restartPolicy: OnFailure
+          - name: verify
+            image: registry.k8s.io/etcd:3.7.0-0
+            command: ["etcdutl", "snapshot", "status", "/backup/incoming.db", "-w", "table"]
+            resources:
+              requests: { cpu: 50m, memory: 64Mi }
+              limits: { cpu: 500m, memory: 512Mi }
+            volumeMounts:
+            - name: backup-storage
+              mountPath: /backup
+          containers:
+          - name: rotate
+            image: alpine:3.24
+            command: ["/bin/sh", "-c"]
+            args:
+              - |
+                set -eu
+                cd /backup
+                name="etcd-$(date +%F_%H%M).db"
+                mv incoming.db "$name"
+                echo "saved $name ($(du -h "$name" | cut -f1))"
+                # leftovers from runs that died mid-snapshot
+                find . -maxdepth 1 -name '*.part' -print -delete
+                # keep ~8 weeks of snapshots
+                find . -maxdepth 1 -name 'etcd-*.db' -mtime +56 -print -delete
+                echo "snapshots now:"
+                ls -lh etcd-*.db
+            resources:
+              requests: { cpu: 10m, memory: 16Mi }
+              limits: { cpu: 200m, memory: 64Mi }
+            volumeMounts:
+            - name: backup-storage
+              mountPath: /backup
           volumes:
           - name: etcd-certs
             secret:
               secretName: etcd-certs   # apps/kube-system/secret.etcd-backup.yaml (SOPS)
           - name: backup-storage
             hostPath:
-              path: /mnt/backup/etcd   # backup HDD; type Directory = must already exist
-              type: Directory
+              path: /mnt/backup/etcd   # backup HDD; type Directory = must already exist, so if
+              type: Directory          # the HDD isn't mounted the pod fails instead of filling the SSD
