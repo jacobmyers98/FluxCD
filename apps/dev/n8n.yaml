@@ -33,7 +33,7 @@ spec:
           mountPath: /ollama
       containers:
       - name: n8n
-        image: n8nio/n8n:stable@sha256:b4b90747b81fcda7e76550c0d3aa7f0f64917a1e9573cff40d6834eaf2e0f8ea # {"$imagepolicy": "dev:n8n-policy"}
+        image: n8nio/n8n:stable@sha256:63bdcfdea7e0d21152a7ad8f62e6622658c5eae3835e7515dbd9b610cdb76111 # {"$imagepolicy": "dev:n8n-policy"}
         securityContext:
           runAsUser: 1001 # container_user
           runAsGroup: 1004
@@ -75,7 +75,7 @@ spec:
       # 2. Python/JavaScript Sandbox (Task Runner)
       # Version must match n8n: both images follow the "stable" tag (image-policies.yaml)
       - name: n8n-task-runner
-        image: n8nio/runners:stable@sha256:c6215e7626277e194e39f1dfe768fbdda718b61c759875ddb4fc9f9f21ee08ad # {"$imagepolicy": "dev:n8n-runners-policy"}
+        image: n8nio/runners:stable@sha256:9c0b3300dc81814dea43f186f17752cb2ffb161635e8f533376513773048ed02 # {"$imagepolicy": "dev:n8n-runners-policy"}
         env:
         - name: N8N_RUNNERS_AUTH_TOKEN
           value: "my-secure-random-token" # Matches the n8n token
