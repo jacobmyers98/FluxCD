@@ -27,7 +27,7 @@ spec:
             seccompProfile: {type: RuntimeDefault}
           containers:
             - name: download
-              image: ghcr.io/jacobmyers98/backtester:0.8.0
+              image: ghcr.io/jacobmyers98/backtester:0.9.0
               args: [download, --set, "symbols=[QQQ, SPY, IWM]"]   # IWM: Strategy Lab video strategies
               env:
                 - {name: BACKTEST_CONFIG, value: /etc/backtest/default.yaml}
