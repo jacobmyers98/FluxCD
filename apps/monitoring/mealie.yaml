@@ -37,6 +37,15 @@ spec:
           value: "1"
         - name: WEB_CONCURRENCY
           value: "1"
+        # AI features via the local Ollama (OpenAI-compatible API in the n8n pod)
+        - name: OPENAI_BASE_URL
+          value: http://ollama-service.dev.svc.cluster.local:11434/v1
+        - name: OPENAI_API_KEY
+          value: ollama # Ollama ignores it, but Mealie needs a value
+        - name: OPENAI_MODEL
+          value: qwen3-32k:latest
+        - name: OPENAI_REQUEST_TIMEOUT
+          value: "300"
         resources:
           requests:
             cpu: 50m
