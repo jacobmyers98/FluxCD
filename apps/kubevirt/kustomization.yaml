@@ -1,3 +1,19 @@
+# KubeVirt: runs real virtual machines (like dev/devbox) next to containers.
+# Applied by its own Flux Kustomization "kubevirt" (clusters/my-cluster/kubevirt.yaml), NOT by
+# "apps": the operator's CRDs must have exactly one owner, or moving/removing them between two
+# Kustomizations can prune the CRDs and with them every VM.
+#
+# The two files come straight from the KubeVirt GitHub release (kustomize downloads them):
+#   1. kubevirt-operator.yaml: namespace kubevirt, the CRDs and the virt-operator Deployment
+#   2. kubevirt-cr.yaml: the "KubeVirt" object that tells virt-operator to install the rest
+#      (virt-api, virt-controller, virt-handler on each node, ...)
+# The KubeVirt object has no imageTag, so the installed version = the operator's version.
+#
+# UPGRADING: KubeVirt only supports going one minor version at a time, from the latest patch
+# of each minor (v1.8.4 → v1.9.1 → v1.10.x ...). Change BOTH URLs to the next step, push,
+# then wait until `kubectl -n kubevirt get kubevirt` shows the new version, Available and
+# not Progressing, before the next step. Running VMs keep their old virt-launcher until
+# they are restarted (`virtctl -n dev restart devbox`; devbox's disk resets on restart).
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
