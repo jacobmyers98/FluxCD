@@ -3,28 +3,30 @@ FluxCD GitOps pipeline for home automation<br>
 
 
 
-### **Current Pod count: 79 (75 running, 4 completed job pods)**<br>
+### **Current Pod count: 87 (77 running, 10 completed job pods)**<br>
 ### **Current K8s version: v1.37.0**<br>
 ### **Current GPU version: 580.178.04 (NVIDIA GeForce RTX 3060)**<br>
 ### **Current Cilium version: v1.20.1**<br>
-### **Current OS version: Ubuntu Server 22.04.5 LTS (kernel 5.15.0-198)**<br>
+### **Current OS version: Ubuntu Server 22.04.5 LTS (kernel 5.15.0-202)**<br>
 
 
 ## **Directory Structure**<br>
 **apps** - Everything Flux deploys to the cluster, one folder per area. `apps/kustomization.yaml` lists which folders are active.<br>
-**clusters** - Flux bootstrap files (`flux-system`) and the root `apps` Kustomization that points Flux at `./apps` with SOPS decryption.<br>
+**clusters** - Flux bootstrap files (`flux-system`), the root `apps` Kustomization that points Flux at `./apps` with SOPS decryption, and the separate `kubevirt` Kustomization (`kubevirt.yaml`) for `./apps/kubevirt`.<br>
 **examples** - Files that are not deployed by Flux: KEDA, HAProxy/Keepalived configs, and the `research-dependency` example project.<br>
+
+The manifests under `apps/` and `clusters/my-cluster/` are commented: every HelmRelease, Flux object, CronJob, network policy, PV and other non-trivial resource explains what it does and why it's set up that way (SOPS-encrypted files and the generated `gotk-*.yaml` are the exceptions).<br>
 
 
 ## **Namespaces**<br>
-**kube-system** - Cluster core: Cilium, CoreDNS, cert-manager, Tailscale, the NVIDIA device plugin and the etcd backup job.<br>
+**kube-system** - Cluster core: Cilium, CoreDNS, cert-manager, Tailscale, the NVIDIA device plugin, Vaultwarden and the backup jobs.<br>
 **cilium-spire** - SPIRE server and agent that issue workload identities for Cilium's mutual TLS.<br>
 **flux-system** - The FluxCD controllers that sync this repo to the cluster.<br>
 **monitoring** - Dashboards, metrics, logs and other self-hosted tools (Grafana, Prometheus, Loki, Homarr, Teslamate, etc.).<br>
-**compliance** - Vulnerability and configuration scanning (Trivy and Kubescape).<br>
+**compliance** - Vulnerability and configuration scanning (Trivy) and the Headlamp dashboard.<br>
 **plex** - Media server and the automation around it. Note that this Namespace should be considered a production Namespace as outside users utilize this service.<br>
 **gaming** - Video game servers such as Minecraft, with Cloudflare DDNS. Note that this Namespace should be considered a production Namespace as outside users utilize this service.<br>
-**dev** - Personal projects, a KubeVirt dev VM and self-hosted GitHub Actions runners.<br>
+**dev** - Personal projects (n8n automations, local LLMs, a backtester), a KubeVirt dev VM and self-hosted GitHub Actions runners.<br>
 **kubevirt** - The KubeVirt operator that runs virtual machines on the cluster.<br>
 **default / kube-public / kube-node-lease** - Unused by workloads; a Cilium deny-all policy blocks all ingress and egress for any pod placed there.<br>
 
@@ -48,6 +50,10 @@ tailscale-subnet-router - advertises the home LAN (192.168.1.0/24), the service 
 nvidia-device-plugin - exposes the GPU to Kubernetes as the `nvidia.com/gpu` resource. Time slicing splits the single GPU into 4 schedulable replicas so that Plex/Tdarr, Ollama and other workloads can share it. A `nvidia` RuntimeClass is also defined.<br>
 
 etcd-backup - a CronJob that runs every Sunday at 03:00, takes an etcd snapshot and saves it to an HDD at `/mnt/backup/etcd`, so the cluster can be recovered if it becomes corrupt.<br>
+
+weekly-server-backup - a CronJob that runs every Sunday at 02:00 and rsyncs `/home/server` into a dated folder on the backup HDD (`/mnt/backup`), deleting copies older than 30 days.<br>
+
+vaultwarden - a self-hosted Bitwarden-compatible password manager at vault.waffle-systems.com, with signups disabled.<br>
 
 coredns / etcd / kube-apiserver / kube-controller-manager / kube-scheduler / kube-proxy / metrics-server - standard Kubernetes control-plane and cluster add-on pods, not managed by FluxCD.<br>
 
@@ -91,6 +97,8 @@ glances - a system monitoring web UI showing host CPU, memory, disk, network and
 
 snapotter - SnapOtter, a self-hosted image and file processing toolkit (with its own embedded PostgreSQL and Redis), storing its data on a hostPath folder.<br>
 
+mealie - a self-hosted recipe manager at mealie.waffle-systems.com (SQLite on a hostPath folder). Its "Import with AI" feature uses the cluster's Ollama. Image updates are automated by Flux.<br>
+
 
 ## **compliance**<br>
 
@@ -98,7 +106,9 @@ trivy-operator / trivy-server - deployed via the trivy-operator and trivy charts
 
 <img width="1340" height="486" alt="image" src="https://github.com/user-attachments/assets/d576d94e-a4c9-45e9-a77c-9ed7e991d102" />
 
-kubescape / operator / node-agent / storage / kubescape-scheduler - deployed via the kubescape-operator chart. Runs Kubernetes configuration and compliance scans (vulnerability scanning and runtime observability are disabled). The scheduler CronJob triggers a scan daily at 01:27.<br>
+headlamp - the Headlamp Kubernetes dashboard at headlamp.waffle-systems.com, with the Trivy plugin for browsing vulnerability, config-audit and compliance (CIS / NSA / PSS) reports. It logs in with a read-only service account token (no cluster-admin, no access to Secrets).<br>
+
+kubescape - disabled since 2026-11-14 (Trivy covers the same checks). Its config is kept as comments in `apps/compliance` so it can be turned back on.<br>
 
 
 ## **plex**<br>
@@ -113,13 +123,11 @@ prowlarr / flaresolverr - Prowlarr is an indexer manager that syncs torrent trac
 
 qbittorrent / gluetun - qBittorrent is the download client used by Sonarr and Radarr. All of its traffic goes through a Gluetun WireGuard VPN sidecar, and an init container blocks qBittorrent from starting until the VPN is confirmed working.<br>
 
-qbittorrent-restarter - a CronJob that restarts the qBittorrent deployment every Sunday at 00:00.<br>
+qbittorrent-restarter - a CronJob that restarts the qBittorrent deployment every Sunday at 00:00, using the official `registry.k8s.io/kubectl` image (kept on the cluster's minor version by Flux image automation).<br>
 
 tdarr-server / tdarr-node - Tdarr is a media transcoding tool that automatically converts video files to optimized formats for Plex. The node uses the GPU for transcoding and waits for the server to be up before starting.<br>
 
 seerr - a web-based request management system for Plex, allowing users to request new movies or TV shows, which are then sent to Sonarr and Radarr.<br>
-
-requestrr - a chatbot that lets users request movies and TV shows from Discord.<br>
 
 cloudflared - runs a Cloudflare Tunnel, giving outside users access to selected services without opening router ports.<br>
 
@@ -135,18 +143,26 @@ project-zomboid - a Project Zomboid server manifest is kept in the repo but is c
 
 ## **dev**<br>
 
-finance-friend - the Finance-Friend web app, pulled from GHCR. Flux image automation bumps its tag whenever a new version is published. Reachable at finance-friend.waffle-systems.com.<br>
+n8n / task runner / ollama - n8n workflow automation (job search, shop tools, blog drafts, Discord posts) at n8n.waffle-systems.com, with its JavaScript task runner and Ollama in the same pod. Ollama uses the GPU to serve local LLMs. Flux follows n8n's `stable` tag by digest and Ollama's release tags.<br>
 
-starnet-backend - runs the StarNet sidecar together with Ollama, which uses the GPU to serve local LLMs.<br>
+n8n-sandbox-api / n8n-sandbox-runner - n8n's code sandbox service and its Docker-in-Docker runner, connected with mutual TLS.<br>
 
-devbox (virt-launcher) - a KubeVirt VirtualMachine running Fedora 42 with 2 cores and 4Gi of memory, configured by a cloud-init secret.<br>
+searxng - a private metasearch engine used by the n8n workflows for web searches (cluster-internal only).<br>
+
+mongodb - the database for n8n's AI memory and the workflows' saved data.<br>
+
+discord-assistant - a small relay that forwards Discord messages to an n8n workflow and posts the reply.<br>
+
+backtest-api / backtest-report-web / data-update - a trading-strategy backtester (`apps/dev/backtest`, image from GHCR) with a web UI at backtest.waffle-systems.com, a static report site and a weekday CronJob that downloads market data.<br>
+
+devbox (virt-launcher) - a KubeVirt VirtualMachine running Fedora 45 (containerDisk, so its disk resets on restart) with 2 cores, 2Gi of memory and EFI Secure Boot, configured by a cloud-init secret.<br>
 
 arc-gha-rs-controller / my-runner-set-listener - Actions Runner Controller. It runs self-hosted GitHub Actions runners (Docker-in-Docker mode) for the Finance-Friend repository, scaling runner pods up when jobs are queued.<br>
 
 
 ## **kubevirt**<br>
 
-virt-operator / virt-api / virt-controller / virt-handler - KubeVirt v1.2.0, installed from the upstream release manifests through its own Flux Kustomization. It lets the cluster run virtual machines (such as the devbox) alongside containers, which is useful for testing security implementations.<br>
+virt-operator / virt-api / virt-controller / virt-handler - KubeVirt v1.9.1, installed from the upstream release manifests through its own Flux Kustomization (`clusters/my-cluster/kubevirt.yaml`, path `./apps/kubevirt`); `apps` does not include that folder, so the operator and its CRDs have exactly one owner. KubeVirt only supports upgrading one minor version at a time, from the latest patch of each minor (e.g. v1.8.4 → v1.9.1), so bump the version in `apps/kubevirt/kustomization.yaml` one step at a time. It lets the cluster run virtual machines (such as the devbox) alongside containers, which is useful for testing security implementations.<br>
 
 
 
@@ -233,8 +249,11 @@ flux bootstrap github \
   --repository=FluxCD \
   --branch=main \
   --path=clusters/my-cluster \
-  --components-extra=image-reflector-controller,image-automation-controller
+  --components-extra=image-reflector-controller,image-automation-controller \
+  --read-write-key
 
 flux get sources git -n flux-system
 flux get kustomizations -A
 ```
+
+  Always pass both `--components-extra` and `--read-write-key` when re-running bootstrap: without the extra components Flux removes the image automation controllers and their CRDs, and without `--read-write-key` the new deploy key is read-only, so image automation can no longer push.<br>
