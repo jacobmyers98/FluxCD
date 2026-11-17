@@ -24,7 +24,7 @@ spec:
         seccompProfile: {type: RuntimeDefault}
       containers:
         - name: api
-          image: ghcr.io/jacobmyers98/backtester:0.7.3
+          image: ghcr.io/jacobmyers98/backtester:0.8.0
           command: [python, -m, app.api]
           ports: [{name: http, containerPort: 8000}, {name: ui, containerPort: 8080}]
           env:
