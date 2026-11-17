@@ -1,3 +1,10 @@
+# NOT DEPLOYED: commented out in apps/compliance/kustomization.yaml since kubescape was
+# disabled (2026-11-14). Kept so kubescape can be turned back on.
+#
+# A ServiceMonitor (prometheus-operator CRD) tells Prometheus which Services to scrape
+# for /metrics. Prometheus here only picks up ServiceMonitors labelled
+# release: prometheus-community (see the kube-prometheus-stack HelmRelease).
+#
 # Scrapes kubescape's prometheus-exporter (posture results from the last scan).
 # The chart's Service has an unnamed port, so the endpoint uses targetPort.
 # Don't scrape the kubescape pod itself: each scrape of it runs a full scan.
@@ -7,12 +14,12 @@ metadata:
   name: kubescape-prometheus-exporter
   namespace: compliance
   labels:
-    release: prometheus-community
+    release: prometheus-community   # required, or Prometheus ignores this ServiceMonitor
 spec:
-  namespaceSelector:
+  namespaceSelector:     # which namespaces to look for matching Services in
     matchNames:
       - compliance
-  selector:
+  selector:              # which Services (by label) to scrape
     matchLabels:
       app.kubernetes.io/instance: kubescape
       app.kubernetes.io/component: prometheus-exporter
@@ -22,5 +29,5 @@ spec:
       # Keep the exporter's own namespace label (the scanned namespace)
       # instead of renaming it to exported_namespace.
       honorLabels: true
-      interval: 5m
+      interval: 5m       # scrape every 5 minutes (results only change after a scan)
       scrapeTimeout: 30s

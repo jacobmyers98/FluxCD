@@ -1,3 +1,5 @@
+# NOT applied by Flux (not listed in any kustomization.yaml). Run it by hand when the
+# whole history has to be downloaded again (new symbol, lost data).
 # One-time full download. kubectl create -f k8s/jobs/data-backfill.yaml
 apiVersion: batch/v1
 kind: Job
@@ -6,9 +8,9 @@ metadata:
   namespace: dev
   labels: {app.kubernetes.io/name: backtester, app.kubernetes.io/component: downloader}
 spec:
-  backoffLimit: 0
-  activeDeadlineSeconds: 21600
-  ttlSecondsAfterFinished: 604800
+  backoffLimit: 0                    # don't retry automatically (a failed backfill is investigated by hand)
+  activeDeadlineSeconds: 21600       # 6 h limit (the full 2016→now download took ~6.5 min)
+  ttlSecondsAfterFinished: 604800    # delete the finished Job (and its logs) after 7 days
   template:
     metadata:
       labels: {app.kubernetes.io/name: backtester, app.kubernetes.io/component: downloader}

@@ -1,21 +1,37 @@
+# Cilium load-balancer IPs + BGP.
+#
+# A Service of type LoadBalancer needs an outside IP. In the cloud the provider hands one
+# out; at home Cilium does it: the pool below says which LAN IPs it may give out, and
+# Cilium then announces them so other devices know where to send traffic:
+#   - L2 announcements (cilium-l2-setup.yaml): answers ARP for the IP on the LAN, like a
+#     normal device would. This is what makes 192.168.1.254 work for the LAN.
+#   - BGP (the three objects below): also tells the UniFi router about the IP over BGP.
+# Both are enabled in Cilium (enable-bgp-control-plane / enable-l2-announcements = true).
+# BGP only does something if the UDM has a matching BGP config (ASN 65000, neighbor
+# 192.168.1.200 / ASN 64512).
+#
+# Only cilium-ingress (the shared Ingress controller) is a LoadBalancer Service today,
+# and it gets the pool's single IP: 192.168.1.254.
 apiVersion: "cilium.io/v2alpha1"
 kind: CiliumLoadBalancerIPPool
 metadata:
-  name: waffle-lb-pool
+  name: waffle-lb-pool     # cluster-wide (no namespace)
 spec:
-  blocks:
+  blocks:                  # start = stop: the pool has exactly one IP. A 2nd LoadBalancer Service would stay <pending>
   - start: "192.168.1.254"
     stop: "192.168.1.254"
 
 ---
 
 # 1. Define WHAT to advertise (Your LoadBalancer VIPs)
+# The selector is a "match everything" trick: no Service has label "somekey" with that
+# value, so NotIn is true for all Services → every LoadBalancer IP is advertised.
 apiVersion: cilium.io/v2
 kind: CiliumBGPAdvertisement
 metadata:
   name: unifi-bgp-advertisement
   labels:
-    advertise: loadbalancer
+    advertise: loadbalancer   # the PeerConfig below selects advertisements by this label
 spec:
   advertisements:
     - advertisementType: Service
@@ -37,8 +53,8 @@ metadata:
   name: unifi-peer-config
 spec:
   families:
-    - afi: ipv4
-      safi: unicast
+    - afi: ipv4          # address family: IPv4 ...
+      safi: unicast      # ... normal (unicast) routes
       advertisements:
         matchLabels:
           advertise: loadbalancer
@@ -51,15 +67,15 @@ kind: CiliumBGPClusterConfig
 metadata:
   name: unifi-bgp-config
 spec:
-  nodeSelector:
+  nodeSelector:          # which nodes run BGP (all Linux nodes = the one node)
     matchLabels:
       kubernetes.io/os: "linux"
   bgpInstances:
     - name: "unifi-instance"
-      localASN: 64512
+      localASN: 64512    # the cluster's private AS number (64512-65534 are private)
       peers:
         - name: "unifi-router"
-          peerAddress: "192.168.1.1"
-          peerASN: 65000
+          peerAddress: "192.168.1.1"   # the UDM Pro
+          peerASN: 65000               # must match the AS number configured on the UDM
           peerConfigRef:
             name: "unifi-peer-config"

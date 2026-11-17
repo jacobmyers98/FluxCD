@@ -1,3 +1,20 @@
+# Cilium network policies: which pods may talk to which.
+#
+# How Cilium policies work (short version):
+#   - A pod with NO policy selecting it can talk to anything and be reached by anything.
+#   - As soon as one policy selects a pod (endpointSelector) for a direction (ingress =
+#     incoming, egress = outgoing), that direction becomes "deny unless allowed": only
+#     traffic matching some rule in some policy gets through. Rules from several policies
+#     add up (they can only allow, never block on their own).
+#   - fromEndpoints / toEndpoints match pods by label; fromEntities / toEntities match
+#     special groups: world (internet + LAN outside the cluster), host (the node itself),
+#     ingress (Cilium's Ingress/Envoy proxy), cluster (all pods), kube-apiserver.
+#   - Labels with "k8s:io.kubernetes.pod.namespace" select the pod's namespace.
+#   - authentication.mode: required = the two pods must also prove who they are with
+#     mutual TLS (identities from SPIRE, namespace cilium-spire). See README.
+#
+# 1-3: deny-all in the namespaces no workload should use. `ingress: [{}]` and
+# `egress: [{}]` are rules that match nothing, so every pod there is fully isolated.
 apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
 metadata:
@@ -40,6 +57,11 @@ spec:
 
 ---
 
+# 4: mTLS everywhere (cluster-wide). Selects every pod except those in kube-system /
+# cilium-spire / flux-system / kubevirt and except pods labelled exposed=nodeport.
+# It allows incoming traffic from any pod in the cluster, but only with mutual TLS.
+# Side effect: every selected pod becomes "deny incoming unless allowed", so outside
+# traffic (Ingress, LAN, Tailscale) needs an extra rule in a namespace policy below.
 apiVersion: "cilium.io/v2"
 kind: CiliumClusterwideNetworkPolicy
 metadata:
@@ -66,10 +88,14 @@ spec:
     - matchLabels: {}
     authentication:
       mode: "required"
-# default blanket mTLS for everything except those 3 namespaces, and =externally exposed apps exposed=nodeport
+# default blanket mTLS for everything except those 4 namespaces, and externally exposed apps (exposed=nodeport)
 
 ---
 
+# 5: pods labelled exposed=nodeport (apps reached directly on a NodePort: today Grafana,
+# TeslaMate, Homarr, Vaultwarden, Tailscale and every plex app) may receive traffic from anywhere: internet/LAN, the node, the
+# Ingress, other pods, the API server. These are left out of the mTLS rule above,
+# because traffic arriving through a NodePort can't do mTLS.
 apiVersion: "cilium.io/v2"
 kind: CiliumClusterwideNetworkPolicy
 metadata:
@@ -89,6 +115,10 @@ spec:
 
 ---
 
+# 6: plex namespace. Media apps may talk to each other (with mTLS), and be reached from
+# the internet/LAN, the node, the Ingress, Homarr (dashboard widgets) and Tailscale.
+# Outgoing: each other, DNS, Homarr, Tailscale and the whole internet (indexers,
+# metadata, VPN). A new app in this namespace must be added to BOTH "app" lists.
 apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
 metadata:
@@ -171,6 +201,12 @@ spec:
 
 ---
 
+# 7: monitoring namespace (the listed apps only; Prometheus/Loki/etc. aren't selected).
+# Incoming: each other (mTLS), the Ingress, Homarr, Tailscale and n8n.
+# Outgoing: DNS, Prometheus (9090) and Loki (3100), Ollama in dev (11434, Mealie's AI),
+# Tailscale, n8n, and the listed ports anywhere in the cluster or outside (Homarr's
+# widgets poll the other apps; Mealie scrapes recipe sites over 80/443).
+# A new app here must be added to both "app" lists, or it can't be reached.
 apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
 metadata:
@@ -282,6 +318,9 @@ spec:
 
 ---
 
+# 8: gaming namespace (Minecraft). Incoming: players on 25565 from the internet/LAN and
+# the Ingress, Homarr on 25565 + RCON 25575 (server status widget), and Tailscale.
+# Outgoing: DNS, internet on 80/443 (Mojang login, mod downloads), Homarr, Tailscale.
 apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
 metadata:
@@ -345,6 +384,11 @@ spec:
 
 ---
 
+# 9: dev namespace, n8n pods only (the other dev apps aren't selected here; the
+# backtester has its own NetworkPolicies in apps/dev/backtest). Incoming: internet/LAN,
+# node and Ingress (forms, webhooks, UI), Homarr, Mealie (calls Ollama in the n8n pod),
+# Tailscale, and the backtest API on 5678 only (run-finished callbacks).
+# No egress rules, so n8n's outgoing traffic is not restricted.
 apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
 metadata:

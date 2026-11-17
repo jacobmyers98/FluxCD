@@ -3,6 +3,7 @@
 # Login: paste the token from secret compliance/headlamp-viewer-token
 #   kubectl -n compliance get secret headlamp-viewer-token -o jsonpath='{.data.token}' | base64 -d
 # The token is read-only (view + security reports), and cannot read Secrets.
+# Where the Headlamp chart comes from (index refreshed every 6 h).
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
@@ -24,18 +25,19 @@ spec:
   chart:
     spec:
       chart: headlamp
-      version: "0.46.0"
+      version: "0.46.0"     # pinned: upgrade by changing this number
       sourceRef:
         kind: HelmRepository
         name: headlamp
         namespace: flux-system
   values:
-    fullnameOverride: headlamp
+    fullnameOverride: headlamp   # fixed name: the Ingress in cert-manager.yaml points at Service "headlamp"
     # No cluster-admin for the pod's own account: every user logs in with a token.
     clusterRoleBinding:
       create: false
     podLabels:
-      app: headlamp
+      app: headlamp          # the CiliumNetworkPolicy at the bottom selects this label
+    # Hardening: non-root, read-only root filesystem, no Linux capabilities, default seccomp.
     podSecurityContext:
       runAsNonRoot: true
       seccompProfile:
@@ -57,8 +59,8 @@ spec:
         cpu: 500m
         memory: 256Mi
     config:
-      watchPlugins: true
-    pluginsManager:
+      watchPlugins: true     # load plugins as soon as the sidecar finishes installing them
+    pluginsManager:          # sidecar that downloads the plugins below from Artifact Hub at startup
       enabled: true
       configContent: |
         plugins:
@@ -100,6 +102,8 @@ metadata:
 
 ---
 
+# A long-lived login token for headlamp-viewer. Kubernetes fills in .data.token for a
+# Secret of this type that names a ServiceAccount (it's not stored in git).
 apiVersion: v1
 kind: Secret
 metadata:
@@ -131,7 +135,7 @@ rules:
   - apiGroups: ["aquasecurity.github.io"]
     resources: ["*"]
     verbs: ["get", "list", "watch"]
-  - apiGroups: ["spdx.softwarecomposition.kubescape.io"]
+  - apiGroups: ["spdx.softwarecomposition.kubescape.io"]   # kubescape's reports (unused while kubescape is disabled)
     resources: ["*"]
     verbs: ["get", "list", "watch"]
 
@@ -141,7 +145,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: headlamp-viewer-view
-roleRef:
+roleRef:                   # built-in read-only role: most objects in every namespace, but not Secrets
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: view

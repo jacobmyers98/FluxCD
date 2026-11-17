@@ -1,23 +1,33 @@
+# ImageUpdateAutomation: the step that writes new image tags into git.
+# Every `interval` Flux's image-automation-controller clones the repo, looks in
+# update.path for image lines with a setter comment like
+#   # {"$imagepolicy": "<namespace>:<policy>"}
+# replaces the tag with what that ImagePolicy picked, and pushes one commit to main.
+# The normal "apps" sync then deploys it (within ~1 minute).
+# Needs a deploy key WITH write access (secret flux-system/flux-system); after a
+# `flux bootstrap` without --read-write-key every push fails with "key … read only".
+# There are 4 of these (dev, gaming, monitoring, plex), each limited to its folder; when
+# two push at the same moment one gets "cannot lock ref" and retries next time.
 apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImageUpdateAutomation
 metadata:
   name: gaming-automation
   namespace: gaming
 spec:
-  interval: 1h
-  sourceRef:
+  interval: 1h                  # check for tag changes once an hour
+  sourceRef:                    # the repo to write to: this FluxCD repo (same one Flux syncs from)
     kind: GitRepository
     name: flux-system
     namespace: flux-system
   git:
     checkout:
       ref:
-        branch: main
+        branch: main            # start from the latest main
     commit:
-      author:
+      author:                   # shown as the commit author on GitHub
         name: flux-bot
         email: flux@users.noreply.github.com
-      messageTemplate: |
+      messageTemplate: |        # Go template: one line per changed image (Kind/namespace/name:old -> new)
         Gaming Namespace Update
         Changes:
           {{- range $resource, $changes := .Changed.Objects -}}
@@ -26,7 +36,7 @@ spec:
             {{- end -}}
           {{- end -}}
     push:
-      branch: main
+      branch: main              # push straight to main = deployed right away (no review)
   update:
-    path: ./apps/gaming
-    strategy: Setters
+    path: ./apps/gaming         # only files under this folder are changed
+    strategy: Setters           # only touch lines that carry a {"$imagepolicy": ...} comment

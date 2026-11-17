@@ -1,10 +1,13 @@
+# The backtester's data volume (market data, run records, reports, research history).
+# Mounted by the API, the report web server and the download jobs. ReadWriteOnce = one
+# node at a time, which works because every pod runs on gameserver.
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: backtest-data
 spec:
   accessModes: [ReadWriteOnce]
-  storageClassName: local-storage
+  storageClassName: local-storage   # binds to backtest-data-pv (overlays/home/pv.yaml); there's no provisioner
   resources:
     requests:
-      storage: 20Gi
+      storage: 20Gi                   # must fit in the PV's capacity (not enforced on a local volume)

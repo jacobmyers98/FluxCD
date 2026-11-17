@@ -1,7 +1,13 @@
+# Entry point for everything Flux deploys from ./apps. The "apps" Flux Kustomization
+# (clusters/my-cluster/server.yaml) builds this file with kustomize and applies the result.
+# Each line is a folder that has its own kustomization.yaml listing its files.
+# Removing a folder here DELETES everything in it from the cluster (prune: true).
+# ./kubevirt is intentionally NOT listed: it has its own Flux Kustomization
+# (clusters/my-cluster/kubevirt.yaml), so the KubeVirt operator has exactly one owner.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - ./admin-namespaces
+  - ./admin-namespaces   # namespaces first (order here doesn't matter to Flux, it sorts by kind)
   - ./monitoring
   - ./gaming
   - ./plex

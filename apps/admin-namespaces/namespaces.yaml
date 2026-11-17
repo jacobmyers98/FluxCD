@@ -1,7 +1,22 @@
+# Namespaces for the app folders. A Namespace is a named "folder" inside the cluster:
+# names only have to be unique inside one namespace, and RBAC rules, network policies
+# and resource quotas can be scoped to it.
+#
+# These are created here, once, instead of inside each app folder, so every folder can
+# assume its namespace already exists. Not listed here: kube-system / kube-public /
+# kube-node-lease / default (Kubernetes makes those), flux-system (flux bootstrap makes
+# it), kubevirt (comes from the KubeVirt operator manifest) and cilium-spire (Cilium).
+#
+# Careful: deleting a Namespace deletes EVERYTHING inside it. Because the "apps" Flux
+# Kustomization has prune: true, removing a block from this file deletes that namespace
+# and all of its apps. Leave these alone unless you really mean it.
+#
+# The "app: <name>" label is just a tag. It can be used by network policies or
+# `kubectl get ns -l app=plex`; nothing requires it.
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: gaming
+  name: gaming        # Minecraft + Cloudflare DDNS ("production": outside players use it)
   labels:
     app: gaming
 
@@ -10,7 +25,7 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: plex
+  name: plex          # Plex and the media automation around it ("production")
   labels:
     app: plex
 
@@ -19,7 +34,7 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: monitoring
+  name: monitoring    # Grafana/Prometheus/Loki, Homarr, Teslamate, Mealie, SnapOtter, ...
   labels:
     app: monitoring
 
@@ -28,7 +43,7 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: compliance
+  name: compliance    # Trivy scanners and Headlamp
   labels:
     app: compliance
 
@@ -37,6 +52,6 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: dev
+  name: dev           # n8n + Ollama, backtester, devbox VM, GitHub Actions runners
   labels:
     app: dev

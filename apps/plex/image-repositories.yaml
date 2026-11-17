@@ -1,3 +1,7 @@
+# ImageRepositories for the plex namespace: which registry image Flux watches for new
+# tags, and how often (`interval`). The matching ImagePolicies (which tag to pick) are in
+# image-policies.yaml; see that file's header for the whole image-automation flow.
+# linuxserver/* = LinuxServer.io images (Docker Hub; lscr.io is their own mirror of the same images).
 apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImageRepository
 metadata:

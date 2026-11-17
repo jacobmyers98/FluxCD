@@ -1,35 +1,41 @@
+# devbox: a Fedora virtual machine run by KubeVirt (a real VM, with its own kernel, next
+# to the containers). A VirtualMachine is the "definition"; KubeVirt starts a
+# VirtualMachineInstance (VMI) from it, which runs inside a pod named virt-launcher-devbox-*.
+# Useful commands:  kubectl -n dev get vm,vmi     virtctl -n dev console|vnc|ssh devbox
+#                   virtctl -n dev restart devbox  (needed to apply template changes; the disk resets!)
+# Needs the KubeVirt CRDs (Flux Kustomization "kubevirt", clusters/my-cluster/kubevirt.yaml).
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
   name: devbox
   namespace: dev
 spec:
-  runStrategy: Always
+  runStrategy: Always        # keep the VM running; KubeVirt restarts it if it stops or crashes
   template:
     metadata:
-      labels:
+      labels:                  # labels for the VM's virt-launcher pod (usable by Services/policies)
         kubevirt.io/domain: devbox
     spec:
       domain:
         cpu:
-          cores: 2
-        resources:
+          cores: 2             # CPU cores the guest OS sees
+        resources:             # what the virt-launcher pod reserves (requests) and may use at most (limits)
           requests:
             cpu: 500m
             memory: 1Gi
           limits:
             cpu: "2"
-            memory: 2Gi
+            memory: 2Gi        # the guest's RAM comes from this
         devices:
-          autoattachSerialConsole: false
+          autoattachSerialConsole: false   # no serial console device (use SSH / `virtctl vnc`)
           interfaces:
           - name: default
-            masquerade: {}
+            masquerade: {}     # the VM sits behind NAT on the pod's IP (like a home router)
           disks:
           - name: containerdisk
             disk:
-              bus: virtio
-          - name: cloudinitdisk
+              bus: virtio      # fast paravirtual disk driver
+          - name: cloudinitdisk  # small disk with the cloud-init config (users, SSH keys, packages)
             disk:
               bus: virtio
         features:
@@ -38,15 +44,15 @@ spec:
         firmware:
           bootloader:
             efi:
-              secureBoot: true
+              secureBoot: true   # only boot signed bootloaders/kernels
       networks:
       - name: default
-        pod: {}
+        pod: {}                # connect to the normal pod network
       volumes:
       - name: containerdisk
         containerDisk:
-          image: quay.io/containerdisks/fedora:45
+          image: quay.io/containerdisks/fedora:45   # the OS disk is a container image: changes inside the VM are LOST on every restart
       - name: cloudinitdisk
         cloudInitNoCloud:
           secretRef:
-            name: devbox-cloud-init
+            name: devbox-cloud-init   # apps/dev/secret.cloud-init.yaml (SOPS)

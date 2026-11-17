@@ -1,3 +1,9 @@
+# Weekly qBittorrent restart (a scheduled "turn it off and on again"; the restart also
+# re-runs the init container that checks the VPN). A CronJob runs kubectl inside the cluster, so it needs its own identity with
+# permission to restart Deployments in the plex namespace, and nothing more:
+#   ServiceAccount (identity) → RoleBinding → Role (allowed actions).
+
+# The identity the CronJob's pod runs as.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -9,6 +15,8 @@ kind: Role
 metadata:
   name: deployment-restarter-role
   namespace: plex
+# What it may do: read and patch Deployments in plex only (a Role is namespace-scoped).
+# `rollout restart` works by patching a timestamp annotation onto the pod template.
 rules:
   - apiGroups: ["apps"]
     resources: ["deployments"]
@@ -16,6 +24,7 @@ rules:
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
+# Gives the Role to the ServiceAccount.
 metadata:
   name: deployment-restarter-binding
   namespace: plex
@@ -36,12 +45,12 @@ metadata:
   name: qbittorrent-restarter
   namespace: plex
 spec:
-  schedule: "0 0 * * 0" # Every Sunday at 00:00
+  schedule: "0 0 * * 0" # Every Sunday at 00:00 (no timeZone set: kube-controller-manager's clock, normally UTC)
   jobTemplate:
     spec:
       template:
         spec:
-          serviceAccountName: deployment-restarter-sa
+          serviceAccountName: deployment-restarter-sa   # run with the permissions above
           containers:
           - name: kubectl
             # Official image (Bitnami stopped publishing free images in 2025). It has no shell; the entrypoint is kubectl.
@@ -61,4 +70,4 @@ spec:
               limits:
                 cpu: 200m
                 memory: 128Mi
-          restartPolicy: OnFailure
+          restartPolicy: OnFailure   # retry the kubectl call if it fails

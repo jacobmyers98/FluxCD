@@ -1,7 +1,12 @@
+# Helm chart sources for the monitoring HelmReleases (apps/monitoring/helmrelease.yaml).
+# A HelmRepository is only "where to download charts from": Flux's source-controller
+# fetches the repo's index.yaml every `interval` (6h), so a new chart version can take up
+# to 6 h to be noticed (`flux reconcile source helm <name>` forces it).
+# They live in flux-system so HelmReleases in any namespace can point at them.
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: teslamate
+  name: teslamate        # community chart (k8s-at-home / geek-cookbook) for TeslaMate
   namespace: flux-system
 spec:
   interval: 6h
@@ -11,7 +16,7 @@ spec:
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: mosquitto
+  name: mosquitto        # t3n's Mosquitto (MQTT broker) chart, used by TeslaMate
   namespace: flux-system
 spec:
   interval: 6h
@@ -22,7 +27,7 @@ spec:
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: prometheus-community
+  name: prometheus-community   # kube-prometheus-stack and prometheus-adapter
   namespace: flux-system
 spec:
   interval: 6h
@@ -33,7 +38,7 @@ spec:
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: grafana
+  name: grafana          # Grafana Labs' official repo: Alloy
   namespace: flux-system
 spec:
   interval: 6h
@@ -44,7 +49,7 @@ spec:
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: grafana-community
+  name: grafana-community   # community-maintained Grafana charts: Loki is installed from here
   namespace: flux-system
 spec:
   interval: 6h
@@ -55,7 +60,7 @@ spec:
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: dcgm-exporter
+  name: dcgm-exporter    # NVIDIA's GPU metrics exporter
   namespace: flux-system
 spec:
   interval: 6h

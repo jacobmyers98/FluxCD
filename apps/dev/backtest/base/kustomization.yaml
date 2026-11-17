@@ -1,7 +1,13 @@
+# Base = the parts of the backtester that are the same everywhere. overlays/home adds the
+# things specific to this server (the PV on gameserver and the Ingress). Flux applies the
+# overlay (apps/dev/kustomization.yaml lists backtest/overlays/home).
+# Source of truth: the backtester repo's k8s/ folder, copied here with
+#   rsync -a --delete --exclude README.md k8s/ ../FluxCD/apps/dev/backtest/
+# so edit it there, not in the FluxCD copy.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: dev
-labels:
+namespace: dev                  # put every object below into the dev namespace
+labels:                         # add this label to every object (handy: kubectl get all -l app.kubernetes.io/part-of=backtester)
   - pairs: {app.kubernetes.io/part-of: backtester}
 resources:
   - pvc.yaml
@@ -9,7 +15,7 @@ resources:
   - cronjob-data-update.yaml
   - report-web.yaml
   - api.yaml
-configMapGenerator:
+configMapGenerator:             # build ConfigMaps from plain files, so the files stay readable/editable on their own
   - name: backtest-config
     files: [default.yaml]   # keep in sync with config/default.yaml
   - name: report-web-nginx

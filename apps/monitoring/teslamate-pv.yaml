@@ -1,20 +1,26 @@
+# Hand-made storage for TeslaMate's PostgreSQL and for Mosquitto.
+# PV (PersistentVolume) = a piece of storage; PVC (PersistentVolumeClaim) = a request for
+# storage that a pod mounts. A PVC binds to a PV with the same storageClassName and enough
+# size, or to the exact PV named in volumeName.
 apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: teslamate-postgres-pv
-  namespace: monitoring
+  namespace: monitoring   # ignored: PVs are cluster-wide objects (harmless)
 spec:
   capacity:
     storage: 15Gi
   accessModes:
     - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
+  persistentVolumeReclaimPolicy: Retain   # never wipe the car's history if the PVC is deleted
   hostPath:
-    path: /home/server/docker/teslamate/postgres-data
-  storageClassName: ""
+    path: /home/server/docker/teslamate/postgres-data   # the actual database files on the server
+  storageClassName: ""    # "" = no storage class; this PV can only bind to a claim that also says ""
 
 ---
 
+# The claim the TeslaMate chart's PostgreSQL uses (postgresql.primary.persistence.existingClaim
+# in the teslamate HelmRelease). volumeName pins it to the PV above.
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -26,11 +32,13 @@ spec:
   resources:
     requests:
       storage: 15Gi
-  volumeName: teslamate-postgres-pv
+  volumeName: teslamate-postgres-pv   # bind to exactly this PV
   storageClassName: ""
 
 ---
 
+# Mosquitto's data folder. The mosquitto chart creates its own PVC ("mosquitto") with
+# storageClassName local-storage, which binds here.
 apiVersion: v1
 kind: PersistentVolume
 metadata:

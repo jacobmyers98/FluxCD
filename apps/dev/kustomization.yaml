@@ -1,15 +1,17 @@
+# dev namespace: personal projects. Only listed files are applied by Flux.
+# secret.*.yaml are SOPS-encrypted in git; Flux decrypts them with the sops-age key.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - n8n.yaml
-  - n8n-sandbox.yaml
-  - image-policies.yaml
-  - image-update-automation.yaml
-  - searxng.yaml
-  - mongodb.yaml
-  - secret.mongodb.yaml
-  - discord-assistant.yaml
-  - secret.discord-assistant.yaml
-  - dev-box.yaml
-  - secret.cloud-init.yaml
-  - backtest/overlays/home
+  - n8n.yaml                      # n8n + task runner + Ollama (one pod)
+  - n8n-sandbox.yaml              # n8n code sandbox API + Docker-in-Docker runner
+  - image-policies.yaml           # which image tags Flux follows for the above
+  - image-update-automation.yaml  # writes new tags into apps/dev and pushes to main
+  - searxng.yaml                  # private web search used by n8n
+  - mongodb.yaml                  # database for n8n workflows' memory/data
+  - secret.mongodb.yaml           # MongoDB root + n8n user logins (SOPS)
+  - discord-assistant.yaml        # Discord → n8n relay bot
+  - secret.discord-assistant.yaml # bot token + relay secret (SOPS)
+  - dev-box.yaml                  # KubeVirt Fedora VM
+  - secret.cloud-init.yaml        # the VM's cloud-init config (SOPS)
+  - backtest/overlays/home        # backtester (a kustomize overlay folder; source = backtester repo k8s/)

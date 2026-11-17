@@ -1,10 +1,25 @@
+# Flux image automation, step by step:
+#   1. ImageRepository: Flux's image-reflector-controller lists the image's tags in the
+#      registry every `interval`.
+#   2. ImagePolicy: picks the "latest" allowed tag from that list (semver range, or a
+#      tag pattern). `kubectl -n <ns> get imagepolicy` shows what it picked.
+#   3. A setter comment on the image line in a manifest, e.g.
+#        image: foo/bar:1.2.3 # {"$imagepolicy": "<namespace>:<policy-name>"}
+#      marks where that tag belongs.
+#   4. ImageUpdateAutomation (image-update-automation.yaml) rewrites those lines in git
+#      and pushes a commit to main; Flux then deploys it like any other change.
+# A semver range like ">=1.2.0" has no upper limit, so it also takes new MAJOR versions
+# (which may need manual migration steps). "<2.0.0" stops at the major. Plain semver
+# never picks pre-releases (-rc, -beta, ...) unless the range itself asks for them.
+#
+# gaming: Cloudflare DDNS (keeps minecraft.waffle-systems.com pointing at the home IP).
 apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImageRepository
 metadata:
   name: cloudflare-ddns
   namespace: gaming
 spec:
-  image: favonia/cloudflare-ddns
+  image: favonia/cloudflare-ddns   # Docker Hub
   interval: 6h
 
 ---
@@ -18,4 +33,4 @@ spec:
     name: cloudflare-ddns
   policy:
     semver:
-      range: ">=1.18.0"
+      range: ">=1.18.0"   # any newer release, majors included

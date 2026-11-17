@@ -1,3 +1,20 @@
+# Flux image automation, step by step:
+#   1. ImageRepository: Flux's image-reflector-controller lists the image's tags in the
+#      registry every `interval`.
+#   2. ImagePolicy: picks the "latest" allowed tag from that list (semver range, or a
+#      tag pattern). `kubectl -n <ns> get imagepolicy` shows what it picked.
+#   3. A setter comment on the image line in a manifest, e.g.
+#        image: foo/bar:1.2.3 # {"$imagepolicy": "<namespace>:<policy-name>"}
+#      marks where that tag belongs.
+#   4. ImageUpdateAutomation (image-update-automation.yaml) rewrites those lines in git
+#      and pushes a commit to main; Flux then deploys it like any other change.
+# A semver range like ">=1.2.0" has no upper limit, so it also takes new MAJOR versions
+# (which may need manual migration steps). "<2.0.0" stops at the major. Plain semver
+# never picks pre-releases (-rc, -beta, ...) unless the range itself asks for them.
+#
+# dev: n8n + its task runner (follow the "stable" tag by digest), the n8n sandbox
+# (semver 1.x) and Ollama (semver 0.x).
+#
 # n8n publishes betas as plain semver tags (e.g. 2.46.0 = "next"), so a semver range would pull betas.
 # Instead follow n8n's "stable" tag by digest; n8n and runners move their "stable" tags together,
 # which keeps the two containers on the same version.
@@ -10,11 +27,11 @@ spec:
   imageRepositoryRef:
     name: n8n
   filterTags:
-    pattern: '^stable$'
+    pattern: '^stable$'        # only consider the tag named exactly "stable"
   policy:
-    alphabetical:
+    alphabetical:            # with a single candidate tag, the sort order doesn't matter
       order: asc
-  digestReflectionPolicy: Always
+  digestReflectionPolicy: Always   # also look up the tag's digest (sha256) every interval: "stable" keeps its name but moves to new builds
   interval: 1h
 
 ---
@@ -45,7 +62,7 @@ spec:
     name: n8n-sandbox-api
   policy:
     semver:
-      range: ">=1.11.0 <2.0.0"
+      range: ">=1.11.0 <2.0.0"   # sandbox 1.x only; keep api and runner on the same version
 
 ---
 apiVersion: image.toolkit.fluxcd.io/v1
@@ -91,7 +108,7 @@ metadata:
   namespace: dev
 spec:
   image: n8nio/n8n-sandbox-service-api
-  interval: 6h
+  interval: 6h   # check for new tags every 6 hours
 
 ---
 apiVersion: image.toolkit.fluxcd.io/v1

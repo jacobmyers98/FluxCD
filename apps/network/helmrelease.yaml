@@ -1,10 +1,20 @@
+# cert-manager: gets and renews TLS certificates automatically.
+# Flow: an Ingress with the annotation cert-manager.io/cluster-issuer: letsencrypt-prod
+# (or a Certificate object) → cert-manager asks Let's Encrypt → proves we own the domain
+# with a DNS-01 challenge (creates a TXT record through the Cloudflare API) → stores the
+# cert in a Secret the Ingress uses → renews it ~30 days before it expires.
+# The ClusterIssuer, Cloudflare token and the Ingresses are in apps/network/cert-manager.yaml.
+# Check certificates:  kubectl get certificate -A     (READY should be True)
+#
+# A HelmRelease = "install this Helm chart with these values and keep it that way";
+# Flux's helm-controller does the `helm install/upgrade` for you.
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: cert-manager
   namespace: kube-system
 spec:
-  releaseName: cert-manager
+  releaseName: cert-manager   # name of the Helm release (`helm -n kube-system list`)
   chart:
     spec:
       chart: cert-manager
@@ -12,12 +22,15 @@ spec:
         kind: HelmRepository
         name: jetstack
         namespace: flux-system
-      version: ">=v1.14.0"
-  interval: 1h
+      version: ">=v1.14.0"      # no upper limit: new majors install automatically (live: v1.21.3). FLUX_TODO.md #2
+  interval: 1h                # how often Flux checks the release
   install:
     createNamespace: true
-    crds: CreateReplace
+    crds: CreateReplace       # only affects charts with a crds/ folder; cert-manager renders its CRDs as templates (installCRDs below), so no effect here
   values:
+    # Have the chart render its CRDs as normal templates so upgrades update them too.
+    # Deprecated since cert-manager 1.15 in favour of `crds: {enabled: true, keep: true}`;
+    # still accepted for now.
     installCRDs: true
     resources:
       requests:
@@ -26,7 +39,7 @@ spec:
       limits:
         cpu: 200m
         memory: 256Mi
-    webhook:
+    webhook:                  # admission webhook: validates Certificate/Issuer objects when they're applied
       resources:
         requests:
           cpu: 10m
@@ -34,7 +47,7 @@ spec:
         limits:
           cpu: 100m
           memory: 128Mi
-    cainjector:
+    cainjector:               # fills CA bundles into webhooks/CRDs (memory grows with the number of objects it watches)
       resources:
         requests:
           cpu: 10m

@@ -1,17 +1,18 @@
+# monitoring namespace: metrics/logs plus self-hosted tools.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - helmrelease.yaml
-  - helmrepo.yaml
-  - teslamate-nodeport.yaml
-  - teslamate-pv.yaml
-  - secret.teslamate.yaml
-  - secret.postgresql.yaml
-  - homarr.yaml
-  - image-policies.yaml
-  - image-update-automation.yaml
-  - grafana-nodeport.yaml
-  - secret.grafana.yaml
-  - glances.yaml
-  - snapotter.yaml
-  - mealie.yaml
+  - helmrelease.yaml              # Helm charts: TeslaMate, Mosquitto, Loki, Alloy, DCGM, kube-prometheus-stack, prometheus-adapter
+  - helmrepo.yaml                 # where those charts come from
+  - teslamate-nodeport.yaml       # NodePort for TeslaMate
+  - teslamate-pv.yaml             # storage for TeslaMate's Postgres and Mosquitto
+  - secret.teslamate.yaml         # TeslaMate encryption key (SOPS)
+  - secret.postgresql.yaml        # TeslaMate Postgres password (SOPS)
+  - homarr.yaml                   # Homarr dashboard
+  - image-policies.yaml           # image tag policies (Homarr, Mealie)
+  - image-update-automation.yaml  # writes new tags into apps/monitoring
+  - grafana-nodeport.yaml         # NodePort for Grafana
+  - secret.grafana.yaml           # Grafana admin login (SOPS)
+  - glances.yaml                  # host stats web UI
+  - snapotter.yaml                # image/file processing toolkit
+  - mealie.yaml                   # recipe manager

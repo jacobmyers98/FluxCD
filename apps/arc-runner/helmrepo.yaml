@@ -1,3 +1,5 @@
+# Chart source for ARC. type: oci = the charts are stored as OCI artifacts in a container
+# registry (GHCR) instead of a classic HTTP index.yaml repo.
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:

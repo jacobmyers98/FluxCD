@@ -1,11 +1,16 @@
+# A HelmRepository tells Flux's source-controller where to download Helm charts from.
+# Every `interval` it fetches the repo's index.yaml (the list of charts and versions);
+# HelmReleases then pick a chart + version from it via chart.spec.sourceRef.
+# All HelmRepositories in this repo live in flux-system, so any namespace can use them
+# (HelmReleases point at them with sourceRef.namespace: flux-system).
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: aqua
+  name: aqua            # referenced as sourceRef.name in apps/compliance/helmrelease.yaml
   namespace: flux-system
 spec:
-  interval: 6h
-  url: https://aquasecurity.github.io/helm-charts/
+  interval: 6h          # how often the chart index is re-downloaded; new chart versions show up at most this late
+  url: https://aquasecurity.github.io/helm-charts/   # Aqua Security: trivy-operator and trivy (server) charts
 
 ---
 

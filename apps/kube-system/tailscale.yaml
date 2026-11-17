@@ -1,3 +1,9 @@
+# Tailscale subnet router: makes the home network reachable from your Tailscale devices
+# (phone, laptop) without opening any router ports.
+# It joins the tailnet as one machine and "advertises" routes: traffic from a tailnet
+# device to those IP ranges is sent through this pod, which forwards it on.
+# New routes have to be approved once in the Tailscale admin console (Machines → this
+# machine → Edit route settings).
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -6,22 +12,22 @@ metadata:
   labels:
     app: tailscale
 spec:
-  replicas: 1
+  replicas: 1            # one router; two pods with the same state Secret would fight over the identity
   strategy:
-    type: Recreate
+    type: Recreate       # stop the old pod before starting the new one (same reason)
   selector:
     matchLabels:
       app: tailscale
   template:
     metadata:
       labels:
-        app: tailscale
+        app: tailscale   # Headlamp's network policy allows traffic from pods with this label
         exposed: nodeport
     spec:
-      serviceAccountName: tailscale
+      serviceAccountName: tailscale   # gives the pod the Role below (to save its state in a Secret)
       containers:
       - name: tailscale
-        image: tailscale/tailscale:v1.104.2
+        image: tailscale/tailscale:v1.104.2   # pinned; not tracked by Flux image automation
         resources:
           requests:
             cpu: 10m
@@ -30,36 +36,37 @@ spec:
             cpu: 500m
             memory: 256Mi
         securityContext:
-          privileged: true
+          privileged: true   # needed to create the tun network device and set up routing/forwarding
           capabilities:
             add:
             - NET_ADMIN                
             - NET_RAW
         env:
-        - name: TS_AUTHKEY
+        - name: TS_AUTHKEY         # one-time key used to join the tailnet (secret.tailscale.yaml, SOPS)
           valueFrom:
             secretKeyRef:
               name: tailscale-auth
               key: TS_AUTHKEY
-        - name: TS_ROUTES
+        - name: TS_ROUTES          # advertised: home LAN, Kubernetes Service IPs, Kubernetes pod IPs
           value: "192.168.1.0/24,10.96.0.0/12,10.244.0.0/16" 
-        - name: TS_KUBE_SECRET
+        - name: TS_KUBE_SECRET     # the node's Tailscale identity is saved in this Secret, so a restart keeps the same machine
           value: tailscale-state
-        - name: TS_USERSPACE
+        - name: TS_USERSPACE       # "false" = use the kernel's tun device (faster, needs privileges) instead of userspace networking
           value: "false"
-        - name: TS_EXTRA_ARGS
+        - name: TS_EXTRA_ARGS      # don't replace the pod's DNS with Tailscale's MagicDNS
           value: "--accept-dns=false"
         volumeMounts:
         - name: tun-device
           mountPath: /dev/net/tun
       volumes:
-      - name: tun-device
+      - name: tun-device           # the host's tun device (virtual network interface)
         hostPath:
           path: /dev/net/tun
 
 
 ---
 
+# The identity the pod runs as inside Kubernetes (used for API permissions).
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -69,19 +76,24 @@ metadata:
 
 ---
 
+# RBAC: what that identity may do. A Role is limited to one namespace (kube-system).
+# Tailscale needs to create and update its state Secret (tailscale-state).
+# Note this allows reading ANY Secret in kube-system; `resourceNames: [tailscale-state]`
+# on get/update/patch would narrow it ("create" can't be limited by name).
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: tailscale
   namespace: kube-system
 rules:
-- apiGroups: [""]
+- apiGroups: [""]          # "" = the core API group (Secrets, Pods, ConfigMaps, ...)
   resources: ["secrets"]
   verbs: ["create", "get", "update", "patch"]
 
 
 ---
 
+# Connects the Role to the ServiceAccount.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:

@@ -1,10 +1,11 @@
+# gaming namespace (used by outside players: treat as production).
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - image-policies.yaml
-  - image-update-automation.yaml
-  - minecraft.yaml
-  - cloudflare-ddns.yaml
-#  - project-zomboid.yaml
+  - image-policies.yaml           # image tag policy for cloudflare-ddns
+  - image-update-automation.yaml  # writes new tags into apps/gaming
+  - minecraft.yaml                # NeoForge Minecraft server
+  - cloudflare-ddns.yaml          # keeps the Minecraft DNS record on the current home IP
+#  - project-zomboid.yaml         # disabled: uncomment both lines to run it again
 #  - secret.pz.yaml
-  - secret.cloudflare-ddns.yaml
+  - secret.cloudflare-ddns.yaml   # Cloudflare API token (SOPS)

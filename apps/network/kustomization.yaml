@@ -1,12 +1,14 @@
+# Networking pieces Flux applies (via apps/kustomization.yaml → the "apps" Flux
+# Kustomization). Cilium itself isn't here: it was installed with the cilium CLI (README).
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - cilium-mTLS-pv.yaml
-  - cilium-network-mTLS.yaml
-  - cilium-bgp-setup.yaml
-  - cilium-l2-setup.yaml
-  - cert-manager.yaml
-  - unifi-cert.yaml
-  - helmrelease.yaml
-  - helmrepo.yaml
-  - secret.udm-ssh.yaml
+  - cilium-mTLS-pv.yaml        # storage for the SPIRE server (mTLS identities)
+  - cilium-network-mTLS.yaml   # network policies: who may talk to whom, mTLS
+  - cilium-bgp-setup.yaml      # LoadBalancer IP pool (192.168.1.254) + BGP to the UDM
+  - cilium-l2-setup.yaml       # ARP announcements for that IP on the LAN
+  - cert-manager.yaml          # Let's Encrypt ClusterIssuer, Cloudflare token (SOPS) and all Ingresses
+  - unifi-cert.yaml            # cert for the UDM Pro + CronJob that installs it
+  - helmrelease.yaml           # cert-manager itself
+  - helmrepo.yaml              # cert-manager's chart repo
+  - secret.udm-ssh.yaml        # SSH key for the UDM push (SOPS)

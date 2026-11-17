@@ -1,46 +1,66 @@
+# Helm-chart apps in the monitoring namespace. Each block is a HelmRelease: "install this
+# chart, at this version, with these values, and keep it that way". Flux's helm-controller
+# runs the `helm install/upgrade` for you and re-checks every `interval`.
+#   flux get hr -n monitoring                  status of each release
+#   flux reconcile hr <name> -n monitoring     apply a change now
+#   helm -n monitoring get values <release>    what Helm actually received
+# `values:` = the chart's values.yaml overrides; each chart's own values.yaml lists all options.
+#
+# Version ranges like ">=7.2.0" have no upper limit, so new MAJOR chart versions install
+# on their own (kube-prometheus-stack went 88 → 93, Loki 18 → 21 this way), and none of
+# these has upgrade remediation (automatic retry/rollback). See FLUX_TODO.md #2.
+#
+# Contents: teslamate, mosquitto, loki, alloy, dcgm-exporter, prometheus-community
+# (kube-prometheus-stack: Prometheus + Grafana + Alertmanager + exporters), prometheus-adapter.
+
+# ---- TeslaMate: logs the car's drives, charging and state into PostgreSQL ------------------
+# The car's data arrives from Tesla's API; TeslaMate stores it in its own Postgres (bundled
+# Bitnami sub-chart below) and also publishes live values to MQTT (Mosquitto, next release).
+# Web UI: NodePort service in teslamate-nodeport.yaml + teslamate.waffle-systems.com.
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: teslamate
   namespace: monitoring
   annotations:
-    image.toolkit.fluxcd.io/image-ref: teslamate
+    image.toolkit.fluxcd.io/image-ref: teslamate   # informational only; no Flux controller reads this annotation
 spec:
   interval: 1h
   releaseName: teslamate
   chart:
     spec:
       chart: teslamate
-      version: ">=7.2.0"
+      version: ">=7.2.0"       # chart version (not the app version); live 7.2.0
       sourceRef:
         kind: HelmRepository
         name: teslamate
         namespace: flux-system
   install:
-    createNamespace: true
+    createNamespace: true   # create the namespace if it doesn't exist (it does)
   values:
     podLabels:
-      exposed: nodeport
+      exposed: nodeport      # lets the cluster-wide "allow-external-nodeport" policy admit outside traffic
     image:
       repository: teslamate/teslamate
-      tag: "4.4.0"
+      tag: "4.4.0"            # app version, pinned; not tracked by Flux image automation
     env:
       - name: TZ
-        value: UTC
+        value: UTC                 # times are stored in UTC; Grafana shows them in your browser's zone
       - name: DATABASE_HOST
-        value: '{{ include "common.names.fullname" .}}-postgresql'
+        value: '{{ include "common.names.fullname" .}}-postgresql'   # Helm template: the bundled Postgres Service's name
       - name: DATABASE_USER
         value: postgres
       - name: DATABASE_PASS
-        value: "{{ .Values.postgresql.auth.postgresPassword }}"
+        value: "{{ .Values.postgresql.auth.postgresPassword }}"   # renders the chart's default ("teslamate-pass") in plain text; it must equal the password in the
+        # teslamate-postgresql secret. Better: valueFrom.secretKeyRef on that secret (FLUX_TODO.md)
       - name: DATABASE_NAME
         value: "{{ .Values.postgresql.auth.database }}"
       - name: DISABLE_MQTT
         value: "false"
       - name: MQTT_HOST
-        value: "mosquitto"
+        value: "mosquitto"         # the Mosquitto Service in this namespace
 
-      - name: ENCRYPTION_KEY
+      - name: ENCRYPTION_KEY       # encrypts the stored Tesla API tokens (secret.teslamate.yaml). Losing it = log in to Tesla again
         valueFrom:
           secretKeyRef:
             name: teslamate-secret
@@ -54,13 +74,15 @@ spec:
         memory: 1Gi
     ingress:
       main:
-        enabled: false
+        enabled: false             # the Ingress is in apps/network/cert-manager.yaml instead
     persistence:
-      import:
+      import:                      # folder for importing TeslaFi CSV exports; this is the mount the pod actually gets
         enabled: true
         type: hostPath
         hostPath: /home/server/docker/teslamate/teslamate
         mountPath: /opt/app/import
+    # NOTE: this chart ignores extraVolumes/extraVolumeMounts (the live pod only has the
+    # "import" mount above at /opt/app/import), so these two blocks do nothing.
     extraVolumes:
       - name: teslamate-data
         hostPath:
@@ -69,9 +91,11 @@ spec:
     extraVolumeMounts:
       - name: teslamate-data
         mountPath: /opt/app/import
-    postgresql:
+    postgresql:                    # bundled Bitnami PostgreSQL sub-chart (TeslaMate's database)
       enabled: true
       image:
+        # Bitnami stopped publishing free images in 2025; this tag still runs from the
+        # node's cache/registry, but a re-pull may fail. FLUX_TODO.md
         repository: bitnami/postgresql
         tag: "17.6.0"
         digest: ""
@@ -86,21 +110,24 @@ spec:
             memory: 2Gi
         persistence:
           enabled: true
-          existingClaim: teslamate-postgres-pvc  
+          existingClaim: teslamate-postgres-pvc   # hand-made PVC → hostPath PV (teslamate-pv.yaml)
       auth:
-        existingSecret: teslamate-postgresql
+        existingSecret: teslamate-postgresql   # postgres password (secret.postgresql.yaml, SOPS)
         database: teslamate
-        persistence:
+        persistence:               # misplaced key (persistence isn't an auth option); ignored
           enabled: false
 
 ---
+# ---- Mosquitto: MQTT message broker -----------------------------------------------------
+# TeslaMate publishes live car values to it (topics teslamate/cars/1/...); anything on the
+# cluster network (e.g. a home-automation tool) could subscribe. Port 1883, no TLS.
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: mosquitto
   namespace: monitoring
   annotations:
-    image.toolkit.fluxcd.io/image-ref: mosquitto
+    image.toolkit.fluxcd.io/image-ref: mosquitto   # informational only; no Flux controller reads this annotation
 spec:
   interval: 1h
   releaseName: mosquitto
@@ -114,8 +141,8 @@ spec:
         namespace: flux-system
   values:
     service:
-      type: ClusterIP
-      externalTrafficPolicy: null
+      type: ClusterIP              # only reachable inside the cluster
+      externalTrafficPolicy: null  # cleared: the chart's default only makes sense for LoadBalancer/NodePort
       annotations: {}
     resources:
       requests:
@@ -126,13 +153,16 @@ spec:
         memory: 64Mi
 
 ---
+# ---- Loki: log database ------------------------------------------------------------------
+# Stores logs pushed by Alloy (next release) and answers LogQL queries from Grafana
+# (Explore → Loki). Runs as one "single binary" pod: fine for one node, no object storage.
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: loki
   namespace: monitoring
   annotations:
-    image.toolkit.fluxcd.io/image-ref: loki
+    image.toolkit.fluxcd.io/image-ref: loki   # informational only; no Flux controller reads this annotation
 spec:
   interval: 1h
   chart:
@@ -146,15 +176,15 @@ spec:
   install:
     createNamespace: true
   values:
-    deploymentMode: SingleBinary
-    backend:
+    deploymentMode: SingleBinary   # everything in one process (vs. the scalable read/write/backend split)
+    backend:                       # the scalable-mode components are turned off (0 replicas)
       replicas: 0
     read:
       replicas: 0
     write:
       replicas: 0
     ruler:
-      enabled: false
+      enabled: false               # no log-based alert rules
     # Memcached caches are overkill for single-binary and request lots of memory
     chunksCache:
       enabled: false
@@ -162,9 +192,13 @@ spec:
       enabled: false
     ingester:
       wal:
-        enabled: true
+        enabled: true              # write-ahead log: logs not yet flushed to chunks survive a restart
     singleBinary:
       replicas: 1
+      # Meant to put Loki's data dir /var/loki on a host folder. It does NOT work (checked
+      # 2026-11-17): the volume is added to the pod but the mount below is ignored, and
+      # /var/loki is the chart's "storage" emptyDir, so logs are lost when Loki restarts.
+      # (The host folder was never created.) See FLUX_TODO.md.
       extraVolumes:
         - name: var-loki
           hostPath:
@@ -174,7 +208,7 @@ spec:
         - name: var-loki
           mountPath: /var/loki
       persistence:
-        enabled: false
+        enabled: false             # no PVC → the chart mounts an emptyDir at /var/loki
       resources:
         requests:
           cpu: 100m
@@ -183,17 +217,17 @@ spec:
           cpu: 1
           memory: 1Gi
     loki:
-      auth_enabled: false
+      auth_enabled: false          # single tenant: no X-Scope-OrgID header needed
       commonConfig:
-        replication_factor: 1
+        replication_factor: 1      # one copy of each log stream (one node)
       limits_config:
-        retention_period: 240h      # 10 days
-      compactor:
+        retention_period: 240h      # 10 days; older logs are deleted by the compactor
+      compactor:                   # merges index files and enforces retention
         retention_enabled: true
         delete_request_store: filesystem
         working_directory: /var/loki/compactor
       storage:
-        type: filesystem
+        type: filesystem           # chunks are plain files under /var/loki (no S3/GCS)
         bucketNames:
           chunks: loki-chunks
           ruler: loki-ruler
@@ -201,7 +235,7 @@ spec:
         filesystem:
           chunks_directory: /var/loki/chunks
           rules_directory: /var/loki/rules
-      schemaConfig:
+      schemaConfig:                # on-disk format. Never edit an existing entry; add a new one with a future "from" date to migrate
         configs:
           - from: "2024-01-01"
             store: tsdb
@@ -210,7 +244,7 @@ spec:
             index:
               prefix: loki_index_
               period: 24h
-    gateway:
+    gateway:                       # nginx in front of Loki; Grafana/Alloy can use one URL for reads and writes
       enabled: true
       deploymentStrategy:
         type: Recreate
@@ -221,7 +255,7 @@ spec:
         limits:
           cpu: 200m
           memory: 128Mi
-    lokiCanary:
+    lokiCanary:                    # writes test log lines and checks they can be read back (health metrics)
       resources:
         requests:
           cpu: 5m
@@ -229,7 +263,7 @@ spec:
         limits:
           cpu: 100m
           memory: 128Mi
-    sidecar:
+    sidecar:                       # loads rule ConfigMaps into Loki (unused while the ruler is off)
       resources:
         requests:
           cpu: 10m
@@ -239,13 +273,17 @@ spec:
           memory: 256Mi
 
 ---
+# ---- Alloy: log collector -----------------------------------------------------------------
+# Grafana Alloy (successor of Promtail / Grafana Agent) runs on every node, reads the host's
+# syslog and all pods' logs, adds labels and pushes them to Loki. Its config is written in
+# Alloy's own language (the configMap.content block below).
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: alloy
   namespace: monitoring
   annotations:
-    image.toolkit.fluxcd.io/image-ref: alloy
+    image.toolkit.fluxcd.io/image-ref: alloy   # informational only; no Flux controller reads this annotation
 spec:
   chart:
     spec:
@@ -255,16 +293,16 @@ spec:
         kind: HelmRepository
         name: grafana
         namespace: flux-system
-  interval: 10m
+  interval: 10m                    # checked more often than the others (no particular reason needed)
   values:
     controller:
-      type: daemonset
+      type: daemonset              # one Alloy pod per node, so it can read that node's files
     rbac:
-      create: true
+      create: true                 # permission to list pods (for discovery.kubernetes below)
     alloy:
       mounts:
-        varlog: true
-        dockercontainers: true
+        varlog: true               # mount the host's /var/log (syslog)
+        dockercontainers: true     # /var/lib/docker/containers; unused (pod logs are read via the API below)
       resources:
         requests:
           cpu: 50m
@@ -273,6 +311,11 @@ spec:
           cpu: 1
           memory: 512Mi
       configMap:
+        # The block below is Alloy config, not YAML (comments inside it would become part of
+        # the config). It wires up: syslog file → Loki, and Kubernetes pod discovery →
+        # relabel (keep this node's pods; add namespace/pod/container/app/node labels) →
+        # read their logs through the Kubernetes API → Loki. Every log line gets the
+        # label cluster="eu-west-1-prod" (a placeholder from an example; harmless).
         content: |-
           loki.write "loki" {
             endpoint {
@@ -332,13 +375,16 @@ spec:
           }
 
 ---
+# ---- DCGM exporter: GPU metrics ------------------------------------------------------------
+# NVIDIA's exporter publishes the RTX 3060's usage, memory, temperature and power as
+# Prometheus metrics (DCGM_FI_*), shown in Grafana's GPU dashboard.
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: dcgm-exporter
   namespace: monitoring
   annotations:
-    image.toolkit.fluxcd.io/image-ref: dcgm-exporter
+    image.toolkit.fluxcd.io/image-ref: dcgm-exporter   # informational only; no Flux controller reads this annotation
 spec:
   interval: 1h
   releaseName: dcgm-exporter
@@ -351,32 +397,46 @@ spec:
         name: dcgm-exporter
         namespace: flux-system
   values:
-    serviceMonitor:
+    serviceMonitor:                # tell Prometheus to scrape it
       enabled: true
       additionalLabels:
-        release: prometheus-community
+        release: prometheus-community   # Prometheus only picks up ServiceMonitors with this label
 
 ---
+# ---- kube-prometheus-stack: Prometheus, Grafana, Alertmanager and exporters ---------------
+# One chart that installs:
+#   - prometheus-operator: manages Prometheus/Alertmanager from CRDs (ServiceMonitor,
+#     PodMonitor, PrometheusRule, ...)
+#   - Prometheus: scrapes /metrics endpoints every 30 s and stores the time series
+#   - Alertmanager: sends alerts from rules (no receivers are configured here)
+#   - Grafana: dashboards (provisioned from a host folder, see below)
+#   - kube-state-metrics (object state) and node-exporter (host CPU/RAM/disk/network)
+#   - a set of default alert/recording rules
+# Prometheus only scrapes ServiceMonitors/PodMonitors labelled release: prometheus-community
+# (the chart's default selector), which is why other charts here add that label.
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: prometheus-community
   namespace: monitoring
   annotations:
-    image.toolkit.fluxcd.io/image-ref: prometheus-community
+    image.toolkit.fluxcd.io/image-ref: prometheus-community   # informational only; no Flux controller reads this annotation
 spec:
   interval: 1h
   releaseName: prometheus-community
   chart:
     spec:
       chart: kube-prometheus-stack
-      version: ">=88.6.2"
+      version: ">=88.6.2"      # no upper limit (live: 93.3.1); major versions can change CRDs. FLUX_TODO.md #2
       sourceRef:
         kind: HelmRepository
         name: prometheus-community
         namespace: flux-system
   values:
     defaultRules:
+      # Turn off rule groups for components kubeadm doesn't expose to Prometheus (etcd,
+      # controller-manager, scheduler, kube-proxy: Cilium replaces it) so they don't fire
+      # "target down" alerts, plus the "general" group (Watchdog / InfoInhibitor).
       rules:
         etcd: false
         kubeControllerManager: false
@@ -386,12 +446,14 @@ spec:
         general: false
     grafana:
       podLabels:
-        exposed: nodeport
+        exposed: nodeport          # reachable on its NodePort (grafana-nodeport.yaml) through the allow-external-nodeport policy
       deploymentStrategy:
-        type: Recreate
+        type: Recreate             # stop the old pod first (both would use the same data/provisioning)
       initChownData:
-        enabled: true
+        enabled: true              # init container chowns Grafana's data dir to uid 472
       enabled: true
+      # The sidecars (which load dashboards/datasources from labelled ConfigMaps) are off:
+      # everything is provisioned from files in the host folder mounted below instead.
       sidecar:
         datasources:
           enabled: false
@@ -400,12 +462,17 @@ spec:
           label: grafana_dashboard
           labelValue: "1"
           searchNamespace: ALL
+        # Misplaced: this option belongs under prometheus.prometheusSpec (where it makes
+        # Prometheus scrape ServiceMonitors without the release label). Here it's ignored.
         serviceMonitorSelectorNilUsesHelmValues: false
+      # Host folder with Grafana's provisioning: dashboards (JSON), datasources (Prometheus,
+      # Loki) and alerting. Files must be readable by uid 472. Grafana's own /var/lib/grafana
+      # is an emptyDir: anything made in the UI and not provisioned is lost on restart.
       extraVolumes:
         - name: grafana-host
           hostPath:
             path: /home/server/docker/monitoring/grafana
-            type: Directory
+            type: Directory          # must already exist
       extraVolumeMounts:
         # Dashboards (JSON files)
         - name: grafana-host
@@ -420,16 +487,17 @@ spec:
           mountPath: /etc/grafana/provisioning/dashboards
           subPath: provisioning/dashboards
 
+        # Alert rules / contact points
         - name: grafana-host
           mountPath: /etc/grafana/provisioning/alerting
           subPath: provisioning/alerting
           readOnly: false
-      admin:
+      admin:                       # admin login from secret.grafana.yaml (SOPS)
         existingSecret: "grafana-admin"
         userKey: admin-user
         passwordKey: admin-password
       ingress:
-        enabled: false
+        enabled: false             # Ingress is in apps/network/cert-manager.yaml
       resources:
         requests:
           cpu: 50m
@@ -438,7 +506,7 @@ spec:
           cpu: 1
           memory: 1536Mi
     prometheus:
-      prometheusSpec:
+      prometheusSpec:              # no storageSpec: the TSDB is on an emptyDir, so metrics history is lost when the pod restarts (chart default retention 10d)
         resources:
           requests:
             cpu: 200m
@@ -447,7 +515,7 @@ spec:
             cpu: 2
             memory: 4Gi
     alertmanager:
-      alertmanagerSpec:
+      alertmanagerSpec:            # only the chart's "null" receiver: alerts show in its UI/Grafana but aren't sent anywhere
         resources:
           requests:
             cpu: 10m
@@ -455,7 +523,7 @@ spec:
           limits:
             cpu: 200m
             memory: 256Mi
-    prometheusOperator:
+    prometheusOperator:            # turns ServiceMonitor/PrometheusRule objects into Prometheus config
       resources:
         requests:
           cpu: 10m
@@ -463,7 +531,7 @@ spec:
         limits:
           cpu: 200m
           memory: 256Mi
-    kube-state-metrics:
+    kube-state-metrics:            # metrics about Kubernetes objects (pod restarts, deployment replicas, ...)
       resources:
         requests:
           cpu: 10m
@@ -471,7 +539,7 @@ spec:
         limits:
           cpu: 200m
           memory: 256Mi
-    prometheus-node-exporter:
+    prometheus-node-exporter:      # host metrics (CPU, memory, disks, network) from the node
           resources:
             requests:
               cpu: 100m
@@ -481,7 +549,7 @@ spec:
               memory: 128Mi
           prometheus:
             monitor:
-              relabelings:
+              relabelings:         # add a node=<node name> label to every node-exporter series
                 - action: replace
                   regex: (.+)
                   replacement: $1
@@ -490,13 +558,18 @@ spec:
                   targetLabel: node
 
 ---
+# ---- prometheus-adapter: `kubectl top` / resource metrics from Prometheus -----------------
+# Serves the Kubernetes resource-metrics API (metrics.k8s.io: what `kubectl top` and the
+# HorizontalPodAutoscaler read) by running the PromQL queries below against Prometheus.
+# metrics-server (kube-system) also runs, but the metrics.k8s.io API points at this adapter
+# (`kubectl get apiservice v1beta1.metrics.k8s.io`), so metrics-server is effectively unused.
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: prometheus-adapter
   namespace: monitoring
   annotations:
-    image.toolkit.fluxcd.io/image-ref: prometheus-adapter
+    image.toolkit.fluxcd.io/image-ref: prometheus-adapter   # informational only; no Flux controller reads this annotation
 spec:
   interval: 1h
   releaseName: prometheus-adapter
@@ -510,7 +583,7 @@ spec:
         namespace: flux-system
   values:
     prometheus:
-      url: http://prometheus-community-kube-prometheus.monitoring.svc
+      url: http://prometheus-community-kube-prometheus.monitoring.svc   # Prometheus' Service from the release above
       port: 9090
     resources:
       requests:
@@ -520,10 +593,10 @@ spec:
         cpu: 500m
         memory: 256Mi
     rules:
-      default: false
+      default: false               # don't install the chart's custom-metrics rules; only the resource rules below
       
       resource:
-        cpu:
+        cpu:                       # CPU = rate of CPU seconds over 3 minutes (cores in use)
           containerQuery: |
             sum by (<<.GroupBy>>) (
               rate(container_cpu_usage_seconds_total{container!="",container!="POD",<<.LabelMatchers>>}[3m])
@@ -541,7 +614,7 @@ spec:
               pod:
                 resource: pod
           containerLabel: container
-        memory:
+        memory:                    # memory = working set (what the kernel counts against limits); node = total - free - buffers - cache
           containerQuery: |
             sum by (<<.GroupBy>>) (
               container_memory_working_set_bytes{container!="",container!="POD",<<.LabelMatchers>>}

@@ -1,3 +1,8 @@
+# L2 announcements: Cilium answers ARP requests ("who has 192.168.1.254?") on the LAN for
+# LoadBalancer / external IPs, so devices on the home network reach the Ingress at
+# 192.168.1.254 as if it were a normal machine. One node at a time holds each IP (a
+# lease); with one node, that's always gameserver. The IPs come from the pool in
+# cilium-bgp-setup.yaml. Needs Cilium's l2announcements.enabled=true (README, step 1).
 apiVersion: "cilium.io/v2alpha1"
 kind: CiliumL2AnnouncementPolicy
 metadata:
@@ -10,5 +15,5 @@ spec:
         operator: In
         values:
           - linux
-  externalIPs: true
-  loadBalancerIPs: true
+  externalIPs: true       # announce Services' spec.externalIPs
+  loadBalancerIPs: true   # announce LoadBalancer IPs (192.168.1.254)

@@ -1,21 +1,36 @@
+# Actions Runner Controller (ARC): self-hosted GitHub Actions runners for the
+# Finance-Friend repo, running as pods in this cluster.
+#
+# A HelmRelease tells Flux's helm-controller to install a Helm chart and keep it
+# installed with these values. Every `interval` it checks that the release still matches
+# (and upgrades it when the chart version or values here change). Handy commands:
+#   flux get hr -A                       status of every release
+#   flux reconcile hr <name> -n <ns>     apply a change now
+#   helm -n <ns> get values <release>    the values Helm actually used
+#
+# ARC is two charts:
+#   1. this one, the controller (watches the runner scale set objects, creates runner pods)
+#   2. "my-runner-set" below: one scale set = one group of runners registered with GitHub.
+#      A listener pod keeps a long-poll connection open to GitHub; when a job is queued it
+#      asks the controller for a runner pod, which runs one job and is then deleted.
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: arc
   namespace: dev
 spec:
-  interval: 1h
+  interval: 1h              # how often Flux checks the release against git
   install:
-    createNamespace: true
+    createNamespace: true   # create the target namespace if missing (dev already exists)
   chart:
     spec:
       chart: gha-runner-scale-set-controller
-      version: "0.15.0"
+      version: "0.15.0"      # pinned: the controller and the scale set chart must be the same version
       sourceRef:
         kind: HelmRepository
-        name: arc
+        name: arc           # apps/arc-runner/helmrepo.yaml (GHCR, OCI)
         namespace: flux-system
-  values:
+  values:                   # Helm values for the chart (same as a values.yaml file)
     resources:
       requests:
         cpu: 10m
@@ -26,6 +41,7 @@ spec:
 
 ---
 
+# The runner scale set. Its name is the label used in workflows:  runs-on: my-runner-set
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -38,15 +54,15 @@ spec:
   chart:
     spec:
       chart: gha-runner-scale-set
-      version: "0.15.0"
+      version: "0.15.0"      # keep equal to the controller's version
       sourceRef:
         kind: HelmRepository
         name: arc
         namespace: flux-system
   values:
-    githubConfigUrl: "https://github.com/jacobmyers98/Finance-Friend"
-    githubConfigSecret: github-arc-auth
-    listenerTemplate:
+    githubConfigUrl: "https://github.com/jacobmyers98/Finance-Friend"   # runners register for this repo only
+    githubConfigSecret: github-arc-auth   # GitHub App / token used to register runners (secret.arc.yaml, SOPS)
+    listenerTemplate:     # the always-on listener pod (small: it only waits for jobs)
       spec:
         containers:
         - name: listener
@@ -57,5 +73,9 @@ spec:
             limits:
               cpu: 200m
               memory: 128Mi
+    # dind = Docker-in-Docker: each runner pod gets a privileged Docker daemon sidecar so
+    # jobs can run `docker build` / container actions. Privileged = full access to the
+    # node, so only run trusted workflows (a private repo's own jobs).
+    # No minRunners/maxRunners set: no idle runners, and no upper limit on how many run at once.
     containerMode:
           type: "dind"

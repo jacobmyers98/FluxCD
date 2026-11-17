@@ -1,6 +1,11 @@
+# A kustomize "Kustomization" (kustomize.config.k8s.io) is just a list of files to bundle
+# together. Don't confuse it with a *Flux* Kustomization (kustomize.toolkit.fluxcd.io),
+# which tells Flux to apply a folder from git.
+# The parent apps/kustomization.yaml includes this folder, so these files are applied by
+# the "apps" Flux Kustomization. A file that isn't listed here is ignored by Flux.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - helmrelease.yaml
-  - helmrepo.yaml
-  - secret.arc.yaml
+  - helmrelease.yaml   # ARC controller + the runner scale set
+  - helmrepo.yaml      # where the ARC charts come from (GHCR, OCI)
+  - secret.arc.yaml    # SOPS-encrypted GitHub App credentials (github-arc-auth); Flux decrypts it with the sops-age key

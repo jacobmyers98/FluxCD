@@ -1,19 +1,20 @@
+# plex namespace: media server + automation (used by outside users: treat as production).
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - image-policies.yaml
-  - image-repositories.yaml
-  - image-update-automation.yaml
+  - image-policies.yaml           # which tags Flux follows (see the file's header)
+  - image-repositories.yaml       # which registries Flux watches
+  - image-update-automation.yaml  # writes new tags into apps/plex
   - plex.yaml
-  - qbittorrent.yaml
-  - qbit-restart-cron.yaml
-  - radarr.yaml
-  - sonarr.yaml
-  - tdarr.yaml
-  - prowlarr.yaml
-  - cloudflare.yaml
-  - seerr.yaml
-  - secret.qbit.yaml
-  - secret.plex.yaml
-  - secret.tdarr.yaml
-  - secret.cloudflare.yaml
+  - qbittorrent.yaml              # download client behind a Gluetun VPN sidecar
+  - qbit-restart-cron.yaml        # weekly qBittorrent restart
+  - radarr.yaml                   # movies
+  - sonarr.yaml                   # TV
+  - tdarr.yaml                    # GPU transcoding (server + node)
+  - prowlarr.yaml                 # indexer manager (+ FlareSolverr)
+  - cloudflare.yaml               # cloudflared tunnel for outside access
+  - seerr.yaml                    # request portal
+  - secret.qbit.yaml              # VPN (WireGuard) settings (SOPS)
+  - secret.plex.yaml              # Plex claim/token (SOPS)
+  - secret.tdarr.yaml             # Tdarr API key (SOPS)
+  - secret.cloudflare.yaml        # tunnel token (SOPS)

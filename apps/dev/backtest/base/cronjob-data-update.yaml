@@ -1,38 +1,42 @@
+# Daily market-data refresh: downloads the latest 1-minute bars for QQQ / SPY / IWM from
+# Alpaca into /data (the backtest-data volume), plus the volatility indexes and T-bill
+# rates used by the options simulator. Backtests then read these files.
+# Check runs: kubectl -n dev get jobs -l app.kubernetes.io/component=downloader
 apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: data-update
 spec:
-  schedule: "30 18 * * 1-5"
-  timeZone: America/New_York
-  concurrencyPolicy: Forbid
-  startingDeadlineSeconds: 3600
+  schedule: "30 18 * * 1-5"        # weekdays 18:30, after the US market closes (16:00 ET)
+  timeZone: America/New_York        # schedule is in New York time (handles daylight saving)
+  concurrencyPolicy: Forbid         # never two downloads writing the same files at once
+  startingDeadlineSeconds: 3600     # if the cluster was down at 18:30, still start up to 1 h late; after that skip the day
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3
   jobTemplate:
     spec:
-      backoffLimit: 2
-      activeDeadlineSeconds: 7200
+      backoffLimit: 2               # retry a failed download twice
+      activeDeadlineSeconds: 7200   # kill it after 2 h
       template:
         metadata:
-          labels: {app.kubernetes.io/name: backtester, app.kubernetes.io/component: downloader}
+          labels: {app.kubernetes.io/name: backtester, app.kubernetes.io/component: downloader}   # NetworkPolicy "downloader" allows HTTPS out for these pods
         spec:
           restartPolicy: Never
-          automountServiceAccountToken: false
+          automountServiceAccountToken: false   # the job never talks to the Kubernetes API, so don't give it a token
           securityContext:
             runAsNonRoot: true
             runAsUser: 10001
             runAsGroup: 10001
-            fsGroup: 10001
+            fsGroup: 10001                       # not applied to `local` PVs: the data dir must be chowned 10001 by hand
             seccompProfile: {type: RuntimeDefault}
           containers:
             - name: download
-              image: ghcr.io/jacobmyers98/backtester:0.9.0
+              image: ghcr.io/jacobmyers98/backtester:0.9.0   # bump together with api.yaml (and push the image first)
               args: [download, --set, "symbols=[QQQ, SPY, IWM]"]   # IWM: Strategy Lab video strategies
               env:
                 - {name: BACKTEST_CONFIG, value: /etc/backtest/default.yaml}
               envFrom:
-                - secretRef: {name: alpaca-creds}
+                - secretRef: {name: alpaca-creds}   # Alpaca API keys (made by hand from ~/.alpaca.env, not in git)
               resources:
                 requests: {cpu: 250m, memory: 512Mi}
                 limits: {cpu: "1", memory: 1536Mi}
@@ -43,7 +47,7 @@ spec:
               volumeMounts:
                 - {name: data, mountPath: /data}
                 - {name: config, mountPath: /etc/backtest, readOnly: true}
-                - {name: tmp, mountPath: /tmp}
+                - {name: tmp, mountPath: /tmp}                    # the only writable scratch space (root filesystem is read-only)
           volumes:
             - name: data
               persistentVolumeClaim: {claimName: backtest-data}

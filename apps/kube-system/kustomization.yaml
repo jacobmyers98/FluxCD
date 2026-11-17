@@ -1,13 +1,18 @@
+# Files in kube-system that Flux applies (via apps/kustomization.yaml → the "apps" Flux
+# Kustomization). A file not listed here is ignored. secret.*.yaml files are
+# SOPS-encrypted in git and decrypted by Flux with the sops-age key.
+# Cilium itself, CoreDNS and the control plane are NOT here: they were installed by
+# kubeadm / the cilium CLI (see README).
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - nvidia-daemonset.yaml
-  - nvidia-runtime.yaml
-  - nvidia-time-slice.yaml
-  - etcd-backup.yaml
-  - tailscale.yaml
-  - cilium-nodeport.yaml
-  - server-backup-cron.yaml
-  - secret.tailscale.yaml
-  - secret.etcd-backup.yaml
-  - vault-warden.yaml
+  - nvidia-daemonset.yaml     # GPU device plugin (exposes nvidia.com/gpu)
+  - nvidia-runtime.yaml       # RuntimeClass "nvidia"
+  - nvidia-time-slice.yaml    # splits the GPU into 4 shareable slots
+  - etcd-backup.yaml          # weekly etcd snapshot to the HDD
+  - tailscale.yaml            # Tailscale subnet router (remote access)
+  - cilium-nodeport.yaml      # NodePort for Hubble UI
+  - server-backup-cron.yaml   # weekly rsync of /home/server to the HDD
+  - secret.tailscale.yaml     # Tailscale auth key (SOPS)
+  - secret.etcd-backup.yaml   # etcd client certs for the backup (SOPS)
+  - vault-warden.yaml         # Vaultwarden password manager

@@ -1,3 +1,7 @@
+# Standard Kubernetes NetworkPolicies (Cilium enforces these too, next to the
+# CiliumNetworkPolicies in apps/network). Rules from all policies that select a pod add up.
+# podSelector picks the pods a policy applies to; policyTypes says which directions it
+# locks down: once a direction is listed, only traffic matched by some rule is allowed.
 # Shares namespace `dev` with other apps, so "default deny" is scoped to backtester pods only.
 # Every backtester pod is denied unless a policy below allows it.
 apiVersion: networking.k8s.io/v1
@@ -28,7 +32,7 @@ spec:
         - {protocol: UDP, port: 53}
         - {protocol: TCP, port: 53}
     - to:
-        - ipBlock: {cidr: 0.0.0.0/0}
+        - ipBlock: {cidr: 0.0.0.0/0}   # any address, but only on port 443
       ports:
         - {protocol: TCP, port: 443}
 ---
@@ -61,7 +65,7 @@ spec:
             matchLabels: {app: n8n}
       ports:
         - {protocol: TCP, port: 8000}
-    - ports:
+    - ports:                     # no "from" = from anywhere (the Ingress sends the web UI traffic)
         - {protocol: TCP, port: 8080}
   egress:
     - to:

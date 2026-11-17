@@ -1,10 +1,11 @@
+# compliance namespace: security scanning and the Headlamp UI.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - helmrelease.yaml
-  - helmrepo.yaml
-  - trivy-pv.yaml
-  - headlamp.yaml
+  - helmrelease.yaml   # trivy-operator + trivy-server (kubescape commented out)
+  - helmrepo.yaml      # Aqua's chart repo
+  - trivy-pv.yaml      # storage for trivy-server's vulnerability DB
+  - headlamp.yaml      # Headlamp dashboard + its read-only login
   # Kubescape disabled 2026-11-14 (see helmrelease.yaml):
   # - kubescape-pv.yaml
   # - kubescape-servicemonitor.yaml

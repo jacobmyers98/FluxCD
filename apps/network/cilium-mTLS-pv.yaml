@@ -1,3 +1,8 @@
+# Storage for the SPIRE server (namespace cilium-spire). SPIRE issues the identities Cilium
+# uses for mutual TLS between pods (cilium-network-mTLS.yaml). Cilium's install creates a
+# StatefulSet whose PVC (spire-data-spire-server-0) binds to this PV via
+# storageClassName local-storage. Losing this data makes SPIRE re-issue all identities
+# (brief mTLS failures while it does).
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -8,8 +13,8 @@ spec:
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: "local-storage"
+  persistentVolumeReclaimPolicy: Retain   # keep the data if the PVC is deleted
+  storageClassName: "local-storage"       # matching name only; no provisioner
   hostPath:
     path: /home/server/docker/spire/
     type: DirectoryOrCreate

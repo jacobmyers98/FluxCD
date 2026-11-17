@@ -1,13 +1,20 @@
+# Storage for trivy-server's vulnerability database cache (the "trivy-server" HelmRelease
+# in helmrelease.yaml). The chart creates a PVC; Kubernetes binds it to this PV because
+# the storageClassName matches and the size/access mode fit.
+#
+# PV = a piece of storage the cluster knows about; PVC = a pod's request for storage.
+# This cluster has no dynamic storage provisioner, so PVs are written by hand as
+# hostPath folders on the server.
 apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: trivy-server-pv
 spec:
   capacity:
-    storage: 10Gi
+    storage: 10Gi            # size advertised to claims (hostPath doesn't enforce a limit)
   accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
+    - ReadWriteOnce          # read-write from one node at a time (fine: single node)
+  persistentVolumeReclaimPolicy: Retain   # keep the files if the PVC is deleted; the PV must then be cleaned up by hand to rebind
   hostPath:
-    path: /home/server/docker/trivy
-  storageClassName: local-storage
+    path: /home/server/docker/trivy       # folder on the server's SSD
+  storageClassName: local-storage         # only a matching name; no provisioner behind it

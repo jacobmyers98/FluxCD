@@ -1,8 +1,10 @@
+# Helm chart source for cert-manager (used by apps/network/helmrelease.yaml).
+# Flux's source-controller re-downloads the repo's chart index every `interval`.
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: jetstack
-  namespace: flux-system
+  name: jetstack          # Jetstack = the company that started cert-manager
+  namespace: flux-system  # all HelmRepositories live in flux-system so any namespace can use them
 spec:
   interval: 6h
   url: https://charts.jetstack.io

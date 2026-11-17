@@ -1,9 +1,19 @@
+# Config for the NVIDIA device plugin (nvidia-daemonset.yaml mounts it at
+# /etc/device-plugin/time-slicing.yaml). Time slicing makes the single RTX 3060 appear as
+# 4 GPUs, so 4 pods that each ask for nvidia.com/gpu: 1 can run at once.
+# The pods take turns on the GPU and share its 12 GB of memory with NO isolation, so
+# the sum of what they load (Ollama models, Plex/Tdarr transcodes) must fit in 12 GB.
+# The device plugin reads this file at startup: after changing it, restart the DaemonSet
+#   kubectl -n kube-system rollout restart ds/nvidia-device-plugin-daemonset
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: nvidia-time-slice-cfg
   namespace: kube-system
 data:
+  # Inside the file: gfdEnabled false = GPU Feature Discovery (GPU node labels) isn't
+  # deployed; replicas 4 = how many pods can hold "a GPU" at the same time.
+  # (Comments go out here: anything inside the | block is part of the file's content.)
   time-slicing.yaml: |
     version: v1
     flags:

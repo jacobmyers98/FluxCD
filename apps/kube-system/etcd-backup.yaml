@@ -1,28 +1,42 @@
+# Weekly etcd snapshot. etcd is the control plane's database: every object in the cluster
+# (Deployments, Secrets, CRDs, ...) lives there. With a snapshot the cluster's state can be
+# restored (`etcdutl snapshot restore`) if etcd is ever corrupted. It does NOT back up app
+# data on hostPath folders; the weekly-server-backup CronJob covers /home/server.
+#
+# How it works: a pod on the host network (etcd only listens on 127.0.0.1:2379) runs
+# `etcdctl snapshot save` with an etcd client certificate and writes the file to the HDD.
+#
+# Known issues (see /home/server/FLUX_TODO.md):
+#   - the script ends in `exit 0`, so a failed snapshot still shows as a successful Job;
+#     /mnt/backup/etcd has several half-written *.db.part files from such runs
+#   - file names use $RANDOM instead of a date, and nothing deletes old snapshots
+#   - the etcd-certs Secret (SOPS-encrypted in secret.etcd-backup.yaml) holds copies of the
+#     etcd client cert; when kubeadm renews certificates, update it too
 apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: etcd-backup
   namespace: kube-system
 spec:
-  schedule: "0 3 * * 0"  # Every 7 days at 03:00 AM
-  successfulJobsHistoryLimit: 1
+  schedule: "0 3 * * 0"  # Every 7 days at 03:00 AM (Sunday). No timeZone set, so it's the node's/controller's time zone
+  successfulJobsHistoryLimit: 1    # keep only the last successful Job (and its logs)
   failedJobsHistoryLimit: 1
   jobTemplate:
     spec:
       completions: 1
       parallelism: 1
-      backoffLimit: 6
-      activeDeadlineSeconds: 300
+      backoffLimit: 6              # retry a failing pod up to 6 times
+      activeDeadlineSeconds: 300   # kill the Job after 5 minutes (a slow snapshot on the SATA SSD can hit this)
       template:
         spec:
           securityContext:
-            runAsUser: 0
+            runAsUser: 0           # root, to read the client key and write to the HDD
           nodeSelector:
-            kubernetes.io/hostname: gameserver
-          hostNetwork: true
+            kubernetes.io/hostname: gameserver   # the control-plane node, where etcd runs
+          hostNetwork: true        # share the node's network so 127.0.0.1:2379 is etcd
           containers:
           - name: etcd-backup
-            image: registry.k8s.io/etcd:3.6.4-0
+            image: registry.k8s.io/etcd:3.6.4-0  # official etcd image (contains etcdctl); keep near the cluster's etcd version
             env:
               - name: ETCDCTL_API
                 value: "3"
@@ -39,7 +53,7 @@ spec:
                 memory: 512Mi
             volumeMounts:
             - name: etcd-certs
-              mountPath: /certs
+              mountPath: /certs      # ca.crt, client.crt, client.key
               readOnly: true
             - name: backup-storage
               mountPath: /backup
@@ -47,8 +61,8 @@ spec:
           volumes:
           - name: etcd-certs
             secret:
-              secretName: etcd-certs
+              secretName: etcd-certs   # apps/kube-system/secret.etcd-backup.yaml (SOPS)
           - name: backup-storage
             hostPath:
-              path: /mnt/backup/etcd
+              path: /mnt/backup/etcd   # backup HDD; type Directory = must already exist
               type: Directory

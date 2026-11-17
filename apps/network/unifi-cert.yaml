@@ -1,23 +1,29 @@
 # Let's Encrypt cert for the UDM Pro web UI.
 # cert-manager issues/renews it (DNS-01 via Cloudflare); the CronJob copies it to
 # the router over SSH and restarts unifi-core only when the cert changed.
-# Needs secret "udm-ssh" (keys: id_ed25519, known_hosts) in kube-system.
+# Needs secret "udm-ssh" (keys: id_ed25519, known_hosts) in kube-system
+# (apps/network/secret.udm-ssh.yaml, SOPS). Local DNS must map unifi.waffle-systems.com
+# to 192.168.1.1 for the cert to match in the browser.
+#
+# A Certificate (cert-manager CRD) says "keep a valid cert for these names in this
+# Secret". cert-manager requests it from the issuer, stores it in secretName, and renews
+# it ~30 days before it expires (Let's Encrypt certs last 90 days).
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: udm-tls
   namespace: kube-system
 spec:
-  secretName: udm-tls
+  secretName: udm-tls          # where cert-manager writes tls.crt / tls.key (mounted by the CronJob)
   dnsNames:
     - unifi.waffle-systems.com
-  issuerRef:
+  issuerRef:                   # who signs it: the Let's Encrypt issuer in apps/network/cert-manager.yaml
     name: letsencrypt-prod
     kind: ClusterIssuer
   privateKey:
     algorithm: RSA
     size: 2048
-    rotationPolicy: Always
+    rotationPolicy: Always     # new private key on every renewal (not just a new cert)
 
 ---
 
@@ -27,22 +33,26 @@ metadata:
   name: udm-cert-push
   namespace: kube-system
 spec:
-  schedule: "0 4 * * *"
-  concurrencyPolicy: Forbid
+  schedule: "0 4 * * *"         # daily 04:00; usually just prints "cert unchanged"
+  concurrencyPolicy: Forbid     # never two pushes at once
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 3
   jobTemplate:
     spec:
-      backoffLimit: 1
+      backoffLimit: 1           # one retry, then give up until tomorrow
       template:
         spec:
           restartPolicy: Never
           containers:
             - name: push
-              image: alpine:3.20
+              image: alpine:3.20     # out of support; move to 3.24 (FLUX_TODO.md)
               env:
                 - name: UDM
-                  value: "192.168.1.1"
+                  value: "192.168.1.1"   # the UDM Pro
+              # Script: compare the cert's hash with the one on the UDM; if different, back up
+              # the old cert/key, write the new ones over SSH and restart unifi-core (the UDM's
+              # web UI service). StrictHostKeyChecking=yes + known_hosts = refuse to talk to an
+              # impostor. set -eu = stop on the first error or unset variable.
               command: ["/bin/sh", "-c"]
               args:
                 - |
@@ -72,4 +82,4 @@ spec:
             - name: ssh
               secret:
                 secretName: udm-ssh
-                defaultMode: 0400
+                defaultMode: 0400   # private key readable only by the owner (ssh refuses looser modes)

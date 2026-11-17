@@ -1,16 +1,21 @@
+# The "apps" Flux Kustomization: tells Flux to apply everything under ./apps.
+# (kustomize.toolkit.fluxcd.io = a Flux object, not the kustomization.yaml file format.)
+# Lives in clusters/my-cluster, which the flux-system Kustomization (made by
+# `flux bootstrap`) applies, so changes to this file roll out within its 10 min interval.
+# Status: flux get ks apps    Force a sync now: flux reconcile ks apps --with-source
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: apps
   namespace: flux-system
 spec:
-  interval: 1m
-  path: ./apps
-  prune: true
-  sourceRef:
+  interval: 1m          # re-apply every minute: manual `kubectl edit`s are reverted within ~1 min
+  path: ./apps          # folder in the git repo (its kustomization.yaml is the entry point)
+  prune: true           # objects removed from git are deleted from the cluster
+  sourceRef:            # which git repo/branch: the GitRepository made by bootstrap (main)
     kind: GitRepository
     name: flux-system
-  decryption:
+  decryption:           # decrypt SOPS-encrypted secret files before applying them
     provider: sops
     secretRef:
-      name: sops-age
+      name: sops-age    # holds the age private key (made by hand, see README step 2)

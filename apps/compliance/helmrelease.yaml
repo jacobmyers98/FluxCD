@@ -1,23 +1,36 @@
+# Trivy: vulnerability and configuration scanning for the whole cluster.
+#   - "aqua" (release trivy-operator) scans every workload's images and config
+#   - "trivy-server" holds the vulnerability database the scans look things up in
+# Results are Kubernetes objects (browse them in Headlamp's Trivy plugin) and Prometheus
+# metrics (Grafana "Security Posture" + Trivy dashboards).
+#
+# A HelmRelease = "install this Helm chart with these values and keep it that way".
+# Flux's helm-controller does the `helm install/upgrade`. `values:` is the same as a
+# values.yaml you'd pass to helm. Status: flux get hr -n compliance
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   annotations:
-    image.toolkit.fluxcd.io/image-ref: trivy
-  name: aqua
+    image.toolkit.fluxcd.io/image-ref: trivy   # informational only; no Flux controller reads this annotation
+  name: aqua               # the HelmRelease's name (the Helm release itself is "trivy-operator", below)
   namespace: compliance
 spec:
-  interval: 1h
+  interval: 1h             # how often Flux checks the release against git
   releaseName: trivy-operator
   chart:
     spec:
       chart: trivy-operator
-      version: ">=0.32.1"
+      version: ">=0.32.1"   # no upper limit: new chart versions install automatically (live: 0.38.1). FLUX_TODO.md #2
       sourceRef:
         kind: HelmRepository
         name: aqua
         namespace: flux-system
   values:
     operator:
+      # The operator watches workloads; for each new image it starts a scan Job and saves
+      # the result as a VulnerabilityReport (plus ConfigAuditReports, RBAC/infra assessments,
+      # exposed-secret reports, SBOMs and the CIS/NSA/PSS ClusterComplianceReports).
+      #   kubectl get vulnerabilityreports -A      kubectl get clustercompliancereports
       # One scan at a time and weekly rescans: each scan downloads and unpacks
       # the whole image, which caused heavy IO wait on the root SSD.
       scanJobsConcurrentLimit: 1
@@ -25,38 +38,40 @@ spec:
     # Compliance reports stay on reportType: summary (chart default). The Headlamp
     # Trivy plugin reads failure counts only from status.summaryReport; with
     # "all" it shows 0 everywhere (tried 2026-11-14).
-    resources:
+    resources:               # the operator pod itself (not the scan Jobs)
       requests:
         cpu: 100m
         memory: 512Mi
       limits:
         cpu: 1
         memory: 1536Mi
-    trivy:
-      serverURL: "http://trivy-server.compliance.svc:4954"
-      resources:
+    trivy:                     # settings for the scanner used inside each scan Job
+      serverURL: "http://trivy-server.compliance.svc:4954"   # the trivy-server release below (holds the vulnerability DB)
+      resources:             # per scan Job (M = megabytes, decimal; Mi = mebibytes)
         requests:
           cpu: 100m
           memory: 200M
         limits:
           cpu: 500m
           memory: 500M
-      mode: ClientServer
-      ignoreUnfixed: true
+      mode: ClientServer     # scan Jobs ask trivy-server instead of each downloading the ~1 GB DB (Standalone)
+      ignoreUnfixed: true    # only report CVEs that have a fixed version available (actionable ones)
       image:
         repository: aquasec/trivy
-        tag: latest
-    serviceMonitor:
+        tag: latest          # unpinned scanner image (pulled from mirror.gcr.io); FLUX_TODO.md
+    serviceMonitor:          # let Prometheus scrape the trivy_* metrics (used by Grafana dashboards)
       enabled: true
       namespace: compliance
       labels:
-        release: prometheus-community
+        release: prometheus-community   # Prometheus only picks up ServiceMonitors with this label
 
 
 ---
 
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
+# trivy-server: holds Trivy's vulnerability database (downloaded and refreshed from
+# GitHub's OCI registry, cached on trivy-server-pv) and answers the scan Jobs' lookups.
 metadata:
   name: trivy-server
   namespace: compliance
@@ -65,15 +80,15 @@ spec:
   chart:
     spec:
       chart: trivy
-      version: "0.25.0"
+      version: "0.25.0"     # pinned (the chart for the trivy server)
       sourceRef:
         kind: HelmRepository
         name: aqua
         namespace: flux-system
   values:
-    fullnameOverride: trivy-server
+    fullnameOverride: trivy-server   # fixed object names, so serverURL above stays valid
     server:
-      enabled: true
+      enabled: true          # run Trivy in server mode (listens on 4954)
     resources:
       requests:
         cpu: 200m
@@ -81,7 +96,7 @@ spec:
       limits:
         cpu: 1000m
         memory: 2Gi
-    podSecurityContext:
+    podSecurityContext:      # run as container_user (1001:1004), which owns /home/server/docker/trivy
       runAsUser: 1001
       runAsGroup: 1004
       fsGroup: 1004

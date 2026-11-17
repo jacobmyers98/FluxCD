@@ -1,17 +1,24 @@
+# NOT DEPLOYED: commented out in apps/compliance/kustomization.yaml since kubescape was
+# disabled (2026-11-14). Kept so kubescape can be turned back on.
+#
+# A PersistentVolume (PV) is a piece of storage the cluster knows about. A pod asks for
+# storage with a PersistentVolumeClaim (PVC); Kubernetes binds the claim to a PV with a
+# matching storageClassName, size and access mode. This PV was for kubescape's storage
+# component, which keeps scan results.
 apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: kubescape-pv
-  labels:
+  labels:   # labels the chart's PVC selects on, so the claim binds to this exact PV
     app: storage
     app.kubernetes.io/component: storage
     app.kubernetes.io/instance: kubescape
 spec:
   capacity:
-    storage: 5Gi
+    storage: 5Gi              # size advertised to claims (hostPath doesn't enforce it)
   accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
+    - ReadWriteOnce           # mounted read-write by pods on one node at a time
+  persistentVolumeReclaimPolicy: Retain   # if the PVC is deleted, keep the data on disk (don't wipe it)
   hostPath:
-    path: /home/server/docker/kubescape
-  storageClassName: local-storage
+    path: /home/server/docker/kubescape   # a plain folder on the server; data is still there (owned by uid 65532)
+  storageClassName: local-storage         # just a matching name; there's no provisioner, PVs are made by hand

@@ -1,3 +1,18 @@
+# Flux image automation, step by step:
+#   1. ImageRepository: Flux's image-reflector-controller lists the image's tags in the
+#      registry every `interval`.
+#   2. ImagePolicy: picks the "latest" allowed tag from that list (semver range, or a
+#      tag pattern). `kubectl -n <ns> get imagepolicy` shows what it picked.
+#   3. A setter comment on the image line in a manifest, e.g.
+#        image: foo/bar:1.2.3 # {"$imagepolicy": "<namespace>:<policy-name>"}
+#      marks where that tag belongs.
+#   4. ImageUpdateAutomation (image-update-automation.yaml) rewrites those lines in git
+#      and pushes a commit to main; Flux then deploys it like any other change.
+# A semver range like ">=1.2.0" has no upper limit, so it also takes new MAJOR versions
+# (which may need manual migration steps). "<2.0.0" stops at the major. Plain semver
+# never picks pre-releases (-rc, -beta, ...) unless the range itself asks for them.
+#
+# monitoring: Homarr and Mealie. Everything else in monitoring comes from Helm charts.
 apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
@@ -8,7 +23,7 @@ spec:
     name: homarr
   policy:
     semver:
-      range: ">=1.45.0"
+      range: ">=1.45.0"           # any newer Homarr, majors included
 
 ---
 
@@ -18,8 +33,8 @@ metadata:
   name: homarr
   namespace: monitoring
 spec:
-  image: ghcr.io/homarr-labs/homarr
-  interval: 6h
+  image: ghcr.io/homarr-labs/homarr   # GitHub Container Registry
+  interval: 6h                        # check for new tags every 6 hours
 
 ---
 
@@ -33,7 +48,7 @@ spec:
     name: mealie
   policy:
     semver:
-      range: ">=3.31.0 <4.0.0"
+      range: ">=3.31.0 <4.0.0"    # stay on Mealie 3.x; a 4.0 needs reading its release notes first
 
 ---
 
