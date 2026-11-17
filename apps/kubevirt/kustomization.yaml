@@ -5,7 +5,6 @@ resources:
   - https://github.com/kubevirt/kubevirt/releases/download/v1.2.0/kubevirt-operator.yaml
   # 2. The KubeVirt Custom Resource
   - https://github.com/kubevirt/kubevirt/releases/download/v1.2.0/kubevirt-cr.yaml
-  - kube-install.yaml
 # Temporary (ownership move from "apps" to "kubevirt"): never let Flux delete these.
 commonAnnotations:
   kustomize.toolkit.fluxcd.io/prune: disabled
