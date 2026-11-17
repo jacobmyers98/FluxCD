@@ -76,3 +76,13 @@ metadata:
 spec:
   image: cloudflare/cloudflared
   interval: 6h
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: kubectl
+  namespace: plex
+spec:
+  image: registry.k8s.io/kubectl
+  interval: 24h

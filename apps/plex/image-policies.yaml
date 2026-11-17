@@ -100,3 +100,18 @@ spec:
   policy:
     semver:
       range: ">=2026.10.3"
+
+---
+# kubectl for the qbittorrent-restarter CronJob. Stays on the cluster's minor version;
+# raise the range when the cluster is upgraded.
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: kubectl-policy
+  namespace: plex
+spec:
+  imageRepositoryRef:
+    name: kubectl
+  policy:
+    semver:
+      range: ">=1.37.0 <1.38.0"

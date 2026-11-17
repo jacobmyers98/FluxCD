@@ -102,3 +102,26 @@ metadata:
 spec:
   image: n8nio/n8n-sandbox-service-runner-dind
   interval: 6h
+---
+# Ollama (container in the n8n pod). Plain semver skips the -rc and -rocm tags (pre-releases).
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: ollama-policy
+  namespace: dev
+spec:
+  imageRepositoryRef:
+    name: ollama
+  policy:
+    semver:
+      range: ">=0.40.16 <1.0.0"
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: ollama
+  namespace: dev
+spec:
+  image: ollama/ollama
+  interval: 6h

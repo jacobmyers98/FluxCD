@@ -44,11 +44,16 @@ spec:
           serviceAccountName: deployment-restarter-sa
           containers:
           - name: kubectl
-            image: bitnami/kubectl:latest
-            command:
-            - /bin/sh
-            - -c
-            - kubectl rollout restart deployment -l app=qbittorrent -n plex
+            # Official image (Bitnami stopped publishing free images in 2025). It has no shell; the entrypoint is kubectl.
+            image: registry.k8s.io/kubectl:v1.37.2 # {"$imagepolicy": "plex:kubectl-policy"}
+            args: ["rollout", "restart", "deployment", "-l", "app=qbittorrent", "-n", "plex"]
+            securityContext:
+              runAsNonRoot: true
+              runAsUser: 65532
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop: ["ALL"]
             resources:
               requests:
                 cpu: 10m
