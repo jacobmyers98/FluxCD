@@ -6,8 +6,6 @@ kind: Kustomization
 metadata:
   name: kubevirt
   namespace: flux-system
-  annotations:
-    kustomize.toolkit.fluxcd.io/prune: disabled # temporary, during the ownership move
 spec:
   interval: 1h
   prune: true
