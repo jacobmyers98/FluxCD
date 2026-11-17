@@ -1,11 +1,17 @@
+# Weekly copy of /home/server (configs, app data under ~/docker, git repos, ...) to the
+# backup HDD mounted at /mnt/backup. Each run makes a new dated folder
+# (server-backup-YYYY-MM-DD) and deletes folders older than 30 days, so ~4-5 full copies
+# exist at a time. They are full copies (no hard links), so each one costs the full size.
+# Not a perfect snapshot: databases (SQLite, Postgres, Mongo) are copied while running,
+# so a copy may need a repair on restore. etcd is backed up separately (etcd-backup.yaml).
 apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: weekly-server-backup
   namespace: kube-system
 spec:
-  schedule: "0 2 * * 0"
-  concurrencyPolicy: Forbid
+  schedule: "0 2 * * 0"        # Sundays 02:00 (before the 03:00 etcd backup)
+  concurrencyPolicy: Forbid    # never start a second backup while one is still running
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 1
   jobTemplate:
@@ -14,7 +20,7 @@ spec:
         spec:
           containers:
           - name: backup-runner
-            image: alpine:latest
+            image: alpine:3.24      # Alpine minor pinned (gets patch updates); rsync is installed at run time
             command: ["/bin/sh", "-c"]
             args:
               - |
@@ -39,13 +45,15 @@ spec:
             volumeMounts:
             - name: source-data
               mountPath: /home/server
-              readOnly: true
+              readOnly: true        # the backup can never change the source
             - name: backup-storage
               mountPath: /mnt/backup
             - name: log-storage
-              mountPath: /var/log
+              mountPath: /var/log   # so the "Backup completed" line lands in the host's /var/log/weekly-backup.log
           restartPolicy: OnFailure
           volumes:
+          # hostPath = folders on the server itself. DirectoryOrCreate makes the folder if
+          # missing: if the HDD isn't mounted, the backup would silently go to the root SSD.
           - name: source-data
             hostPath:
               path: /home/server
