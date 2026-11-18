@@ -26,12 +26,15 @@ spec:
   interval: 1h                # how often Flux checks the release
   install:
     createNamespace: true
-    crds: CreateReplace       # only affects charts with a crds/ folder; cert-manager renders its CRDs as templates (installCRDs below), so no effect here
+    crds: CreateReplace       # only affects charts with a crds/ folder; cert-manager renders its CRDs as templates (crds.enabled below), so no effect here
   values:
     # Have the chart render its CRDs as normal templates so upgrades update them too.
-    # Deprecated since cert-manager 1.15 in favour of `crds: {enabled: true, keep: true}`;
-    # still accepted for now.
-    installCRDs: true
+    # keep = the CRDs get helm.sh/resource-policy: keep, so uninstalling the release never
+    # deletes them (that would delete every Certificate and Issuer with them).
+    # (Was `installCRDs: true`, the pre-1.15 name for the same thing; same render, checked 2026-11-17.)
+    crds:
+      enabled: true
+      keep: true
     resources:
       requests:
         cpu: 10m

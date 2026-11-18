@@ -83,16 +83,6 @@ spec:
         type: hostPath
         hostPath: /home/server/docker/teslamate/teslamate
         mountPath: /opt/app/import
-    # NOTE: this chart ignores extraVolumes/extraVolumeMounts (the live pod only has the
-    # "import" mount above at /opt/app/import), so these two blocks do nothing.
-    extraVolumes:
-      - name: teslamate-data
-        hostPath:
-          path: /home/server/docker/teslamate/teslamate
-          type: DirectoryOrCreate
-    extraVolumeMounts:
-      - name: teslamate-data
-        mountPath: /opt/app/import
     postgresql:                    # bundled Bitnami PostgreSQL sub-chart (TeslaMate's database)
       enabled: true
       image:
@@ -121,8 +111,6 @@ spec:
         secretKeys:
           adminPasswordKey: teslamate-pass
         database: teslamate
-        persistence:               # misplaced key (persistence isn't an auth option); ignored
-          enabled: false
 
 ---
 # ---- Mosquitto: MQTT message broker -----------------------------------------------------
