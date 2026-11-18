@@ -1,0 +1,86 @@
+# NVIDIA device plugin, installed from NVIDIA's Helm chart (since 2026-11-17; before, it was
+# a hand-kept DaemonSet dumped from `kubectl get -o yaml`, see git history of nvidia-daemonset.yaml).
+#
+# What it does: tells Kubernetes about the RTX 3060 so pods can request it with
+#   resources.limits: { nvidia.com/gpu: 1 }
+# (Plex, Tdarr node, Ollama, ...). Without it the node advertises no GPU and such pods stay
+# Pending. The chart runs it as a DaemonSet (one pod per node) that talks to the kubelet
+# through a socket in /var/lib/kubelet/device-plugins. Pods that already hold a GPU keep
+# running while the plugin restarts; only new GPU pods wait for it.
+#
+# Time slicing (config below) makes the one GPU show up as 4 "nvidia.com/gpu", so up to 4
+# pods can hold one at the same time. They share the GPU's time and its 12 GB of memory:
+# there is NO memory isolation, so one big model can starve the others.
+#
+# The GPU driver and NVIDIA container runtime are installed on the host (containerd's default
+# runtime is "nvidia"), so this chart is all that's needed (no GPU Operator).
+#   flux get hr -n kube-system nvidia-device-plugin
+#   kubectl describe node gameserver | grep nvidia.com/gpu     (Capacity/Allocatable should be 4)
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: nvdp             # NVIDIA's chart repo for the k8s device plugin
+  namespace: flux-system # with the other HelmRepositories, so any namespace can use it
+spec:
+  interval: 6h
+  url: https://nvidia.github.io/k8s-device-plugin
+
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: nvidia-device-plugin
+  namespace: kube-system
+spec:
+  interval: 1h
+  releaseName: nvidia-device-plugin
+  chart:
+    spec:
+      chart: nvidia-device-plugin
+      version: "0.18.0"        # chart version = plugin version (the image tag follows it)
+      sourceRef:
+        kind: HelmRepository
+        name: nvdp
+        namespace: flux-system
+  values:
+    # The chart's default affinity only allows nodes labelled by Node Feature Discovery
+    # (feature.node.kubernetes.io/pci-10de.present) or nvidia.com/gpu.present=true. NFD isn't
+    # installed and the node has neither label, so drop the affinity (one node, it has the GPU).
+    # It must be null: Helm merges maps, so `{}` would keep the chart's default.
+    affinity: null
+    failOnInitError: false         # keep running (advertising 0 GPUs) instead of crash-looping if the driver isn't ready
+    deviceListStrategy: envvar     # hand the GPU to containers via NVIDIA_VISIBLE_DEVICES
+    # The chart's only switch for PASS_DEVICE_SPECS=true (also pass the /dev/nvidia* device nodes
+    # to containers, as the old DaemonSet's --pass-device-specs did). It would also make the pod
+    # privileged, but only when securityContext below is empty, so it stays unprivileged.
+    compatWithCPUManager: true
+    # Time-slicing config. The chart builds a ConfigMap (nvidia-device-plugin-configs) from this
+    # map and runs a small config-manager sidecar that loads it (and reloads the plugin when it
+    # changes, so no manual DaemonSet restart is needed). "default" = the entry used on every
+    # node. A node label nvidia.com/device-plugin.config=<name> would override it per node; the
+    # node must NOT have one pointing at a missing entry (an old one from 2025 was removed 2026-11-17).
+    # gfdEnabled false = GPU Feature Discovery (GPU node labels) isn't deployed.
+    config:
+      default: time-slicing
+      map:
+        time-slicing: |-
+          version: v1
+          flags:
+            gfdEnabled: false
+          sharing:
+            timeSlicing:
+              resources:
+                - name: nvidia.com/gpu
+                  replicas: 4
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
+    # priorityClassName system-node-critical and the nvidia.com/gpu toleration are chart defaults.

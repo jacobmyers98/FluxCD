@@ -6,9 +6,8 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - nvidia-daemonset.yaml     # GPU device plugin (exposes nvidia.com/gpu)
+  - nvidia-device-plugin.yaml # GPU device plugin (NVIDIA's Helm chart; exposes nvidia.com/gpu, time-sliced into 4)
   - nvidia-runtime.yaml       # RuntimeClass "nvidia"
-  - nvidia-time-slice.yaml    # splits the GPU into 4 shareable slots
   - etcd-backup.yaml          # weekly etcd snapshot to the HDD
   - tailscale.yaml            # Tailscale subnet router (remote access)
   - cilium-nodeport.yaml      # NodePort for Hubble UI
