@@ -3,7 +3,11 @@ kind: PersistentVolume
 metadata:
   name: prom-data
 spec:
+  accessModes:
+    - ReadWriteOnce
   storageClassName: "local-storage"
+  capacity:
+    storage: 10Gi
   claimRef:
     name: prom-data-pvc
     namespace: monitoring
