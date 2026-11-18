@@ -14,36 +14,20 @@
 #   prune: true    objects removed from git are deleted from the cluster
 #   decryption     decrypt SOPS-encrypted secret files with the age key in secret sops-age
 #                  (made by hand, see README step 2)
-#   dependsOn      admin-namespaces: wait until the namespaces exist (only matters on a fresh cluster;
-#                  kube-system and image-automation don't need it)
+#
+# Each folder creates its own Namespace (apps/<folder>/namespace.yaml, annotated
+# kustomize.toolkit.fluxcd.io/prune: disabled so Flux never deletes one). There's no dependsOn
+# between folders: on a fresh cluster, folders that write into another folder's namespace
+# (network's Ingresses, arc-runner in dev) fail once and succeed on the next 1m retry.
 #
 # Careful: DELETING or RENAMING an entry here deletes everything that folder created (prune: true),
-# e.g. removing admin-namespaces deletes the namespaces and every app in them. To move a folder or
+# e.g. removing plex deletes every app in plex (the Namespace itself stays: it's prune-protected). To move a folder or
 # rename an entry, first set prune: false on it and let that roll out (check with
 # kubectl -n flux-system get ks <name> -o jsonpath='{.spec.prune}'), then make the change.
 #
 # kubevirt (last entry) has different settings: 1h interval, wait, no SOPS. dev does NOT dependsOn
 # kubevirt: that would stop n8n updates whenever KubeVirt is unhealthy (e.g. during an upgrade). On a
 # fresh cluster the devbox VM fails until KubeVirt's CRDs exist, then dev succeeds on the next retry.
----
-# admin-namespaces: the namespaces (gaming, plex, monitoring, compliance, dev)
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: admin-namespaces
-  namespace: flux-system
-spec:
-  interval: 1m
-  timeout: 5m
-  path: ./apps/admin-namespaces
-  prune: false # being removed: namespaces move into their app folders
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-  decryption:
-    provider: sops
-    secretRef:
-      name: sops-age
 ---
 # network: cert-manager + all Ingresses and certs, Cilium policies/BGP/L2, UDM cert push
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -63,8 +47,6 @@ spec:
     provider: sops
     secretRef:
       name: sops-age
-  dependsOn:
-    - name: admin-namespaces
 ---
 # kube-system: GPU plugin, Tailscale, etcd + server backups, Vaultwarden
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -103,8 +85,6 @@ spec:
     provider: sops
     secretRef:
       name: sops-age
-  dependsOn:
-    - name: admin-namespaces
 ---
 # compliance: trivy-operator + trivy-server, Headlamp
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -124,8 +104,6 @@ spec:
     provider: sops
     secretRef:
       name: sops-age
-  dependsOn:
-    - name: admin-namespaces
 ---
 # plex: Plex + *arr apps, qBittorrent, Tdarr, cloudflared ("production")
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -145,8 +123,6 @@ spec:
     provider: sops
     secretRef:
       name: sops-age
-  dependsOn:
-    - name: admin-namespaces
 ---
 # gaming: Minecraft + Cloudflare DDNS ("production")
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -166,8 +142,6 @@ spec:
     provider: sops
     secretRef:
       name: sops-age
-  dependsOn:
-    - name: admin-namespaces
 ---
 # dev: n8n + Ollama, SearXNG, MongoDB, backtester, Discord relay, devbox VM
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -187,8 +161,6 @@ spec:
     provider: sops
     secretRef:
       name: sops-age
-  dependsOn:
-    - name: admin-namespaces
 ---
 # arc-runner: GitHub Actions runner controller + scale set (runs in namespace dev)
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -208,8 +180,6 @@ spec:
     provider: sops
     secretRef:
       name: sops-age
-  dependsOn:
-    - name: admin-namespaces
 ---
 # image-automation: every ImageRepository/ImagePolicy + the one ImageUpdateAutomation (all in
 # namespace flux-system), which writes new image tags into ./apps and pushes them to main.

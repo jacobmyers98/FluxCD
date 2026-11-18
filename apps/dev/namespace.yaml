@@ -1,0 +1,14 @@
+# The dev namespace: n8n + Ollama, backtester, devbox VM, GitHub Actions runners (arc-runner folder).
+# Moved here from apps/admin-namespaces on 2026-11-18.
+#
+# Deleting a Namespace deletes EVERYTHING inside it. The prune: disabled annotation stops Flux
+# from ever deleting this one, even if this file or the whole folder's Flux Kustomization is
+# removed. To really delete the namespace, do it by hand with kubectl.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+  labels:
+    app: dev   # just a tag (e.g. kubectl get ns -l app=dev); nothing requires it

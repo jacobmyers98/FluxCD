@@ -1,5 +1,0 @@
-# The namespaces the app folders deploy into (see namespaces.yaml).
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-resources:
-  - namespaces.yaml
