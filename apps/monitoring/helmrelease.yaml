@@ -422,8 +422,8 @@ spec:
 #   - Grafana: dashboards (provisioned from a host folder, see below)
 #   - kube-state-metrics (object state) and node-exporter (host CPU/RAM/disk/network)
 #   - a set of default alert/recording rules
-# Prometheus only scrapes ServiceMonitors/PodMonitors labelled release: prometheus-community
-# (the chart's default selector), which is why other charts here add that label.
+# Prometheus scrapes every ServiceMonitor (serviceMonitorSelectorNilUsesHelmValues: false below);
+# PodMonitors still need the label release: prometheus-community (the chart's default selector).
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -472,9 +472,6 @@ spec:
           label: grafana_dashboard
           labelValue: "1"
           searchNamespace: ALL
-        # Misplaced: this option belongs under prometheus.prometheusSpec (where it makes
-        # Prometheus scrape ServiceMonitors without the release label). Here it's ignored.
-        serviceMonitorSelectorNilUsesHelmValues: false
       # Host folder with Grafana's provisioning: dashboards (JSON), datasources (Prometheus,
       # Loki) and alerting. Files must be readable by uid 472. Grafana's own /var/lib/grafana
       # is an emptyDir: anything made in the UI and not provisioned is lost on restart.
@@ -517,6 +514,10 @@ spec:
           memory: 1536Mi
     prometheus:
       prometheusSpec:              # no storageSpec: the TSDB is on an emptyDir, so metrics history is lost when the pod restarts (chart default retention 10d)
+        # false = scrape EVERY ServiceMonitor in the cluster, not only those labelled
+        # release: prometheus-community (moved here 2026-11-17 from grafana.sidecar, where it did
+        # nothing). Picks up kube-system/cilium-metrics, which is labelled release: prometheus.
+        serviceMonitorSelectorNilUsesHelmValues: false
         resources:
           requests:
             cpu: 200m
