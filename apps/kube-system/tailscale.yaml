@@ -77,9 +77,10 @@ metadata:
 ---
 
 # RBAC: what that identity may do. A Role is limited to one namespace (kube-system).
-# Tailscale needs to create and update its state Secret (tailscale-state).
-# Note this allows reading ANY Secret in kube-system; `resourceNames: [tailscale-state]`
-# on get/update/patch would narrow it ("create" can't be limited by name).
+# Tailscale needs to read and update its state Secret (tailscale-state), and create it if
+# it's missing. get/update/patch are limited to that one Secret, so the pod can't read the
+# other Secrets in kube-system. "create" can't be limited by name (the object doesn't exist
+# yet), so it gets its own rule; it can't read or change existing Secrets.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -88,7 +89,11 @@ metadata:
 rules:
 - apiGroups: [""]          # "" = the core API group (Secrets, Pods, ConfigMaps, ...)
   resources: ["secrets"]
-  verbs: ["create", "get", "update", "patch"]
+  resourceNames: ["tailscale-state"]
+  verbs: ["get", "update", "patch"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["create"]
 
 
 ---

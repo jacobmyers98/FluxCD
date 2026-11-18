@@ -24,15 +24,24 @@ spec:
             command: ["/bin/sh", "-c"]
             args:
               - |
-                # Install rsync on the fly
-                apk add --no-cache rsync && \
-                
+                set -eu   # any failed step fails the Job (before, a failed rsync still looked like a success)
+
                 SRC="/home/server"
                 DEST="/mnt/backup/server-backup-$(date +%F)"
-                
+
+                # Refuse to run if the backup HDD isn't mounted. Then /mnt/backup is just an empty
+                # folder on the root SSD (same filesystem as /home/server), and a full copy would fill it.
+                if [ "$(stat -c %d /mnt/backup)" = "$(stat -c %d "$SRC")" ]; then
+                  echo "ERROR: /mnt/backup is on the same filesystem as $SRC; is the backup HDD mounted?" >&2
+                  exit 1
+                fi
+
+                # Install rsync on the fly
+                apk add --no-cache rsync
+
                 # Create destination folder
                 mkdir -p "$DEST"
-                
+
                 # Run rsync
                 echo "Starting rsync from $SRC to $DEST..."
                 rsync -a --delete "$SRC/" "$DEST/"
@@ -52,16 +61,17 @@ spec:
               mountPath: /var/log   # so the "Backup completed" line lands in the host's /var/log/weekly-backup.log
           restartPolicy: OnFailure
           volumes:
-          # hostPath = folders on the server itself. DirectoryOrCreate makes the folder if
-          # missing: if the HDD isn't mounted, the backup would silently go to the root SSD.
+          # hostPath = folders on the server itself. "Directory" = must already exist (the pod
+          # won't start otherwise). That alone doesn't catch an unmounted HDD (the empty
+          # /mnt/backup mount point still exists), hence the filesystem check in the script.
           - name: source-data
             hostPath:
               path: /home/server
-              type: DirectoryOrCreate
+              type: Directory
           - name: backup-storage
             hostPath:
               path: /mnt/backup
-              type: DirectoryOrCreate
+              type: Directory
           - name: log-storage
             hostPath:
               path: /var/log

@@ -96,9 +96,12 @@ spec:
     postgresql:                    # bundled Bitnami PostgreSQL sub-chart (TeslaMate's database)
       enabled: true
       image:
-        # Bitnami stopped publishing free images in 2025; this tag still runs from the
-        # node's cache/registry, but a re-pull may fail. FLUX_TODO.md
-        repository: bitnami/postgresql
+        # Must be a Bitnami image: the chart's bundled sub-chart (Bitnami postgresql 11.9.13)
+        # relies on Bitnami's startup scripts and paths, so the official `postgres` image won't work.
+        # Bitnami deleted the free tags from bitnami/* in 2025 (bitnami/postgresql:17.6.0 = 404);
+        # the old tags live on, frozen (no security fixes), under bitnamilegacy/*. Same digest
+        # as before (sha256:94c1485…). Long term: official postgres as its own Deployment. FLUX_TODO.md
+        repository: bitnamilegacy/postgresql
         tag: "17.6.0"
         digest: ""
         pullPolicy: IfNotPresent
