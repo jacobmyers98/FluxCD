@@ -3,6 +3,7 @@
 # Setter comments point here as "flux-system:<policy-name>". See kustomization.yaml for how it works.
 # plex: ImageRepositories first (which registry image Flux watches, and how often),
 # then the ImagePolicies (which tag to pick).
+# Plex and Seerr are production: NOT automated (owner, 2026-11-18); bump their tags by hand.
 # linuxserver/* = LinuxServer.io images (Docker Hub; lscr.io is their own mirror of the same images).
 apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImageRepository
@@ -31,16 +32,6 @@ metadata:
   namespace: flux-system
 spec:
   image: linuxserver/prowlarr
-  interval: 6h
-
----
-apiVersion: image.toolkit.fluxcd.io/v1
-kind: ImageRepository
-metadata:
-  name: seerr
-  namespace: flux-system
-spec:
-  image: ghcr.io/seerr-team/seerr
   interval: 6h
 
 ---
@@ -133,19 +124,6 @@ spec:
   policy:
     semver:
       range: ">=2.3.0"            # Prowlarr, majors included (2.x → 3.0.2 arrived this way)
-
----
-apiVersion: image.toolkit.fluxcd.io/v1
-kind: ImagePolicy
-metadata:
-  name: seerr-policy
-  namespace: flux-system
-spec:
-  imageRepositoryRef:
-    name: seerr
-  policy:
-    semver:
-      range: ">=v3.4.1"           # Seerr (tags start with "v")
 
 ---
 apiVersion: image.toolkit.fluxcd.io/v1
