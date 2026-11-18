@@ -12,7 +12,7 @@ FluxCD GitOps pipeline for home automation<br>
 
 ## **Directory Structure**<br>
 **apps** - Everything Flux deploys to the cluster, one folder per area. Each folder is applied by its own Flux Kustomization (`clusters/my-cluster/apps.yaml`), so a broken manifest only stops its own folder.<br>
-**clusters** - Flux bootstrap files (`flux-system`), `apps.yaml` (one Flux Kustomization per `./apps/<folder>`, all with SOPS decryption), and the separate `kubevirt` Kustomization (`kubevirt.yaml`) for `./apps/kubevirt`.<br>
+**clusters** - Flux bootstrap files (`flux-system`), `apps.yaml` (one Flux Kustomization per `./apps/<folder>`, including `kubevirt` for `./apps/kubevirt`).<br>
 **examples** - Files that are not deployed by Flux: KEDA, HAProxy/Keepalived configs, and the `research-dependency` example project.<br>
 
 The manifests under `apps/` and `clusters/my-cluster/` are commented: every HelmRelease, Flux object, CronJob, network policy, PV and other non-trivial resource explains what it does and why it's set up that way (SOPS-encrypted files and the generated `gotk-*.yaml` are the exceptions).<br>
@@ -162,7 +162,7 @@ arc-gha-rs-controller / my-runner-set-listener - Actions Runner Controller. It r
 
 ## **kubevirt**<br>
 
-virt-operator / virt-api / virt-controller / virt-handler - KubeVirt v1.9.1, installed from the upstream release manifests through its own Flux Kustomization (`clusters/my-cluster/kubevirt.yaml`, path `./apps/kubevirt`); `apps.yaml` does not include that folder, so the operator and its CRDs have exactly one owner. KubeVirt only supports upgrading one minor version at a time, from the latest patch of each minor (e.g. v1.8.4 → v1.9.1), so bump the version in `apps/kubevirt/kustomization.yaml` one step at a time. It lets the cluster run virtual machines (such as the devbox) alongside containers, which is useful for testing security implementations.<br>
+virt-operator / virt-api / virt-controller / virt-handler - KubeVirt v1.9.1, installed from the upstream release manifests through its own Flux Kustomization (`kubevirt` in `clusters/my-cluster/apps.yaml`, path `./apps/kubevirt`); no other Kustomization includes that folder, so the operator and its CRDs have exactly one owner. KubeVirt only supports upgrading one minor version at a time, from the latest patch of each minor (e.g. v1.8.4 → v1.9.1), so bump the version in `apps/kubevirt/kustomization.yaml` one step at a time. It lets the cluster run virtual machines (such as the devbox) alongside containers, which is useful for testing security implementations.<br>
 
 
 

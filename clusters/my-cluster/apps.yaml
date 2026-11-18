@@ -21,9 +21,9 @@
 # rename an entry, first set prune: false on it and let that roll out (check with
 # kubectl -n flux-system get ks <name> -o jsonpath='{.spec.prune}'), then make the change.
 #
-# ./kubevirt has its own entry in kubevirt.yaml. dev does NOT dependsOn kubevirt: that would stop
-# n8n updates whenever KubeVirt is unhealthy (e.g. during an upgrade). On a fresh cluster the devbox
-# VM fails until KubeVirt's CRDs exist, then dev succeeds on the next retry.
+# kubevirt (last entry) has different settings: 1h interval, wait, no SOPS. dev does NOT dependsOn
+# kubevirt: that would stop n8n updates whenever KubeVirt is unhealthy (e.g. during an upgrade). On a
+# fresh cluster the devbox VM fails until KubeVirt's CRDs exist, then dev succeeds on the next retry.
 ---
 # admin-namespaces: the namespaces (gaming, plex, monitoring, compliance, dev)
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -209,3 +209,22 @@ spec:
       name: sops-age
   dependsOn:
     - name: admin-namespaces
+---
+# kubevirt: KubeVirt operator + KubeVirt CR (runs the dev/devbox VM). Moved here from kubevirt.yaml
+# 2026-11-17. ./apps/kubevirt is in no other entry, so the operator's CRDs have exactly one owner
+# (two owners could prune the CRDs and with them every VM). Upgrade one minor version at a time
+# (latest patch of each minor), see apps/kubevirt/kustomization.yaml.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: kubevirt
+  namespace: flux-system
+spec:
+  interval: 1h        # the manifests only change on an upgrade
+  prune: true
+  wait: true          # Ready only once the operator and KubeVirt CR are healthy
+  timeout: 10m        # an upgrade rolls virt-api/controller/handler, which takes a while
+  path: ./apps/kubevirt
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
