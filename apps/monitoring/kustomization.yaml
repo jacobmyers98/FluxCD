@@ -8,6 +8,7 @@ resources:
   - teslamate-pv.yaml             # storage for TeslaMate's Postgres and Mosquitto
   - secret.teslamate.yaml         # TeslaMate encryption key (SOPS)
   - secret.postgresql.yaml        # TeslaMate Postgres password (SOPS)
+  - secret.alert-manager.yaml
   - homarr.yaml                   # Homarr dashboard
   - grafana-service.yaml          # Service for Grafana (ClusterIP; HTTPS via the Ingress)
   - secret.grafana.yaml           # Grafana admin login (SOPS)
