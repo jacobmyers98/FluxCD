@@ -51,11 +51,10 @@ spec:
       - name: DATABASE_USER
         value: postgres
       - name: DATABASE_PASS
-        value:
-          valueFrom:
-        secretKeyRef:
-          name: teslamate-password 
-          key: teslamate-pass
+        valueFrom:
+          secretKeyRef:
+            name: teslamate-password 
+            key: teslamate-pass
         # teslamate-postgresql secret. Better: valueFrom.secretKeyRef on that secret (FLUX_TODO.md)
       - name: DATABASE_NAME
         value: "{{ .Values.postgresql.auth.database }}"
