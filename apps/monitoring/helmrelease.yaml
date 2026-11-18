@@ -322,7 +322,7 @@ spec:
         # the config). It wires up: syslog file → Loki, and Kubernetes pod discovery →
         # relabel (keep this node's pods; add namespace/pod/container/app/node labels) →
         # read their logs through the Kubernetes API → Loki. Every log line gets the
-        # label cluster="eu-west-1-prod" (a placeholder from an example; harmless).
+        # label cluster="home" (until 2026-11-17 it was "eu-west-1-prod", a placeholder from an example).
         # The node name comes from K8S_NODE_NAME, which the chart sets on the pod. (Until
         # 2026-11-17 this read NODE_NAME, which doesn't exist: the node filter then kept
         # no pods, so Loki only ever had syslog.)
@@ -331,7 +331,7 @@ spec:
             endpoint {
               url = "http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push"
             }
-            external_labels = { cluster = "eu-west-1-prod" }
+            external_labels = { cluster = "home" }
           }
 
           // Node syslog
@@ -571,8 +571,8 @@ spec:
 # ---- prometheus-adapter: `kubectl top` / resource metrics from Prometheus -----------------
 # Serves the Kubernetes resource-metrics API (metrics.k8s.io: what `kubectl top` and the
 # HorizontalPodAutoscaler read) by running the PromQL queries below against Prometheus.
-# metrics-server (kube-system) also runs, but the metrics.k8s.io API points at this adapter
-# (`kubectl get apiservice v1beta1.metrics.k8s.io`), so metrics-server is effectively unused.
+# (metrics-server, installed by hand with kubectl apply and never in git, was deleted 2026-11-17;
+# `kubectl get apiservice v1beta1.metrics.k8s.io` points here.) metrics-reader.yaml grants read access.
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:

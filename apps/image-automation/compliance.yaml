@@ -1,0 +1,26 @@
+# Image automation for the compliance namespace (Trivy). These objects live in flux-system.
+# Setter comments point here as "flux-system:<policy-name>". See kustomization.yaml for how it works.
+# One policy drives both Trivy tags in apps/compliance/helmrelease.yaml (the scan Jobs' client
+# and trivy-server), so they're always updated in the same commit and stay on the same version.
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: trivy-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: trivy
+  policy:
+    semver:
+      range: ">=0.76.2 <1.0.0"    # any newer 0.x Trivy; plain semver skips -rc tags
+
+---
+
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: trivy
+  namespace: flux-system
+spec:
+  image: docker.io/aquasec/trivy
+  interval: 6h                    # check for new tags every 6 hours

@@ -14,3 +14,4 @@ resources:
   - glances.yaml                  # host stats web UI
   - snapotter.yaml                # image/file processing toolkit
   - mealie.yaml                   # recipe manager
+  - metrics-reader.yaml           # lets view/edit/admin read kubectl-top metrics (prometheus-adapter)

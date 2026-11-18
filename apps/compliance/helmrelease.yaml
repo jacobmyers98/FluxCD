@@ -58,7 +58,9 @@ spec:
       ignoreUnfixed: true    # only report CVEs that have a fixed version available (actionable ones)
       image:
         repository: aquasec/trivy
-        tag: latest          # unpinned scanner image (pulled from mirror.gcr.io); FLUX_TODO.md
+        # Pinned, and kept the same as trivy-server's tag below (client and server should run
+        # the same Trivy version). Both lines follow ImagePolicy trivy-policy, so they move together.
+        tag: "0.76.2" # {"$imagepolicy": "flux-system:trivy-policy:tag"}
     serviceMonitor:          # let Prometheus scrape the trivy_* metrics (used by Grafana dashboards)
       enabled: true
       namespace: compliance
@@ -87,6 +89,8 @@ spec:
         namespace: flux-system
   values:
     fullnameOverride: trivy-server   # fixed object names, so serverURL above stays valid
+    image:
+      tag: "0.76.2" # {"$imagepolicy": "flux-system:trivy-policy:tag"}
     server:
       enabled: true          # run Trivy in server mode (listens on 4954)
     resources:

@@ -1,0 +1,17 @@
+# Lets anyone with the built-in view / edit / admin roles read resource metrics
+# (`kubectl top`, Headlamp's CPU/memory numbers), which prometheus-adapter serves as the
+# metrics.k8s.io API. The aggregate-to-* labels make Kubernetes merge these rules into those
+# roles automatically. It replaces system:aggregated-metrics-reader, which came with the
+# hand-installed metrics-server (deleted 2026-11-17); prometheus-adapter's chart has no equivalent.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: metrics-reader
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-view: "true"
+    rbac.authorization.k8s.io/aggregate-to-edit: "true"
+    rbac.authorization.k8s.io/aggregate-to-admin: "true"
+rules:
+- apiGroups: ["metrics.k8s.io"]
+  resources: ["pods", "nodes"]
+  verbs: ["get", "list", "watch"]
