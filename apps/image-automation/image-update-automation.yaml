@@ -1,0 +1,37 @@
+# The one ImageUpdateAutomation for the whole repo (replaces the four per-namespace ones,
+# 2026-11-17). Every hour it checks out main, rewrites every image line under ./apps that has a
+# {"$imagepolicy": "flux-system:<policy>"} comment to the tag its policy picked, and pushes ONE
+# commit for all changes. (Four automations pushing separately raced each other: "cannot lock ref".)
+# An automation only reads ImagePolicies in its own namespace, which is why they all live in
+# flux-system now.
+# Status: flux get images update -n flux-system   Run now: flux reconcile image update image-updates -n flux-system
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageUpdateAutomation
+metadata:
+  name: image-updates
+  namespace: flux-system
+spec:
+  interval: 1h                  # check for tag changes once an hour
+  sourceRef:                    # the repo to write to: this FluxCD repo (same one Flux syncs from)
+    kind: GitRepository
+    name: flux-system
+  git:
+    checkout:
+      ref:
+        branch: main            # start from the latest main
+    commit:
+      author:                   # shown as the commit author on GitHub
+        name: flux-bot
+        email: flux@users.noreply.github.com
+      messageTemplate: |        # Go template: one line per changed image line (Kind/namespace/name: old -> new)
+        Image updates
+        {{ range $resource, $changes := .Changed.Objects -}}
+        {{- range $change := $changes }}
+        - {{ $resource.Kind }}/{{ $resource.Namespace }}/{{ $resource.Name }}: {{ $change.OldValue }} -> {{ $change.NewValue }}
+        {{- end -}}
+        {{- end }}
+    push:
+      branch: main              # push straight to main = deployed right away (no review)
+  update:
+    path: ./apps                # every folder (only lines with a setter comment are touched)
+    strategy: Setters

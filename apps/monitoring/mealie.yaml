@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: mealie
-        image: ghcr.io/mealie-recipes/mealie:v3.31.0 # {"$imagepolicy": "monitoring:mealie-policy"}
+        image: ghcr.io/mealie-recipes/mealie:v3.31.0 # {"$imagepolicy": "flux-system:mealie-policy"}
         ports:
         - containerPort: 9000
         env:

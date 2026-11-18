@@ -77,7 +77,7 @@ spec:
           value: "none"
       containers:
       - name: prowlarr
-        image: linuxserver/prowlarr:3.0.2 #  {"$imagepolicy": "plex:prowlarr-policy"}
+        image: linuxserver/prowlarr:3.0.2 #  {"$imagepolicy": "flux-system:prowlarr-policy"}
         env:
         - name: PUID
           value: "1001"

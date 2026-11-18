@@ -33,7 +33,7 @@ spec:
           mountPath: /ollama
       containers:
       - name: n8n
-        image: n8nio/n8n:stable@sha256:63bdcfdea7e0d21152a7ad8f62e6622658c5eae3835e7515dbd9b610cdb76111 # {"$imagepolicy": "dev:n8n-policy"}
+        image: n8nio/n8n:stable@sha256:63bdcfdea7e0d21152a7ad8f62e6622658c5eae3835e7515dbd9b610cdb76111 # {"$imagepolicy": "flux-system:n8n-policy"}
         securityContext:
           runAsUser: 1001 # container_user
           runAsGroup: 1004
@@ -73,9 +73,9 @@ spec:
         - name: n8n-cache
           mountPath: /home/node/.cache # image's /home/node is owned by uid 1000; n8n writes static assets here at startup
       # 2. Python/JavaScript Sandbox (Task Runner)
-      # Version must match n8n: both images follow the "stable" tag (image-policies.yaml)
+      # Version must match n8n: both images follow the "stable" tag (apps/image-automation/dev.yaml)
       - name: n8n-task-runner
-        image: n8nio/runners:stable@sha256:9c0b3300dc81814dea43f186f17752cb2ffb161635e8f533376513773048ed02 # {"$imagepolicy": "dev:n8n-runners-policy"}
+        image: n8nio/runners:stable@sha256:9c0b3300dc81814dea43f186f17752cb2ffb161635e8f533376513773048ed02 # {"$imagepolicy": "flux-system:n8n-runners-policy"}
         env:
         - name: N8N_RUNNERS_AUTH_TOKEN
           value: "my-secure-random-token" # Matches the n8n token
@@ -85,7 +85,7 @@ spec:
           value: "600" # must match the n8n container
       # --- Container 2: Ollama ---
       - name: ollama
-        image: ollama/ollama:0.40.16 # {"$imagepolicy": "dev:ollama-policy"}
+        image: ollama/ollama:0.40.16 # {"$imagepolicy": "flux-system:ollama-policy"}
         securityContext:
           runAsUser: 1001 # container_user
           runAsGroup: 1004

@@ -9,8 +9,6 @@ resources:
   - secret.teslamate.yaml         # TeslaMate encryption key (SOPS)
   - secret.postgresql.yaml        # TeslaMate Postgres password (SOPS)
   - homarr.yaml                   # Homarr dashboard
-  - image-policies.yaml           # image tag policies (Homarr, Mealie)
-  - image-update-automation.yaml  # writes new tags into apps/monitoring
   - grafana-nodeport.yaml         # NodePort for Grafana
   - secret.grafana.yaml           # Grafana admin login (SOPS)
   - glances.yaml                  # host stats web UI

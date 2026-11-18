@@ -14,7 +14,8 @@
 #   prune: true    objects removed from git are deleted from the cluster
 #   decryption     decrypt SOPS-encrypted secret files with the age key in secret sops-age
 #                  (made by hand, see README step 2)
-#   dependsOn      admin-namespaces: wait until the namespaces exist (only matters on a fresh cluster)
+#   dependsOn      admin-namespaces: wait until the namespaces exist (only matters on a fresh cluster;
+#                  kube-system and image-automation don't need it)
 #
 # Careful: DELETING or RENAMING an entry here deletes everything that folder created (prune: true),
 # e.g. removing admin-namespaces deletes the namespaces and every app in them. To move a folder or
@@ -209,6 +210,26 @@ spec:
       name: sops-age
   dependsOn:
     - name: admin-namespaces
+---
+# image-automation: every ImageRepository/ImagePolicy + the one ImageUpdateAutomation (all in
+# namespace flux-system), which writes new image tags into ./apps and pushes them to main.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: image-automation
+  namespace: flux-system
+spec:
+  interval: 1m
+  timeout: 5m
+  path: ./apps/image-automation
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
 ---
 # kubevirt: KubeVirt operator + KubeVirt CR (runs the dev/devbox VM). Moved here from kubevirt.yaml
 # 2026-11-17. ./apps/kubevirt is in no other entry, so the operator's CRDs have exactly one owner

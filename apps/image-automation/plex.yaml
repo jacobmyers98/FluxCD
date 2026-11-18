@@ -1,25 +1,106 @@
-# Flux image automation, step by step:
-#   1. ImageRepository: Flux's image-reflector-controller lists the image's tags in the
-#      registry every `interval`.
-#   2. ImagePolicy: picks the "latest" allowed tag from that list (semver range, or a
-#      tag pattern). `kubectl -n <ns> get imagepolicy` shows what it picked.
-#   3. A setter comment on the image line in a manifest, e.g.
-#        image: foo/bar:1.2.3 # {"$imagepolicy": "<namespace>:<policy-name>"}
-#      marks where that tag belongs.
-#   4. ImageUpdateAutomation (image-update-automation.yaml) rewrites those lines in git
-#      and pushes a commit to main; Flux then deploys it like any other change.
-# A semver range like ">=1.2.0" has no upper limit, so it also takes new MAJOR versions
-# (which may need manual migration steps). "<2.0.0" stops at the major. Plain semver
-# never picks pre-releases (-rc, -beta, ...) unless the range itself asks for them.
-#
-# plex: the policies; their ImageRepositories are in image-repositories.yaml.
+# Image automation for the plex namespace's apps (moved from apps/plex/ on 2026-11-17).
+# These objects live in flux-system; the apps they update stay in namespace plex.
+# Setter comments point here as "flux-system:<policy-name>". See kustomization.yaml for how it works.
+# plex: ImageRepositories first (which registry image Flux watches, and how often),
+# then the ImagePolicies (which tag to pick).
+# linuxserver/* = LinuxServer.io images (Docker Hub; lscr.io is their own mirror of the same images).
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: radarr
+  namespace: flux-system
+spec:
+  image: linuxserver/radarr
+  interval: 6h
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: sonarr
+  namespace: flux-system
+spec:
+  image: linuxserver/sonarr
+  interval: 6h
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: prowlarr
+  namespace: flux-system
+spec:
+  image: linuxserver/prowlarr
+  interval: 6h
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: seerr
+  namespace: flux-system
+spec:
+  image: ghcr.io/seerr-team/seerr
+  interval: 6h
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: qbittorrent
+  namespace: flux-system
+spec:
+  image: lscr.io/linuxserver/qbittorrent
+  interval: 6h
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: tdarr
+  namespace: flux-system
+spec:
+  image: ghcr.io/haveagitgat/tdarr
+  interval: 6h
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: tdarr-node
+  namespace: flux-system
+spec:
+  image: ghcr.io/haveagitgat/tdarr_node
+  interval: 6h
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: cloudflared
+  namespace: flux-system
+spec:
+  image: cloudflare/cloudflared
+  interval: 6h
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: kubectl
+  namespace: flux-system
+spec:
+  image: registry.k8s.io/kubectl
+  interval: 24h
+
+---
 # These apps are used by other people ("production"), and most ranges have no upper
 # limit, so major upgrades arrive automatically within a few hours of release.
 apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
   name: radarr-policy
-  namespace: plex
+  namespace: flux-system
 spec:
   imageRepositoryRef:
     name: radarr
@@ -32,7 +113,7 @@ apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
   name: sonarr-policy
-  namespace: plex
+  namespace: flux-system
 spec:
   imageRepositoryRef:
     name: sonarr
@@ -45,7 +126,7 @@ apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
   name: prowlarr-policy
-  namespace: plex
+  namespace: flux-system
 spec:
   imageRepositoryRef:
     name: prowlarr
@@ -58,7 +139,7 @@ apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
   name: seerr-policy
-  namespace: plex
+  namespace: flux-system
 spec:
   imageRepositoryRef:
     name: seerr
@@ -71,7 +152,7 @@ apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
   name: qbittorrent-policy
-  namespace: plex
+  namespace: flux-system
 spec:
   imageRepositoryRef:
     name: qbittorrent
@@ -84,7 +165,7 @@ apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
   name: tdarr-policy
-  namespace: plex
+  namespace: flux-system
 spec:
   imageRepositoryRef:
     name: tdarr
@@ -97,7 +178,7 @@ apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
   name: tdarr-node-policy
-  namespace: plex
+  namespace: flux-system
 spec:
   imageRepositoryRef:
     name: tdarr-node
@@ -110,7 +191,7 @@ apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
   name: cloudflared-policy
-  namespace: plex
+  namespace: flux-system
 spec:
   imageRepositoryRef:
     name: cloudflared
@@ -125,7 +206,7 @@ apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
   name: kubectl-policy
-  namespace: plex
+  namespace: flux-system
 spec:
   imageRepositoryRef:
     name: kubectl

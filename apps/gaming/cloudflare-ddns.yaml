@@ -18,7 +18,7 @@ spec:
         runAsGroup: 1000
       containers:
       - name: cloudflare-ddns
-        image: favonia/cloudflare-ddns:1.18.0 # {"$imagepolicy": "gaming:cloudflare-ddns-policy"}
+        image: favonia/cloudflare-ddns:1.18.0 # {"$imagepolicy": "flux-system:cloudflare-ddns-policy"}
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true

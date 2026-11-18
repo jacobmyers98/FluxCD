@@ -1,0 +1,24 @@
+# Flux image automation for every app (all objects in namespace flux-system), step by step:
+#   1. ImageRepository: Flux's image-reflector-controller lists the image's tags in the
+#      registry every `interval`.
+#   2. ImagePolicy: picks the "latest" allowed tag from that list (semver range, or a
+#      tag pattern). `kubectl -n flux-system get imagepolicy` shows what each one picked.
+#   3. A setter comment on the image line in a manifest, e.g.
+#        image: foo/bar:1.2.3 # {"$imagepolicy": "flux-system:<policy-name>"}
+#      marks where that tag belongs. The comment must end right after the JSON.
+#   4. ImageUpdateAutomation (image-update-automation.yaml) rewrites those lines in git
+#      and pushes one commit to main; Flux then deploys it like any other change.
+# A semver range like ">=1.2.0" has no upper limit, so it also takes new MAJOR versions
+# (which may need manual migration steps). "<2.0.0" stops at the major. Plain semver
+# never picks pre-releases (-rc, -beta, ...) unless the range itself asks for them.
+#
+# Adding an image: add an ImageRepository + ImagePolicy to the area's file here (namespace
+# flux-system, unique names), then the setter comment on the image line in apps/<area>/.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - image-update-automation.yaml  # the one automation that writes new tags into ./apps
+  - dev.yaml                      # n8n, n8n runners, n8n sandbox, Ollama
+  - gaming.yaml                   # Cloudflare DDNS
+  - monitoring.yaml               # Homarr, Mealie
+  - plex.yaml                     # *arr apps, Seerr, qBittorrent, Tdarr, cloudflared, kubectl (restarter)

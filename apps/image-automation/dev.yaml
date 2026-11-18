@@ -1,17 +1,6 @@
-# Flux image automation, step by step:
-#   1. ImageRepository: Flux's image-reflector-controller lists the image's tags in the
-#      registry every `interval`.
-#   2. ImagePolicy: picks the "latest" allowed tag from that list (semver range, or a
-#      tag pattern). `kubectl -n <ns> get imagepolicy` shows what it picked.
-#   3. A setter comment on the image line in a manifest, e.g.
-#        image: foo/bar:1.2.3 # {"$imagepolicy": "<namespace>:<policy-name>"}
-#      marks where that tag belongs.
-#   4. ImageUpdateAutomation (image-update-automation.yaml) rewrites those lines in git
-#      and pushes a commit to main; Flux then deploys it like any other change.
-# A semver range like ">=1.2.0" has no upper limit, so it also takes new MAJOR versions
-# (which may need manual migration steps). "<2.0.0" stops at the major. Plain semver
-# never picks pre-releases (-rc, -beta, ...) unless the range itself asks for them.
-#
+# Image automation for the dev namespace's apps (moved from apps/dev/ on 2026-11-17).
+# These objects live in flux-system; the apps they update stay in namespace dev.
+# Setter comments point here as "flux-system:<policy-name>". See kustomization.yaml for how it works.
 # dev: n8n + its task runner (follow the "stable" tag by digest), the n8n sandbox
 # (semver 1.x) and Ollama (semver 0.x).
 #
@@ -22,7 +11,7 @@ apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
   name: n8n-policy
-  namespace: dev
+  namespace: flux-system
 spec:
   imageRepositoryRef:
     name: n8n
@@ -39,7 +28,7 @@ apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
   name: n8n-runners-policy
-  namespace: dev
+  namespace: flux-system
 spec:
   imageRepositoryRef:
     name: n8n-runners
@@ -56,7 +45,7 @@ apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
   name: n8n-sandbox-api-policy
-  namespace: dev
+  namespace: flux-system
 spec:
   imageRepositoryRef:
     name: n8n-sandbox-api
@@ -69,7 +58,7 @@ apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
   name: n8n-sandbox-runner-policy
-  namespace: dev
+  namespace: flux-system
 spec:
   imageRepositoryRef:
     name: n8n-sandbox-runner
@@ -83,7 +72,7 @@ apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImageRepository
 metadata:
   name: n8n
-  namespace: dev
+  namespace: flux-system
 spec:
   image: n8nio/n8n
   interval: 1h
@@ -94,7 +83,7 @@ apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImageRepository
 metadata:
   name: n8n-runners
-  namespace: dev
+  namespace: flux-system
 spec:
   image: n8nio/runners
   interval: 1h
@@ -105,7 +94,7 @@ apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImageRepository
 metadata:
   name: n8n-sandbox-api
-  namespace: dev
+  namespace: flux-system
 spec:
   image: n8nio/n8n-sandbox-service-api
   interval: 6h   # check for new tags every 6 hours
@@ -115,7 +104,7 @@ apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImageRepository
 metadata:
   name: n8n-sandbox-runner
-  namespace: dev
+  namespace: flux-system
 spec:
   image: n8nio/n8n-sandbox-service-runner-dind
   interval: 6h
@@ -125,7 +114,7 @@ apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
   name: ollama-policy
-  namespace: dev
+  namespace: flux-system
 spec:
   imageRepositoryRef:
     name: ollama
@@ -138,7 +127,7 @@ apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImageRepository
 metadata:
   name: ollama
-  namespace: dev
+  namespace: flux-system
 spec:
   image: ollama/ollama
   interval: 6h

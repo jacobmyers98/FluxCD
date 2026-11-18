@@ -54,7 +54,7 @@ spec:
           containers:
           - name: kubectl
             # Official image (Bitnami stopped publishing free images in 2025). It has no shell; the entrypoint is kubectl.
-            image: registry.k8s.io/kubectl:v1.37.2 # {"$imagepolicy": "plex:kubectl-policy"}
+            image: registry.k8s.io/kubectl:v1.37.2 # {"$imagepolicy": "flux-system:kubectl-policy"}
             args: ["rollout", "restart", "deployment", "-l", "app=qbittorrent", "-n", "plex"]
             securityContext:
               runAsNonRoot: true

@@ -65,7 +65,7 @@ spire-server / spire-agent - installed by Cilium. They issue SPIFFE identities t
 
 ## **flux-system**<br>
 
-source / kustomize / helm / notification / image-reflector / image-automation controllers - the FluxCD controllers. They pull this repo, apply the per-folder Kustomizations (decrypting SOPS secrets with the `sops-age` key), install HelmReleases, and scan container registries to automatically bump image tags marked with `$imagepolicy` comments.<br>
+source / kustomize / helm / notification / image-reflector / image-automation controllers - the FluxCD controllers. They pull this repo, apply the per-folder Kustomizations (decrypting SOPS secrets with the `sops-age` key), install HelmReleases, and scan container registries to automatically bump image tags marked with `$imagepolicy` comments. All ImageRepositories/ImagePolicies and the single ImageUpdateAutomation (`image-updates`, one commit per run) live in namespace `flux-system`, in `apps/image-automation/`.<br>
 
 
 ## **monitoring**<br>

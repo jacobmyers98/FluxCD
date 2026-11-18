@@ -5,8 +5,6 @@ kind: Kustomization
 resources:
   - n8n.yaml                      # n8n + task runner + Ollama (one pod)
   - n8n-sandbox.yaml              # n8n code sandbox API + Docker-in-Docker runner
-  - image-policies.yaml           # which image tags Flux follows for the above
-  - image-update-automation.yaml  # writes new tags into apps/dev and pushes to main
   - searxng.yaml                  # private web search used by n8n
   - mongodb.yaml                  # database for n8n workflows' memory/data
   - secret.mongodb.yaml           # MongoDB root + n8n user logins (SOPS)

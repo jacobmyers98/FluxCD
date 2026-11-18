@@ -1,0 +1,51 @@
+# Image automation for the monitoring namespace's apps (moved from apps/monitoring/ on 2026-11-17).
+# These objects live in flux-system; the apps they update stay in namespace monitoring.
+# Setter comments point here as "flux-system:<policy-name>". See kustomization.yaml for how it works.
+# monitoring: Homarr and Mealie. Everything else in monitoring comes from Helm charts.
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: homarr-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: homarr
+  policy:
+    semver:
+      range: ">=1.45.0"           # any newer Homarr, majors included
+
+---
+
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: homarr
+  namespace: flux-system
+spec:
+  image: ghcr.io/homarr-labs/homarr   # GitHub Container Registry
+  interval: 6h                        # check for new tags every 6 hours
+
+---
+
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: mealie-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: mealie
+  policy:
+    semver:
+      range: ">=3.31.0 <4.0.0"    # stay on Mealie 3.x; a 4.0 needs reading its release notes first
+
+---
+
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: mealie
+  namespace: flux-system
+spec:
+  image: ghcr.io/mealie-recipes/mealie
+  interval: 6h
