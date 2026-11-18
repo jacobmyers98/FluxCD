@@ -17,6 +17,8 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: gaming        # Minecraft + Cloudflare DDNS ("production": outside players use it)
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled   # moving to the app folders; never prune
   labels:
     app: gaming
 
@@ -26,6 +28,8 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: plex          # Plex and the media automation around it ("production")
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled   # moving to the app folders; never prune
   labels:
     app: plex
 
@@ -35,6 +39,8 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: monitoring    # Grafana/Prometheus/Loki, Homarr, Teslamate, Mealie, SnapOtter, ...
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled   # moving to the app folders; never prune
   labels:
     app: monitoring
 
@@ -44,6 +50,8 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: compliance    # Trivy scanners and Headlamp
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled   # moving to the app folders; never prune
   labels:
     app: compliance
 
@@ -53,5 +61,7 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: dev           # n8n + Ollama, backtester, devbox VM, GitHub Actions runners
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled   # moving to the app folders; never prune
   labels:
     app: dev

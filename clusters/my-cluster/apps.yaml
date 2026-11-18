@@ -36,7 +36,7 @@ spec:
   interval: 1m
   timeout: 5m
   path: ./apps/admin-namespaces
-  prune: true
+  prune: false # being removed: namespaces move into their app folders
   sourceRef:
     kind: GitRepository
     name: flux-system
