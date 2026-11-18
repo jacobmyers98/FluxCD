@@ -25,9 +25,7 @@ spec:
   selector:
     app: qbittorrent
   type: NodePort
-
 ---
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -98,7 +96,7 @@ spec:
       # Waits until the VPN routes traffic before letting qBit start
       # ---------------------------------------------------------
       - name: vpn-check
-        image: busybox:1.37.0 # {"$imagepolicy": "flux-system:busybox-policy"}
+        image: busybox:1.38.0 # {"$imagepolicy": "flux-system:busybox-policy"}
         command:
         - 'sh'
         - '-c'
