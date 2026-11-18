@@ -11,7 +11,7 @@ metadata:
 spec:
   interval: 1m          # re-apply every minute: manual `kubectl edit`s are reverted within ~1 min
   path: ./apps          # folder in the git repo (its kustomization.yaml is the entry point)
-  prune: true           # objects removed from git are deleted from the cluster
+  prune: false          # TEMPORARY (2026-11-17): off while apps is split into per-folder Kustomizations
   sourceRef:            # which git repo/branch: the GitRepository made by bootstrap (main)
     kind: GitRepository
     name: flux-system
