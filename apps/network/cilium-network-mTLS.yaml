@@ -92,8 +92,8 @@ spec:
 
 ---
 
-# 5: pods labelled exposed=nodeport (apps reached directly on a NodePort: today Grafana,
-# TeslaMate, Homarr, Vaultwarden, Tailscale and every plex app) may receive traffic from anywhere: internet/LAN, the node, the
+# 5: pods labelled exposed=nodeport (apps reached directly on a NodePort: today Plex,
+# Minecraft, Vaultwarden and Tailscale; the others go through the HTTPS Ingress since 2026-11-17) may receive traffic from anywhere: internet/LAN, the node, the
 # Ingress, other pods, the API server. These are left out of the mTLS rule above,
 # because traffic arriving through a NodePort can't do mTLS.
 apiVersion: "cilium.io/v2"
@@ -203,7 +203,8 @@ spec:
 
 # 7: monitoring namespace (the listed apps only; Prometheus/Loki/etc. aren't selected).
 # Incoming: each other (mTLS), the Ingress, Homarr, Tailscale and n8n.
-# Outgoing: DNS, Prometheus (9090) and Loki (3100), Ollama in dev (11434, Mealie's AI),
+# Outgoing: DNS, Prometheus (9090), Loki (3100), Alertmanager (9093), Postgres (5432) and
+# Mosquitto (1883) in monitoring, Ollama in dev (11434, Mealie's AI),
 # Tailscale, n8n, and the listed ports anywhere in the cluster or outside (Homarr's
 # widgets poll the other apps; Mealie scrapes recipe sites over 80/443).
 # A new app here must be added to both "app" lists, or it can't be reached.
@@ -269,6 +270,12 @@ spec:
         - port: "9090" # Prometheus
           protocol: TCP
         - port: "3100" # Loki
+          protocol: TCP
+        - port: "9093" # Alertmanager (Grafana datasource)
+          protocol: TCP
+        - port: "5432" # TeslaMate's Postgres (TeslaMate, Grafana's TeslaMate datasource)
+          protocol: TCP
+        - port: "1883" # Mosquitto (TeslaMate)
           protocol: TCP
     - toEndpoints:
       - matchLabels:

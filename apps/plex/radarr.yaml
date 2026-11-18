@@ -33,7 +33,6 @@ spec:
     metadata:
       labels:
         app: radarr
-        exposed: nodeport
     spec:
       containers:
       - name: radarr

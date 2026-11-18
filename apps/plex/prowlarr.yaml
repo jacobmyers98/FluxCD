@@ -48,7 +48,6 @@ spec:
     metadata:
       labels:
         app: prowlarr
-        exposed: nodeport
     spec:
       securityContext:
         runAsUser: 1001

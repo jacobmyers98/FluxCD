@@ -31,7 +31,6 @@ spec:
     metadata:
       labels:
         app: seerr
-        exposed: nodeport
     spec:
       securityContext:
         runAsUser: 1001

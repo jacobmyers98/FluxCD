@@ -33,7 +33,6 @@ spec:
     metadata:
       labels:
         app: homarr
-        exposed: nodeport
       annotations:
         fluxcd.io/image: "homarr-policy"
     spec:

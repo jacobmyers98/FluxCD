@@ -39,7 +39,7 @@ spec:
     createNamespace: true   # create the namespace if it doesn't exist (it does)
   values:
     podLabels:
-      exposed: nodeport      # lets the cluster-wide "allow-external-nodeport" policy admit outside traffic
+      app: teslamate         # selected by Cilium policy monitoring-stack-ingress (HTTPS via the Ingress, mTLS from other pods)
     image:
       repository: teslamate/teslamate
       tag: "4.4.0"            # app version, pinned; not tracked by Flux image automation
@@ -446,7 +446,7 @@ spec:
         general: false
     grafana:
       podLabels:
-        exposed: nodeport          # reachable on its NodePort (grafana-nodeport.yaml) through the allow-external-nodeport policy
+        app: grafana               # selected by Cilium policy monitoring-stack-ingress (HTTPS via the Ingress, mTLS from other pods)
       deploymentStrategy:
         type: Recreate             # stop the old pod first (both would use the same data/provisioning)
       initChownData:
