@@ -9,7 +9,7 @@ spec:
   capacity:
     storage: 10Gi
   claimRef:
-    name: prom-data-pvc
+    name: prometheus-prometheus-community-kube-prometheus-db-prometheus-prometheus-community-kube-prometheus-0
     namespace: monitoring
   hostPath:
     path: /home/server/docker/monitoring/prometheus/
