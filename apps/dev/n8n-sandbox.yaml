@@ -131,7 +131,7 @@ spec:
       initContainers:
       # The runner refuses to start without br_netfilter loaded on the node
       - name: load-br-netfilter
-        image: busybox:1.37
+        image: busybox:1.37.0 # {"$imagepolicy": "flux-system:busybox-policy"}
         securityContext:
           privileged: true
         command: ["sh", "-c", "modprobe br_netfilter && echo br_netfilter loaded"]
@@ -141,7 +141,7 @@ spec:
           readOnly: true
       # Wait for the API pod to generate the mTLS material
       - name: wait-for-certs
-        image: busybox:1.37
+        image: busybox:1.37.0 # {"$imagepolicy": "flux-system:busybox-policy"}
         command: ["sh", "-c", "until [ -f /tls/runner/control-grpc-server.key ]; do echo waiting for certs; sleep 2; done"]
         volumeMounts:
         - name: tls-data

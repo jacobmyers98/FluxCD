@@ -27,7 +27,7 @@ spec:
       serviceAccountName: tailscale   # gives the pod the Role below (to save its state in a Secret)
       containers:
       - name: tailscale
-        image: tailscale/tailscale:v1.104.2   # pinned; not tracked by Flux image automation
+        image: tailscale/tailscale:v1.104.2 # {"$imagepolicy": "flux-system:tailscale-policy"}
         resources:
           requests:
             cpu: 10m

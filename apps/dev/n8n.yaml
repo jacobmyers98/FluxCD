@@ -20,7 +20,7 @@ spec:
       initContainers:
       # Hands the host volumes to container_user (1001:1004); group-writable so user server (in group 1004) keeps write access
       - name: fix-perms
-        image: busybox:1.37
+        image: busybox:1.37.0 # {"$imagepolicy": "flux-system:busybox-policy"}
         securityContext:
           runAsUser: 0
         command: ["sh", "-c", "chown -R 1001:1004 /n8n /files /ollama && chmod -R g+rwX /n8n /files"]

@@ -19,7 +19,9 @@ kind: Kustomization
 resources:
   - image-update-automation.yaml  # the one automation that writes new tags into ./apps
   - compliance.yaml               # Trivy (scanner client + trivy-server, one policy)
-  - dev.yaml                      # n8n, n8n runners, n8n sandbox, Ollama
-  - gaming.yaml                   # Cloudflare DDNS
-  - monitoring.yaml               # Homarr, Mealie
-  - plex.yaml                     # *arr apps, Seerr, qBittorrent, Tdarr, cloudflared, kubectl (restarter)
+  - common.yaml                   # busybox + alpine helper images (used in several namespaces)
+  - dev.yaml                      # n8n, n8n runners, n8n sandbox, Ollama, Node (discord-assistant), MongoDB, SearXNG
+  - gaming.yaml                   # Cloudflare DDNS, Minecraft server image
+  - kube-system.yaml              # Vaultwarden, Tailscale
+  - monitoring.yaml               # Homarr, Mealie, Glances, SnapOtter, TeslaMate
+  - plex.yaml                     # *arr apps, Seerr, qBittorrent, Tdarr, cloudflared, kubectl (restarter), FlareSolverr, Gluetun, curl

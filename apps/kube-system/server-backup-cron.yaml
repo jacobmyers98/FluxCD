@@ -20,7 +20,7 @@ spec:
         spec:
           containers:
           - name: backup-runner
-            image: alpine:3.24      # Alpine minor pinned (gets patch updates); rsync is installed at run time
+            image: alpine:3.24.4 # {"$imagepolicy": "flux-system:alpine-policy"}
             command: ["/bin/sh", "-c"]
             args:
               - |

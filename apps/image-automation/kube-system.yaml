@@ -1,0 +1,50 @@
+# Image automation for the kube-system namespace's apps (added 2026-11-18).
+# These objects live in flux-system; the apps they update stay in kube-system.
+# Setter comments point here as "flux-system:<policy-name>". See kustomization.yaml for how it works.
+# Not tracked: registry.k8s.io/etcd in etcd-backup (must match the cluster's etcd version,
+# so it moves with cluster upgrades, not with new releases).
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: vaultwarden
+  namespace: flux-system
+spec:
+  image: vaultwarden/server
+  interval: 6h
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: vaultwarden-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: vaultwarden
+  filterTags:
+    pattern: '^\d+\.\d+\.\d+$'
+  policy:
+    semver:
+      range: ">=1.37.4 <2.0.0"   # Vaultwarden 1.x (skips the -alpine variants)
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: tailscale
+  namespace: flux-system
+spec:
+  image: tailscale/tailscale
+  interval: 6h
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: tailscale-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: tailscale
+  filterTags:
+    pattern: '^v\d+\.\d+\.\d+$'
+  policy:
+    semver:
+      range: ">=1.104.2 <2.0.0"   # stable releases only (unstable ones are tagged unstable-v1.odd.x)

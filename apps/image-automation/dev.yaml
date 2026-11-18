@@ -131,3 +131,75 @@ metadata:
 spec:
   image: ollama/ollama
   interval: 6h
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: node
+  namespace: flux-system
+spec:
+  image: node
+  interval: 6h
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: node-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: node
+  filterTags:
+    pattern: '^(?P<v>22\.\d+\.\d+)-alpine$'
+    extract: '$v'
+  policy:
+    semver:
+      range: ">=22.21.1 <23.0.0"   # Node 22 LTS, alpine image (discord-assistant)
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: mongo
+  namespace: flux-system
+spec:
+  image: mongo
+  interval: 6h
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: mongo-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: mongo
+  filterTags:
+    pattern: '^\d+\.\d+\.\d+$'
+  policy:
+    semver:
+      range: ">=8.0.34 <8.1.0"   # patch releases only: a MongoDB minor/major upgrade needs a featureCompatibilityVersion step
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: searxng
+  namespace: flux-system
+spec:
+  image: searxng/searxng
+  interval: 6h
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: searxng-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: searxng
+  filterTags:
+    pattern: '^(?P<v>\d+\.\d+\.\d+)-[0-9a-f]+$'
+    extract: '$v'
+  policy:
+    semver:
+      range: ">=2026.10.19"   # date tags YYYY.M.D-<commit>; the date is compared as a version

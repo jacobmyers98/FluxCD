@@ -55,7 +55,7 @@ spec:
         fsGroup: 1004
       initContainers:
       - name: flaresolverr
-        image: ghcr.io/flaresolverr/flaresolverr:v3.5.2
+        image: ghcr.io/flaresolverr/flaresolverr:v3.5.2 # {"$imagepolicy": "flux-system:flaresolverr-policy"}
         imagePullPolicy: Always
         restartPolicy: Always
         securityContext:

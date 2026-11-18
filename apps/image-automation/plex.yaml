@@ -213,3 +213,73 @@ spec:
   policy:
     semver:
       range: ">=1.37.0 <1.38.0"
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: flaresolverr
+  namespace: flux-system
+spec:
+  image: ghcr.io/flaresolverr/flaresolverr
+  interval: 6h
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: flaresolverr-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: flaresolverr
+  filterTags:
+    pattern: '^v\d+\.\d+\.\d+$'
+  policy:
+    semver:
+      range: ">=3.5.2 <4.0.0"   # FlareSolverr 3.x (skips pr-* test builds)
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: gluetun
+  namespace: flux-system
+spec:
+  image: qmcgaw/gluetun
+  interval: 6h
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: gluetun-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: gluetun
+  filterTags:
+    pattern: '^v\d+\.\d+\.\d+$'
+  policy:
+    semver:
+      range: ">=3.41.1 <4.0.0"   # Gluetun (qBittorrent's VPN) 3.x, skips pr-*/issue-* builds
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: curl
+  namespace: flux-system
+spec:
+  image: curlimages/curl
+  interval: 6h
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: curl-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: curl
+  filterTags:
+    pattern: '^\d+\.\d+\.\d+$'
+  policy:
+    semver:
+      range: ">=8.5.0 <9.0.0"   # curl helper in tdarr.yaml

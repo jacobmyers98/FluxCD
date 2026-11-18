@@ -49,7 +49,7 @@ spec:
           hostNetwork: true        # share the node's network so 127.0.0.1:2379 is etcd
           initContainers:
           - name: check-disk         # same check as weekly-server-backup (server-backup-cron.yaml)
-            image: alpine:3.24
+            image: alpine:3.24.4 # {"$imagepolicy": "flux-system:alpine-policy"}
             command: ["/bin/sh", "-c"]
             args:
               - |
@@ -102,7 +102,7 @@ spec:
               mountPath: /backup
           containers:
           - name: rotate
-            image: alpine:3.24
+            image: alpine:3.24.4 # {"$imagepolicy": "flux-system:alpine-policy"}
             command: ["/bin/sh", "-c"]
             args:
               - |

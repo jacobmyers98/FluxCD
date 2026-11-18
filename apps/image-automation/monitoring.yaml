@@ -49,3 +49,73 @@ metadata:
 spec:
   image: ghcr.io/mealie-recipes/mealie
   interval: 6h
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: glances
+  namespace: flux-system
+spec:
+  image: nicolargo/glances
+  interval: 6h
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: glances-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: glances
+  filterTags:
+    pattern: '^\d+\.\d+\.\d+$'
+  policy:
+    semver:
+      range: ">=4.5.8 <5.0.0"   # Glances 4.x, plain image (not -full / ubuntu-*)
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: snapotter
+  namespace: flux-system
+spec:
+  image: snapotter/snapotter
+  interval: 6h
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: snapotter-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: snapotter
+  filterTags:
+    pattern: '^\d+\.\d+\.\d+$'
+  policy:
+    semver:
+      range: ">=2.3.0 <3.0.0"   # SnapOtter 2.x
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: teslamate
+  namespace: flux-system
+spec:
+  image: teslamate/teslamate
+  interval: 6h
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: teslamate-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: teslamate
+  filterTags:
+    pattern: '^\d+\.\d+\.\d+$'
+  policy:
+    semver:
+      range: ">=4.4.0 <5.0.0"   # TeslaMate 4.x (HelmRelease values tag; DB migrations run on start)

@@ -40,7 +40,7 @@ spec:
     spec:
       containers:
       - name: searxng
-        image: searxng/searxng:2026.10.19-81371861f
+        image: searxng/searxng:2026.10.19-81371861f # {"$imagepolicy": "flux-system:searxng-policy"}
         env:
         - name: SEARXNG_SECRET
           value: "9954ccecadf6dd4702947960de1a471aef3cdd18499f0d03225c3c3c9994f6fd"

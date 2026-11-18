@@ -179,7 +179,7 @@ spec:
     spec:
       containers:
       - name: relay
-        image: node:22.21.1-alpine
+        image: node:22.21.1-alpine # {"$imagepolicy": "flux-system:node-policy"}
         command: ["node", "/app/relay.mjs"]
         env:
         - name: N8N_WEBHOOK_URL

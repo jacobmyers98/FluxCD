@@ -36,7 +36,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: mc
-        image: itzg/minecraft-server:java21
+        image: itzg/minecraft-server:2026.11.0-java21 # {"$imagepolicy": "flux-system:minecraft-policy"}
         resources:
           requests:
             cpu: "1"

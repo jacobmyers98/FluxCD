@@ -42,7 +42,7 @@ spec:
       app: teslamate         # selected by Cilium policy monitoring-stack-ingress (HTTPS via the Ingress, mTLS from other pods)
     image:
       repository: teslamate/teslamate
-      tag: "4.4.0"            # app version, pinned; not tracked by Flux image automation
+      tag: "4.4.0" # {"$imagepolicy": "flux-system:teslamate-policy:tag"}
     env:
       - name: TZ
         value: UTC                 # times are stored in UTC; Grafana shows them in your browser's zone

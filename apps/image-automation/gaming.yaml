@@ -23,3 +23,28 @@ spec:
   policy:
     semver:
       range: ">=1.18.0"   # any newer release, majors included
+
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: minecraft
+  namespace: flux-system
+spec:
+  image: itzg/minecraft-server
+  interval: 6h
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: minecraft-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: minecraft
+  filterTags:
+    pattern: '^(?P<v>\d+\.\d+\.\d+)-java21$'
+    extract: '$v'
+  policy:
+    semver:
+      range: ">=2026.11.0"   # image release (YYYY.M.patch) of the java21 variant; the game version is the VERSION env

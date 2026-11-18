@@ -1,0 +1,49 @@
+# Image automation for small helper images used in several namespaces (busybox init
+# containers, alpine script steps). Setter comments point here as "flux-system:<policy-name>".
+# See kustomization.yaml for how it works. Only full X.Y.Z tags are followed (the floating
+# "1.37" / "3.24" tags would never be re-pulled with imagePullPolicy IfNotPresent).
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: busybox
+  namespace: flux-system
+spec:
+  image: busybox
+  interval: 6h
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: busybox-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: busybox
+  filterTags:
+    pattern: '^\d+\.\d+\.\d+$'
+  policy:
+    semver:
+      range: ">=1.37.0 <2.0.0"   # busybox init containers (dev, kube-system, plex)
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: alpine
+  namespace: flux-system
+spec:
+  image: alpine
+  interval: 6h
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: alpine-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: alpine
+  filterTags:
+    pattern: '^\d+\.\d+\.\d+$'
+  policy:
+    semver:
+      range: ">=3.24.0 <4.0.0"   # alpine steps: etcd-backup, weekly-server-backup, udm-cert-push

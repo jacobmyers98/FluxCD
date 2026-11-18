@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: snapotter
-        image: snapotter/snapotter:2
+        image: snapotter/snapotter:2.3.0 # {"$imagepolicy": "flux-system:snapotter-policy"}
         ports:
         - containerPort: 1349
         resources:
