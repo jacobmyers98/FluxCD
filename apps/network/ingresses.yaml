@@ -1,0 +1,307 @@
+# All HTTPS entry points (Ingresses), one per namespace. Plain YAML, not encrypted: edit freely.
+# (Until 2026-11-17 they lived in cert-manager.yaml next to the SOPS-encrypted issuer + token.)
+#
+# How a request reaches an app:
+#   browser → https://<app>.waffle-systems.com → LAN DNS (UDM) → 192.168.1.254 (Cilium's ingress
+#   LoadBalancer IP, cilium-bgp-setup.yaml / cilium-l2-setup.yaml) → Cilium's Envoy terminates TLS
+#   → the backend Service named in the matching rule below.
+# Certificates: the `cert-manager.io/cluster-issuer` annotation makes cert-manager request one
+# Let's Encrypt certificate per Ingress, covering every host in `tls.hosts` (DNS-01 via Cloudflare,
+# see cluster-issuer.yaml), stored in the Secret `tls.secretName` and renewed automatically.
+#   kubectl get certificates -A        (READY should be True)
+#
+# Adding a site:
+#   1. add the host to `tls.hosts` AND a rule under `rules` of the Ingress in the app's namespace
+#      (an Ingress can only send traffic to Services in its own namespace);
+#   2. add a LAN DNS record <host> → 192.168.1.254 on the UDM (there's no wildcard record);
+#   3. the app's pods must allow traffic from the ingress in the namespace's Cilium policy
+#      (cilium-network-mTLS.yaml). The domain has no public DNS: these sites only work on the
+#      LAN or over Tailscale (with split DNS).
+# Not here: backtest.waffle-systems.com (apps/dev/backtest/overlays/home/ingress.yaml).
+
+# ---- kube-system: Hubble UI (Cilium network flows) and Vaultwarden (passwords) ----
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kube-system-tls
+  namespace: kube-system
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"   # cert-manager issues the certificate below
+spec:
+  ingressClassName: cilium      # handled by Cilium's built-in ingress (Envoy)
+  tls:
+  - hosts:
+    - hubble.waffle-systems.com
+    - vault.waffle-systems.com
+    secretName: kube-system-tls # cert-manager stores the certificate + key here
+  rules:
+  # --- Hubble ---
+  - host: hubble.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: hubble-ui
+            port:
+              number: 80
+  # --- Vaultwarden ---
+  - host: vault.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-vaultwarden
+            port:
+              number: 80
+
+---
+
+# ---- plex: media server and the *arr apps ----
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: plex-tls
+  namespace: plex
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: cilium
+  tls:
+  - hosts:
+    - radarr.waffle-systems.com
+    - sonarr.waffle-systems.com
+    - plex.waffle-systems.com
+    - qbit.waffle-systems.com
+    - seerr.waffle-systems.com
+    - prowlarr.waffle-systems.com
+    - tdarr.waffle-systems.com
+    secretName: plex-tls
+  rules:
+  # --- Radarr (movies) ---
+  - host: radarr.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-radarr
+            port:
+              number: 7878
+  # --- Sonarr (TV) ---
+  - host: sonarr.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-sonarr
+            port:
+              number: 8989
+  # --- Plex ---
+  - host: plex.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-plex
+            port:
+              number: 32400
+  # --- Qbittorrent ---
+  - host: qbit.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-qbit
+            port:
+              number: 8080
+  # --- Seerr (requests) ---
+  - host: seerr.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-seerr
+            port:
+              number: 5055
+  # --- Prowlarr ---
+  - host: prowlarr.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-prowlarr
+            port:
+              number: 9696
+  # --- Tdarr ---
+  - host: tdarr.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-tdarr-server
+            port:
+              number: 8265
+
+---
+
+# ---- monitoring: dashboards and self-hosted tools ----
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: monitoring-tls
+  namespace: monitoring
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: cilium
+  tls:
+  - hosts:
+    - homarr.waffle-systems.com
+    - grafana.waffle-systems.com
+    - snapotter.waffle-systems.com
+    - teslamate.waffle-systems.com
+    - glances.waffle-systems.com
+    - mealie.waffle-systems.com
+    secretName: monitoring-tls
+  rules:
+  # --- Grafana ---
+  - host: grafana.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-grafana
+            port:
+              number: 80
+  # --- Homarr ---
+  - host: homarr.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-homarr
+            port:
+              number: 7575
+  # --- Teslamate ---
+  - host: teslamate.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-teslamate
+            port:
+              number: 4000
+  # --- Snapotter ---
+  - host: snapotter.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-snapotter
+            port:
+              number: 1349
+  # --- Glances ---
+  - host: glances.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-glances
+            port:
+              number: 61208
+  # --- Mealie ---
+  - host: mealie.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-mealie
+            port:
+              number: 9000
+
+---
+
+# ---- dev: n8n (its WEBHOOK_URL uses this host, so form links depend on it) ----
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dev-tls
+  namespace: dev
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: cilium
+  tls:
+  - hosts:
+    - n8n.waffle-systems.com
+    secretName: dev-tls
+  rules:
+  # --- n8n ---
+  - host: n8n.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-n8n
+            port:
+              number: 5678
+
+---
+
+# ---- compliance: Headlamp (Kubernetes UI, read only) ----
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: compliance-tls
+  namespace: compliance
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: cilium
+  tls:
+  - hosts:
+    - headlamp.waffle-systems.com
+    secretName: compliance-tls
+  rules:
+  # --- Headlamp ---
+  - host: headlamp.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: headlamp
+            port:
+              number: 80

@@ -31,7 +31,7 @@ spec:
         name: headlamp
         namespace: flux-system
   values:
-    fullnameOverride: headlamp   # fixed name: the Ingress in cert-manager.yaml points at Service "headlamp"
+    fullnameOverride: headlamp   # fixed name: the Ingress in apps/network/ingresses.yaml points at Service "headlamp"
     # No cluster-admin for the pod's own account: every user logs in with a token.
     clusterRoleBinding:
       create: false

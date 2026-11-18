@@ -76,7 +76,7 @@ spec:
         memory: 1Gi
     ingress:
       main:
-        enabled: false             # the Ingress is in apps/network/cert-manager.yaml instead
+        enabled: false             # the Ingress is in apps/network/ingresses.yaml instead
     persistence:
       import:                      # folder for importing TeslaFi CSV exports; this is the mount the pod actually gets
         enabled: true
@@ -492,7 +492,7 @@ spec:
         userKey: admin-user
         passwordKey: admin-password
       ingress:
-        enabled: false             # Ingress is in apps/network/cert-manager.yaml
+        enabled: false             # Ingress is in apps/network/ingresses.yaml
       resources:
         requests:
           cpu: 50m

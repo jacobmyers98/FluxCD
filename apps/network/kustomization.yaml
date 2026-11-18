@@ -7,7 +7,9 @@ resources:
   - cilium-network-mTLS.yaml   # network policies: who may talk to whom, mTLS
   - cilium-bgp-setup.yaml      # LoadBalancer IP pool (192.168.1.254) + BGP to the UDM
   - cilium-l2-setup.yaml       # ARP announcements for that IP on the LAN
-  - cert-manager.yaml          # Let's Encrypt ClusterIssuer, Cloudflare token (SOPS) and all Ingresses
+  - cluster-issuer.yaml        # Let's Encrypt ClusterIssuer "letsencrypt-prod" (SOPS: only its email is encrypted)
+  - secret.cloudflare-token.yaml # Cloudflare API token for DNS-01 challenges (SOPS)
+  - ingresses.yaml             # every HTTPS entry point (*.waffle-systems.com), plain YAML
   - unifi-cert.yaml            # cert for the UDM Pro + CronJob that installs it
   - helmrelease.yaml           # cert-manager itself
   - helmrepo.yaml              # cert-manager's chart repo

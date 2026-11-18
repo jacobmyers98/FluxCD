@@ -3,7 +3,8 @@
 # (or a Certificate object) → cert-manager asks Let's Encrypt → proves we own the domain
 # with a DNS-01 challenge (creates a TXT record through the Cloudflare API) → stores the
 # cert in a Secret the Ingress uses → renews it ~30 days before it expires.
-# The ClusterIssuer, Cloudflare token and the Ingresses are in apps/network/cert-manager.yaml.
+# The ClusterIssuer is in cluster-issuer.yaml, the Cloudflare token in secret.cloudflare-token.yaml,
+# and the Ingresses in ingresses.yaml (all in apps/network/).
 # Check certificates:  kubectl get certificate -A     (READY should be True)
 #
 # A HelmRelease = "install this Helm chart with these values and keep it that way";

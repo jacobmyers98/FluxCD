@@ -17,7 +17,7 @@ spec:
   secretName: udm-tls          # where cert-manager writes tls.crt / tls.key (mounted by the CronJob)
   dnsNames:
     - unifi.waffle-systems.com
-  issuerRef:                   # who signs it: the Let's Encrypt issuer in apps/network/cert-manager.yaml
+  issuerRef:                   # who signs it: the Let's Encrypt issuer in apps/network/cluster-issuer.yaml
     name: letsencrypt-prod
     kind: ClusterIssuer
   privateKey:
