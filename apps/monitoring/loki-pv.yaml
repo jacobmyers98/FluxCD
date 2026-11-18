@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: loki-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: "local-storage"
+  capacity:
+    storage: 10Gi
+  claimRef:
+    name: loki-data
+    namespace: monitoring
+  hostPath:
+    path: /home/server/docker/monitoring/loki/
+    type: DirectoryOrCreate
+  persistentVolumeReclaimPolicy: Delete

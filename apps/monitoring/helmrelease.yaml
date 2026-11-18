@@ -191,16 +191,13 @@ spec:
       # 2026-11-17): the volume is added to the pod but the mount below is ignored, and
       # /var/loki is the chart's "storage" emptyDir, so logs are lost when Loki restarts.
       # (The host folder was never created.) See FLUX_TODO.md.
-      extraVolumes:
-        - name: var-loki
-          hostPath:
-            path: /home/server/docker/monitoring/loki
-            type: DirectoryOrCreate
-      extraVolumeMounts:
-        - name: var-loki
-          mountPath: /var/loki
       persistence:
-        enabled: false # no PVC → the chart mounts an emptyDir at /var/loki
+        enabled: true # no PVC → the chart mounts an emptyDir at /var/loki
+        storageClass: local-storage
+        size: 10Gi
+        selector:
+          matchLabels:
+            app.kubernetes.io/name: loki-data        
       resources:
         requests:
           cpu: 100m
