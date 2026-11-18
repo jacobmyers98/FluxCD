@@ -506,6 +506,15 @@ spec:
           limits:
             cpu: 2
             memory: 4Gi
+        storageSpec: |
+          volumeClaimTemplate:
+            spec:
+              storageClassName: "local-storage"
+              accessModes: ["ReadWriteOnce"]
+              resources:
+                requests:
+                  storage: 10Gi
+              selector: {}
     alertmanager:
       # Message format for Discord, shared with Grafana's contact point (same text in
       # /home/server/docker/monitoring/grafana/provisioning/alerting/templates.yaml; change both).
