@@ -27,7 +27,7 @@ spec:
               name: data
       containers:
         - name: vaultwarden
-          image: vaultwarden/server:1.37.4 # {"$imagepolicy": "flux-system:vaultwarden-policy"}
+          image: vaultwarden/server:1.37.5 # {"$imagepolicy": "flux-system:vaultwarden-policy"}
           securityContext:
             runAsUser: 1001 # container_user
             runAsGroup: 1004

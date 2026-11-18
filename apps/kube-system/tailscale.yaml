@@ -12,22 +12,22 @@ metadata:
   labels:
     app: tailscale
 spec:
-  replicas: 1            # one router; two pods with the same state Secret would fight over the identity
+  replicas: 1 # one router; two pods with the same state Secret would fight over the identity
   strategy:
-    type: Recreate       # stop the old pod before starting the new one (same reason)
+    type: Recreate # stop the old pod before starting the new one (same reason)
   selector:
     matchLabels:
       app: tailscale
   template:
     metadata:
       labels:
-        app: tailscale   # Headlamp's network policy allows traffic from pods with this label
+        app: tailscale # Headlamp's network policy allows traffic from pods with this label
         exposed: nodeport
     spec:
-      serviceAccountName: tailscale   # gives the pod the Role below (to save its state in a Secret)
+      serviceAccountName: tailscale # gives the pod the Role below (to save its state in a Secret)
       containers:
       - name: tailscale
-        image: tailscale/tailscale:v1.104.2 # {"$imagepolicy": "flux-system:tailscale-policy"}
+        image: tailscale/tailscale:v1.104.7 # {"$imagepolicy": "flux-system:tailscale-policy"}
         resources:
           requests:
             cpu: 10m
@@ -36,46 +36,40 @@ spec:
             cpu: 500m
             memory: 256Mi
         securityContext:
-          privileged: true   # needed to create the tun network device and set up routing/forwarding
+          privileged: true # needed to create the tun network device and set up routing/forwarding
           capabilities:
             add:
-            - NET_ADMIN                
+            - NET_ADMIN
             - NET_RAW
         env:
-        - name: TS_AUTHKEY         # one-time key used to join the tailnet (secret.tailscale.yaml, SOPS)
+        - name: TS_AUTHKEY # one-time key used to join the tailnet (secret.tailscale.yaml, SOPS)
           valueFrom:
             secretKeyRef:
               name: tailscale-auth
               key: TS_AUTHKEY
-        - name: TS_ROUTES          # advertised: home LAN, Kubernetes Service IPs, Kubernetes pod IPs
-          value: "192.168.1.0/24,10.96.0.0/12,10.244.0.0/16" 
-        - name: TS_KUBE_SECRET     # the node's Tailscale identity is saved in this Secret, so a restart keeps the same machine
+        - name: TS_ROUTES # advertised: home LAN, Kubernetes Service IPs, Kubernetes pod IPs
+          value: "192.168.1.0/24,10.96.0.0/12,10.244.0.0/16"
+        - name: TS_KUBE_SECRET # the node's Tailscale identity is saved in this Secret, so a restart keeps the same machine
           value: tailscale-state
-        - name: TS_USERSPACE       # "false" = use the kernel's tun device (faster, needs privileges) instead of userspace networking
+        - name: TS_USERSPACE # "false" = use the kernel's tun device (faster, needs privileges) instead of userspace networking
           value: "false"
-        - name: TS_EXTRA_ARGS      # don't replace the pod's DNS with Tailscale's MagicDNS
+        - name: TS_EXTRA_ARGS # don't replace the pod's DNS with Tailscale's MagicDNS
           value: "--accept-dns=false"
         volumeMounts:
         - name: tun-device
           mountPath: /dev/net/tun
       volumes:
-      - name: tun-device           # the host's tun device (virtual network interface)
+      - name: tun-device # the host's tun device (virtual network interface)
         hostPath:
           path: /dev/net/tun
-
-
 ---
-
 # The identity the pod runs as inside Kubernetes (used for API permissions).
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: tailscale
   namespace: kube-system
-
-
 ---
-
 # RBAC: what that identity may do. A Role is limited to one namespace (kube-system).
 # Tailscale needs to read and update its state Secret (tailscale-state), and create it if
 # it's missing. get/update/patch are limited to that one Secret, so the pod can't read the
@@ -87,17 +81,14 @@ metadata:
   name: tailscale
   namespace: kube-system
 rules:
-- apiGroups: [""]          # "" = the core API group (Secrets, Pods, ConfigMaps, ...)
+- apiGroups: [""] # "" = the core API group (Secrets, Pods, ConfigMaps, ...)
   resources: ["secrets"]
   resourceNames: ["tailscale-state"]
   verbs: ["get", "update", "patch"]
 - apiGroups: [""]
   resources: ["secrets"]
   verbs: ["create"]
-
-
 ---
-
 # Connects the Role to the ServiceAccount.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding

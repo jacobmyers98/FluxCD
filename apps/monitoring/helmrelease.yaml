@@ -23,31 +23,31 @@ metadata:
   name: teslamate
   namespace: monitoring
   annotations:
-    image.toolkit.fluxcd.io/image-ref: teslamate   # informational only; no Flux controller reads this annotation
+    image.toolkit.fluxcd.io/image-ref: teslamate # informational only; no Flux controller reads this annotation
 spec:
   interval: 1h
   releaseName: teslamate
   chart:
     spec:
       chart: teslamate
-      version: ">=7.2.0"       # chart version (not the app version); live 7.2.0
+      version: ">=7.2.0" # chart version (not the app version); live 7.2.0
       sourceRef:
         kind: HelmRepository
         name: teslamate
         namespace: flux-system
   install:
-    createNamespace: true   # create the namespace if it doesn't exist (it does)
+    createNamespace: true # create the namespace if it doesn't exist (it does)
   values:
     podLabels:
-      app: teslamate         # selected by Cilium policy monitoring-stack-ingress (HTTPS via the Ingress, mTLS from other pods)
+      app: teslamate # selected by Cilium policy monitoring-stack-ingress (HTTPS via the Ingress, mTLS from other pods)
     image:
       repository: teslamate/teslamate
-      tag: "4.4.0" # {"$imagepolicy": "flux-system:teslamate-policy:tag"}
+      tag: "4.5.0" # {"$imagepolicy": "flux-system:teslamate-policy:tag"}
     env:
       - name: TZ
-        value: UTC                 # times are stored in UTC; Grafana shows them in your browser's zone
+        value: UTC # times are stored in UTC; Grafana shows them in your browser's zone
       - name: DATABASE_HOST
-        value: '{{ include "common.names.fullname" .}}-postgresql'   # Helm template: the bundled Postgres Service's name
+        value: '{{ include "common.names.fullname" .}}-postgresql' # Helm template: the bundled Postgres Service's name
       - name: DATABASE_USER
         value: postgres
       - name: DATABASE_PASS
@@ -60,9 +60,8 @@ spec:
       - name: DISABLE_MQTT
         value: "false"
       - name: MQTT_HOST
-        value: "mosquitto"         # the Mosquitto Service in this namespace
-
-      - name: ENCRYPTION_KEY       # encrypts the stored Tesla API tokens (secret.teslamate.yaml). Losing it = log in to Tesla again
+        value: "mosquitto" # the Mosquitto Service in this namespace
+      - name: ENCRYPTION_KEY # encrypts the stored Tesla API tokens (secret.teslamate.yaml). Losing it = log in to Tesla again
         valueFrom:
           secretKeyRef:
             name: teslamate-secret
@@ -76,14 +75,14 @@ spec:
         memory: 1Gi
     ingress:
       main:
-        enabled: false             # the Ingress is in apps/network/ingresses.yaml instead
+        enabled: false # the Ingress is in apps/network/ingresses.yaml instead
     persistence:
-      import:                      # folder for importing TeslaFi CSV exports; this is the mount the pod actually gets
+      import: # folder for importing TeslaFi CSV exports; this is the mount the pod actually gets
         enabled: true
         type: hostPath
         hostPath: /home/server/docker/teslamate/teslamate
         mountPath: /opt/app/import
-    postgresql:                    # bundled Bitnami PostgreSQL sub-chart (TeslaMate's database)
+    postgresql: # bundled Bitnami PostgreSQL sub-chart (TeslaMate's database)
       enabled: true
       image:
         # Must be a Bitnami image: the chart's bundled sub-chart (Bitnami postgresql 11.9.13)
@@ -105,13 +104,12 @@ spec:
             memory: 2Gi
         persistence:
           enabled: true
-          existingClaim: teslamate-postgres-pvc   # hand-made PVC → hostPath PV (teslamate-pv.yaml)
+          existingClaim: teslamate-postgres-pvc # hand-made PVC → hostPath PV (teslamate-pv.yaml)
       auth:
-        existingSecret: teslamate-password   # postgres password (secret.postgresql.yaml, SOPS)
+        existingSecret: teslamate-password # postgres password (secret.postgresql.yaml, SOPS)
         secretKeys:
           adminPasswordKey: teslamate-pass
         database: teslamate
-
 ---
 # ---- Mosquitto: MQTT message broker -----------------------------------------------------
 # TeslaMate publishes live car values to it (topics teslamate/cars/1/...); anything on the
@@ -122,7 +120,7 @@ metadata:
   name: mosquitto
   namespace: monitoring
   annotations:
-    image.toolkit.fluxcd.io/image-ref: mosquitto   # informational only; no Flux controller reads this annotation
+    image.toolkit.fluxcd.io/image-ref: mosquitto # informational only; no Flux controller reads this annotation
 spec:
   interval: 1h
   releaseName: mosquitto
@@ -136,8 +134,8 @@ spec:
         namespace: flux-system
   values:
     service:
-      type: ClusterIP              # only reachable inside the cluster
-      externalTrafficPolicy: null  # cleared: the chart's default only makes sense for LoadBalancer/NodePort
+      type: ClusterIP # only reachable inside the cluster
+      externalTrafficPolicy: null # cleared: the chart's default only makes sense for LoadBalancer/NodePort
       annotations: {}
     resources:
       requests:
@@ -146,7 +144,6 @@ spec:
       limits:
         cpu: 200m
         memory: 64Mi
-
 ---
 # ---- Loki: log database ------------------------------------------------------------------
 # Stores logs pushed by Alloy (next release) and answers LogQL queries from Grafana
@@ -157,7 +154,7 @@ metadata:
   name: loki
   namespace: monitoring
   annotations:
-    image.toolkit.fluxcd.io/image-ref: loki   # informational only; no Flux controller reads this annotation
+    image.toolkit.fluxcd.io/image-ref: loki # informational only; no Flux controller reads this annotation
 spec:
   interval: 1h
   chart:
@@ -171,15 +168,15 @@ spec:
   install:
     createNamespace: true
   values:
-    deploymentMode: SingleBinary   # everything in one process (vs. the scalable read/write/backend split)
-    backend:                       # the scalable-mode components are turned off (0 replicas)
+    deploymentMode: SingleBinary # everything in one process (vs. the scalable read/write/backend split)
+    backend: # the scalable-mode components are turned off (0 replicas)
       replicas: 0
     read:
       replicas: 0
     write:
       replicas: 0
     ruler:
-      enabled: false               # no log-based alert rules
+      enabled: false # no log-based alert rules
     # Memcached caches are overkill for single-binary and request lots of memory
     chunksCache:
       enabled: false
@@ -187,7 +184,7 @@ spec:
       enabled: false
     ingester:
       wal:
-        enabled: true              # write-ahead log: logs not yet flushed to chunks survive a restart
+        enabled: true # write-ahead log: logs not yet flushed to chunks survive a restart
     singleBinary:
       replicas: 1
       # Meant to put Loki's data dir /var/loki on a host folder. It does NOT work (checked
@@ -203,7 +200,7 @@ spec:
         - name: var-loki
           mountPath: /var/loki
       persistence:
-        enabled: false             # no PVC → the chart mounts an emptyDir at /var/loki
+        enabled: false # no PVC → the chart mounts an emptyDir at /var/loki
       resources:
         requests:
           cpu: 100m
@@ -212,17 +209,17 @@ spec:
           cpu: 1
           memory: 1Gi
     loki:
-      auth_enabled: false          # single tenant: no X-Scope-OrgID header needed
+      auth_enabled: false # single tenant: no X-Scope-OrgID header needed
       commonConfig:
-        replication_factor: 1      # one copy of each log stream (one node)
+        replication_factor: 1 # one copy of each log stream (one node)
       limits_config:
-        retention_period: 240h      # 10 days; older logs are deleted by the compactor
-      compactor:                   # merges index files and enforces retention
+        retention_period: 240h # 10 days; older logs are deleted by the compactor
+      compactor: # merges index files and enforces retention
         retention_enabled: true
         delete_request_store: filesystem
         working_directory: /var/loki/compactor
       storage:
-        type: filesystem           # chunks are plain files under /var/loki (no S3/GCS)
+        type: filesystem # chunks are plain files under /var/loki (no S3/GCS)
         bucketNames:
           chunks: loki-chunks
           ruler: loki-ruler
@@ -230,7 +227,7 @@ spec:
         filesystem:
           chunks_directory: /var/loki/chunks
           rules_directory: /var/loki/rules
-      schemaConfig:                # on-disk format. Never edit an existing entry; add a new one with a future "from" date to migrate
+      schemaConfig: # on-disk format. Never edit an existing entry; add a new one with a future "from" date to migrate
         configs:
           - from: "2024-01-01"
             store: tsdb
@@ -239,7 +236,7 @@ spec:
             index:
               prefix: loki_index_
               period: 24h
-    gateway:                       # nginx in front of Loki; Grafana/Alloy can use one URL for reads and writes
+    gateway: # nginx in front of Loki; Grafana/Alloy can use one URL for reads and writes
       enabled: true
       deploymentStrategy:
         type: Recreate
@@ -250,7 +247,7 @@ spec:
         limits:
           cpu: 200m
           memory: 128Mi
-    lokiCanary:                    # writes test log lines and checks they can be read back (health metrics)
+    lokiCanary: # writes test log lines and checks they can be read back (health metrics)
       resources:
         requests:
           cpu: 5m
@@ -258,7 +255,7 @@ spec:
         limits:
           cpu: 100m
           memory: 128Mi
-    sidecar:                       # loads rule ConfigMaps into Loki (unused while the ruler is off)
+    sidecar: # loads rule ConfigMaps into Loki (unused while the ruler is off)
       resources:
         requests:
           cpu: 10m
@@ -266,7 +263,6 @@ spec:
         limits:
           cpu: 200m
           memory: 256Mi
-
 ---
 # ---- Alloy: log collector -----------------------------------------------------------------
 # Grafana Alloy (successor of Promtail / Grafana Agent) runs on every node, reads the host's
@@ -278,7 +274,7 @@ metadata:
   name: alloy
   namespace: monitoring
   annotations:
-    image.toolkit.fluxcd.io/image-ref: alloy   # informational only; no Flux controller reads this annotation
+    image.toolkit.fluxcd.io/image-ref: alloy # informational only; no Flux controller reads this annotation
 spec:
   chart:
     spec:
@@ -288,16 +284,16 @@ spec:
         kind: HelmRepository
         name: grafana
         namespace: flux-system
-  interval: 10m                    # checked more often than the others (no particular reason needed)
+  interval: 10m # checked more often than the others (no particular reason needed)
   values:
     controller:
-      type: daemonset              # one Alloy pod per node, so it can read that node's files
+      type: daemonset # one Alloy pod per node, so it can read that node's files
     rbac:
-      create: true                 # permission to list pods (for discovery.kubernetes below)
+      create: true # permission to list pods (for discovery.kubernetes below)
     alloy:
       mounts:
-        varlog: true               # mount the host's /var/log (syslog)
-        dockercontainers: true     # /var/lib/docker/containers; unused (pod logs are read via the API below)
+        varlog: true # mount the host's /var/log (syslog)
+        dockercontainers: true # /var/lib/docker/containers; unused (pod logs are read via the API below)
       resources:
         requests:
           cpu: 50m
@@ -371,7 +367,6 @@ spec:
             targets    = discovery.relabel.pods.output
             forward_to = [loki.write.loki.receiver]
           }
-
 ---
 # ---- DCGM exporter: GPU metrics ------------------------------------------------------------
 # NVIDIA's exporter publishes the RTX 3060's usage, memory, temperature and power as
@@ -382,7 +377,7 @@ metadata:
   name: dcgm-exporter
   namespace: monitoring
   annotations:
-    image.toolkit.fluxcd.io/image-ref: dcgm-exporter   # informational only; no Flux controller reads this annotation
+    image.toolkit.fluxcd.io/image-ref: dcgm-exporter # informational only; no Flux controller reads this annotation
 spec:
   interval: 1h
   releaseName: dcgm-exporter
@@ -395,11 +390,10 @@ spec:
         name: dcgm-exporter
         namespace: flux-system
   values:
-    serviceMonitor:                # tell Prometheus to scrape it
+    serviceMonitor: # tell Prometheus to scrape it
       enabled: true
       additionalLabels:
-        release: prometheus-community   # Prometheus only picks up ServiceMonitors with this label
-
+        release: prometheus-community # Prometheus only picks up ServiceMonitors with this label
 ---
 # ---- kube-prometheus-stack: Prometheus, Grafana, Alertmanager and exporters ---------------
 # One chart that installs:
@@ -418,14 +412,14 @@ metadata:
   name: prometheus-community
   namespace: monitoring
   annotations:
-    image.toolkit.fluxcd.io/image-ref: prometheus-community   # informational only; no Flux controller reads this annotation
+    image.toolkit.fluxcd.io/image-ref: prometheus-community # informational only; no Flux controller reads this annotation
 spec:
   interval: 1h
   releaseName: prometheus-community
   chart:
     spec:
       chart: kube-prometheus-stack
-      version: ">=88.6.2"      # no upper limit (live: 93.3.1); major versions can change CRDs. FLUX_TODO.md #2
+      version: ">=88.6.2" # no upper limit (live: 93.3.1); major versions can change CRDs. FLUX_TODO.md #2
       sourceRef:
         kind: HelmRepository
         name: prometheus-community
@@ -444,11 +438,11 @@ spec:
         general: false
     grafana:
       podLabels:
-        app: grafana               # selected by Cilium policy monitoring-stack-ingress (HTTPS via the Ingress, mTLS from other pods)
+        app: grafana # selected by Cilium policy monitoring-stack-ingress (HTTPS via the Ingress, mTLS from other pods)
       deploymentStrategy:
-        type: Recreate             # stop the old pod first (both would use the same data/provisioning)
+        type: Recreate # stop the old pod first (both would use the same data/provisioning)
       initChownData:
-        enabled: true              # init container chowns Grafana's data dir to uid 472
+        enabled: true # init container chowns Grafana's data dir to uid 472
       enabled: true
       # The sidecars (which load dashboards/datasources from labelled ConfigMaps) are off:
       # everything is provisioned from files in the host folder mounted below instead.
@@ -467,7 +461,7 @@ spec:
         - name: grafana-host
           hostPath:
             path: /home/server/docker/monitoring/grafana
-            type: Directory          # must already exist
+            type: Directory # must already exist
       extraVolumeMounts:
         # Dashboards (JSON files)
         - name: grafana-host
@@ -481,18 +475,17 @@ spec:
         - name: grafana-host
           mountPath: /etc/grafana/provisioning/dashboards
           subPath: provisioning/dashboards
-
         # Alert rules / contact points
         - name: grafana-host
           mountPath: /etc/grafana/provisioning/alerting
           subPath: provisioning/alerting
           readOnly: false
-      admin:                       # admin login from secret.grafana.yaml (SOPS)
+      admin: # admin login from secret.grafana.yaml (SOPS)
         existingSecret: "grafana-admin"
         userKey: admin-user
         passwordKey: admin-password
       ingress:
-        enabled: false             # Ingress is in apps/network/ingresses.yaml
+        enabled: false # Ingress is in apps/network/ingresses.yaml
       resources:
         requests:
           cpu: 50m
@@ -501,7 +494,7 @@ spec:
           cpu: 1
           memory: 1536Mi
     prometheus:
-      prometheusSpec:              # no storageSpec: the TSDB is on an emptyDir, so metrics history is lost when the pod restarts (chart default retention 10d)
+      prometheusSpec: # no storageSpec: the TSDB is on an emptyDir, so metrics history is lost when the pod restarts (chart default retention 10d)
         # false = scrape EVERY ServiceMonitor in the cluster, not only those labelled
         # release: prometheus-community (moved here 2026-11-17 from grafana.sidecar, where it did
         # nothing). Picks up kube-system/cilium-metrics, which is labelled release: prometheus.
@@ -521,43 +514,8 @@ spec:
       #   docker run --rm -v $PWD:/t --entrypoint amtool quay.io/prometheus/alertmanager:v0.35.0 \
       #     template render --template.glob=/t/home.tmpl --template.text='{{ template "home.message" . }}'
       templateFiles:
-        home.tmpl: |-
-          {{/* Shared Discord alert format: the SAME text is in Alertmanager (FluxCD apps/monitoring/helmrelease.yaml,
-               alertmanager.templateFiles.home.tmpl) and Grafana (provisioning/alerting/templates.yaml). Change both.
-               Only firing alerts are sent (resolved messages are off in both), so only firing alerts are shown. */}}
-
-          {{ define "home.title" -}}
-          {{ if eq .CommonLabels.severity "critical" }}🚨 {{ else }}⚠️ {{ end -}}
-          {{ if .CommonLabels.alertname }}{{ .CommonLabels.alertname }}{{ else }}{{ len .Alerts.Firing }} alerts{{ with .CommonLabels.namespace }} in {{ . }}{{ end }}{{ end -}}
-          {{ if and .CommonLabels.alertname (gt (len .Alerts.Firing) 1) }} ({{ len .Alerts.Firing }}){{ end }}
-          {{- end }}
-
-          {{ define "home.where" -}}
-          {{ if .Labels.namespace }}📍 `{{ .Labels.namespace }}{{ with .Labels.pod }}/{{ . }}{{ end }}`{{ with .Labels.container }} · container `{{ . }}`{{ end }}
-          {{- else if .Labels.instance }}📍 `{{ .Labels.instance }}`{{ with .Labels.mountpoint }} · `{{ . }}`{{ end }}
-          {{- else }}📍 whole cluster{{ end }}
-          {{- end }}
-
-          {{ define "home.alert" -}}
-          {{ if eq .Labels.severity "critical" }}🔴{{ else }}🟠{{ end }} **{{ or .Annotations.summary .Labels.alertname "Alert" }}**
-          {{ with or .Annotations.description .Annotations.message }}{{ reReplaceAll " on cluster ?\\." "." . }}
-          {{ end -}}
-          {{ template "home.where" . }}
-          🕒 since {{ .StartsAt | tz "America/Denver" | date "Mon Jan 2, 3:04 PM" }}
-          {{- with .Annotations.runbook_url }}
-          📖 [What it means / how to fix](<{{ . }}>){{ end }}
-          {{- end }}
-
-          {{ define "home.message" -}}
-          {{ range $i, $a := .Alerts.Firing }}{{ if lt $i 5 }}{{ template "home.alert" $a }}
-
-          {{ end }}{{ end -}}
-          {{ if gt (len .Alerts.Firing) 5 }}… {{ len .Alerts.Firing }} firing in this group; the first 5 are shown.
-
-          {{ end -}}
-          🔗 [All alerts in Grafana](<https://grafana.waffle-systems.com/alerting/list>)
-          {{- end }}
-      alertmanagerSpec:            # receivers are in config below (Discord via the SOPS secret alert-manager)
+        home.tmpl: "{{/* Shared Discord alert format: the SAME text is in Alertmanager (FluxCD apps/monitoring/helmrelease.yaml,\n     alertmanager.templateFiles.home.tmpl) and Grafana (provisioning/alerting/templates.yaml). Change both.\n     Only firing alerts are sent (resolved messages are off in both), so only firing alerts are shown. */}}\n\n{{ define \"home.title\" -}}\n{{ if eq .CommonLabels.severity \"critical\" }}\U0001F6A8 {{ else }}⚠️ {{ end -}}\n{{ if .CommonLabels.alertname }}{{ .CommonLabels.alertname }}{{ else }}{{ len .Alerts.Firing }} alerts{{ with .CommonLabels.namespace }} in {{ . }}{{ end }}{{ end -}}\n{{ if and .CommonLabels.alertname (gt (len .Alerts.Firing) 1) }} ({{ len .Alerts.Firing }}){{ end }}\n{{- end }}\n\n{{ define \"home.where\" -}}\n{{ if .Labels.namespace }}\U0001F4CD `{{ .Labels.namespace }}{{ with .Labels.pod }}/{{ . }}{{ end }}`{{ with .Labels.container }} · container `{{ . }}`{{ end }}\n{{- else if .Labels.instance }}\U0001F4CD `{{ .Labels.instance }}`{{ with .Labels.mountpoint }} · `{{ . }}`{{ end }}\n{{- else }}\U0001F4CD whole cluster{{ end }}\n{{- end }}\n\n{{ define \"home.alert\" -}}\n{{ if eq .Labels.severity \"critical\" }}\U0001F534{{ else }}\U0001F7E0{{ end }} **{{ or .Annotations.summary .Labels.alertname \"Alert\" }}**\n{{ with or .Annotations.description .Annotations.message }}{{ reReplaceAll \" on cluster ?\\\\.\" \".\" . }}\n{{ end -}}\n{{ template \"home.where\" . }}\n\U0001F552 since {{ .StartsAt | tz \"America/Denver\" | date \"Mon Jan 2, 3:04 PM\" }}\n{{- with .Annotations.runbook_url }}\n\U0001F4D6 [What it means / how to fix](<{{ . }}>){{ end }}\n{{- end }}\n\n{{ define \"home.message\" -}}\n{{ range $i, $a := .Alerts.Firing }}{{ if lt $i 5 }}{{ template \"home.alert\" $a }}\n\n{{ end }}{{ end -}}\n{{ if gt (len .Alerts.Firing) 5 }}… {{ len .Alerts.Firing }} firing in this group; the first 5 are shown.\n\n{{ end -}}\n\U0001F517 [All alerts in Grafana](<https://grafana.waffle-systems.com/alerting/list>)\n{{- end }}"
+      alertmanagerSpec: # receivers are in config below (Discord via the SOPS secret alert-manager)
         resources:
           requests:
             cpu: 10m
@@ -577,10 +535,10 @@ spec:
           - name: discord
             discord_configs:
               - webhook_url_file: /etc/alertmanager/secrets/alert-manager/alertmanager-discord
-                send_resolved: false     # no "resolved" messages (owner's choice); Grafana's contact point matches
-                title: '{{ template "home.title" . }}'      # templates from templateFiles above
+                send_resolved: false # no "resolved" messages (owner's choice); Grafana's contact point matches
+                title: '{{ template "home.title" . }}' # templates from templateFiles above
                 message: '{{ template "home.message" . }}'
-    prometheusOperator:            # turns ServiceMonitor/PrometheusRule objects into Prometheus config
+    prometheusOperator: # turns ServiceMonitor/PrometheusRule objects into Prometheus config
       resources:
         requests:
           cpu: 10m
@@ -588,7 +546,7 @@ spec:
         limits:
           cpu: 200m
           memory: 256Mi
-    kube-state-metrics:            # metrics about Kubernetes objects (pod restarts, deployment replicas, ...)
+    kube-state-metrics: # metrics about Kubernetes objects (pod restarts, deployment replicas, ...)
       resources:
         requests:
           cpu: 10m
@@ -596,24 +554,23 @@ spec:
         limits:
           cpu: 200m
           memory: 256Mi
-    prometheus-node-exporter:      # host metrics (CPU, memory, disks, network) from the node
-          resources:
-            requests:
-              cpu: 100m
-              memory: 32Mi
-            limits:
-              cpu: 400m
-              memory: 128Mi
-          prometheus:
-            monitor:
-              relabelings:         # add a node=<node name> label to every node-exporter series
-                - action: replace
-                  regex: (.+)
-                  replacement: $1
-                  sourceLabels:
-                    - __meta_kubernetes_endpoint_node_name
-                  targetLabel: node
-
+    prometheus-node-exporter: # host metrics (CPU, memory, disks, network) from the node
+      resources:
+        requests:
+          cpu: 100m
+          memory: 32Mi
+        limits:
+          cpu: 400m
+          memory: 128Mi
+      prometheus:
+        monitor:
+          relabelings: # add a node=<node name> label to every node-exporter series
+            - action: replace
+              regex: (.+)
+              replacement: $1
+              sourceLabels:
+                - __meta_kubernetes_endpoint_node_name
+              targetLabel: node
 ---
 # ---- prometheus-adapter: `kubectl top` / resource metrics from Prometheus -----------------
 # Serves the Kubernetes resource-metrics API (metrics.k8s.io: what `kubectl top` and the
@@ -626,7 +583,7 @@ metadata:
   name: prometheus-adapter
   namespace: monitoring
   annotations:
-    image.toolkit.fluxcd.io/image-ref: prometheus-adapter   # informational only; no Flux controller reads this annotation
+    image.toolkit.fluxcd.io/image-ref: prometheus-adapter # informational only; no Flux controller reads this annotation
 spec:
   interval: 1h
   releaseName: prometheus-adapter
@@ -640,7 +597,7 @@ spec:
         namespace: flux-system
   values:
     prometheus:
-      url: http://prometheus-community-kube-prometheus.monitoring.svc   # Prometheus' Service from the release above
+      url: http://prometheus-community-kube-prometheus.monitoring.svc # Prometheus' Service from the release above
       port: 9090
     resources:
       requests:
@@ -650,10 +607,9 @@ spec:
         cpu: 500m
         memory: 256Mi
     rules:
-      default: false               # don't install the chart's custom-metrics rules; only the resource rules below
-      
+      default: false # don't install the chart's custom-metrics rules; only the resource rules below
       resource:
-        cpu:                       # CPU = rate of CPU seconds over 3 minutes (cores in use)
+        cpu: # CPU = rate of CPU seconds over 3 minutes (cores in use)
           containerQuery: |
             sum by (<<.GroupBy>>) (
               rate(container_cpu_usage_seconds_total{container!="",container!="POD",<<.LabelMatchers>>}[3m])
@@ -671,7 +627,7 @@ spec:
               pod:
                 resource: pod
           containerLabel: container
-        memory:                    # memory = working set (what the kernel counts against limits); node = total - free - buffers - cache
+        memory: # memory = working set (what the kernel counts against limits); node = total - free - buffers - cache
           containerQuery: |
             sum by (<<.GroupBy>>) (
               container_memory_working_set_bytes{container!="",container!="POD",<<.LabelMatchers>>}

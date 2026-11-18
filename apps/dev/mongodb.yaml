@@ -42,7 +42,7 @@ spec:
           mountPath: /data/db
       containers:
       - name: mongodb
-        image: mongo:8.0.34 # {"$imagepolicy": "flux-system:mongo-policy"}
+        image: mongo:8.0.38 # {"$imagepolicy": "flux-system:mongo-policy"}
         securityContext:
           runAsUser: 1001 # container_user
           runAsGroup: 1004

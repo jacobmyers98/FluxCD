@@ -101,7 +101,7 @@ spec:
     spec:
       initContainers:
         - name: tdarr-checker
-          image: curlimages/curl:8.5.0 # {"$imagepolicy": "flux-system:curl-policy"}
+          image: curlimages/curl:8.23.0 # {"$imagepolicy": "flux-system:curl-policy"}
           command:
             - /bin/sh
             - -c

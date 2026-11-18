@@ -52,7 +52,7 @@ spec:
       # Starts first and runs in the background
       # ---------------------------------------------------------
       - name: gluetun
-        image: qmcgaw/gluetun:v3.41.1 # {"$imagepolicy": "flux-system:gluetun-policy"}
+        image: qmcgaw/gluetun:v3.41.3 # {"$imagepolicy": "flux-system:gluetun-policy"}
         imagePullPolicy: Always
         restartPolicy: Always
         securityContext:
