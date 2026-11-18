@@ -506,7 +506,7 @@ spec:
           limits:
             cpu: 2
             memory: 4Gi
-        storageSpec: |
+        storageSpec:
           volumeClaimTemplate:
             spec:
               storageClassName: "local-storage"
@@ -514,7 +514,9 @@ spec:
               resources:
                 requests:
                   storage: 10Gi
-              selector: {}
+              selector:
+                matchLabels:
+                  app.kubernetes.io/name: prom-data
     alertmanager:
       # Message format for Discord, shared with Grafana's contact point (same text in
       # /home/server/docker/monitoring/grafana/provisioning/alerting/templates.yaml; change both).

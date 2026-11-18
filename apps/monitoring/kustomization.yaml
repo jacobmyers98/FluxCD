@@ -6,6 +6,7 @@ resources:
   - helmrepo.yaml                 # where those charts come from
   - teslamate-service.yaml        # Service for TeslaMate (ClusterIP; HTTPS via the Ingress)
   - teslamate-pv.yaml             # storage for TeslaMate's Postgres and Mosquitto
+  - prometheus-pv.yaml
   - secret.teslamate.yaml         # TeslaMate encryption key (SOPS)
   - secret.postgresql.yaml        # TeslaMate Postgres password (SOPS)
   - secret.alert-manager.yaml
