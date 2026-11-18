@@ -523,12 +523,13 @@ spec:
       templateFiles:
         home.tmpl: |-
           {{/* Shared Discord alert format: the SAME text is in Alertmanager (FluxCD apps/monitoring/helmrelease.yaml,
-               alertmanager.templateFiles.home.tmpl) and Grafana (provisioning/alerting/templates.yaml). Change both. */}}
+               alertmanager.templateFiles.home.tmpl) and Grafana (provisioning/alerting/templates.yaml). Change both.
+               Only firing alerts are sent (resolved messages are off in both), so only firing alerts are shown. */}}
 
           {{ define "home.title" -}}
-          {{ if eq .Status "firing" }}{{ if eq .CommonLabels.severity "critical" }}🚨 {{ else }}⚠️ {{ end }}{{ else }}✅ Resolved: {{ end -}}
-          {{ if .CommonLabels.alertname }}{{ .CommonLabels.alertname }}{{ else }}{{ len .Alerts }} alerts{{ with .CommonLabels.namespace }} in {{ . }}{{ end }}{{ end -}}
-          {{ if and (eq .Status "firing") (gt (len .Alerts.Firing) 1) }} ({{ len .Alerts.Firing }} firing){{ end }}
+          {{ if eq .CommonLabels.severity "critical" }}🚨 {{ else }}⚠️ {{ end -}}
+          {{ if .CommonLabels.alertname }}{{ .CommonLabels.alertname }}{{ else }}{{ len .Alerts.Firing }} alerts{{ with .CommonLabels.namespace }} in {{ . }}{{ end }}{{ end -}}
+          {{ if and .CommonLabels.alertname (gt (len .Alerts.Firing) 1) }} ({{ len .Alerts.Firing }}){{ end }}
           {{- end }}
 
           {{ define "home.where" -}}
@@ -537,17 +538,12 @@ spec:
           {{- else }}📍 whole cluster{{ end }}
           {{- end }}
 
-          {{ define "home.when" -}}
-          {{ if eq .Status "firing" }}🕒 since {{ .StartsAt | tz "America/Denver" | date "Mon Jan 2, 3:04 PM" }}
-          {{- else }}🕒 {{ .StartsAt | tz "America/Denver" | date "Mon Jan 2, 3:04 PM" }} → {{ .EndsAt | tz "America/Denver" | date "3:04 PM" }} (lasted {{ reReplaceAll "m0s$" "m" ((.EndsAt.Sub .StartsAt).Round 1000000000).String }}){{ end }}
-          {{- end }}
-
           {{ define "home.alert" -}}
-          {{ if eq .Status "firing" }}{{ if eq .Labels.severity "critical" }}🔴{{ else }}🟠{{ end }}{{ else }}🟢{{ end }} **{{ or .Annotations.summary .Labels.alertname "Alert" }}**
+          {{ if eq .Labels.severity "critical" }}🔴{{ else }}🟠{{ end }} **{{ or .Annotations.summary .Labels.alertname "Alert" }}**
           {{ with or .Annotations.description .Annotations.message }}{{ reReplaceAll " on cluster ?\\." "." . }}
           {{ end -}}
           {{ template "home.where" . }}
-          {{ template "home.when" . }}
+          🕒 since {{ .StartsAt | tz "America/Denver" | date "Mon Jan 2, 3:04 PM" }}
           {{- with .Annotations.runbook_url }}
           📖 [What it means / how to fix](<{{ . }}>){{ end }}
           {{- end }}
@@ -556,10 +552,7 @@ spec:
           {{ range $i, $a := .Alerts.Firing }}{{ if lt $i 5 }}{{ template "home.alert" $a }}
 
           {{ end }}{{ end -}}
-          {{ range $i, $a := .Alerts.Resolved }}{{ if lt $i 5 }}{{ template "home.alert" $a }}
-
-          {{ end }}{{ end -}}
-          {{ if or (gt (len .Alerts.Firing) 5) (gt (len .Alerts.Resolved) 5) }}… {{ len .Alerts }} alerts in this group; the first 5 firing / 5 resolved are shown.
+          {{ if gt (len .Alerts.Firing) 5 }}… {{ len .Alerts.Firing }} firing in this group; the first 5 are shown.
 
           {{ end -}}
           🔗 [All alerts in Grafana](<https://grafana.waffle-systems.com/alerting/list>)
@@ -584,7 +577,7 @@ spec:
           - name: discord
             discord_configs:
               - webhook_url_file: /etc/alertmanager/secrets/alert-manager/alertmanager-discord
-                send_resolved: true
+                send_resolved: false     # no "resolved" messages (owner's choice); Grafana's contact point matches
                 title: '{{ template "home.title" . }}'      # templates from templateFiles above
                 message: '{{ template "home.message" . }}'
     prometheusOperator:            # turns ServiceMonitor/PrometheusRule objects into Prometheus config
