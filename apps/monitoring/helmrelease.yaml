@@ -101,8 +101,6 @@ spec:
         digest: ""
         pullPolicy: IfNotPresent
       primary:
-        podLabels:
-          app: teslamate-postgresql   # picked up by Cilium policy 8 (apps/network/cilium-network-mTLS.yaml): only monitoring apps may connect
         resources:
           requests:
             cpu: 100m
