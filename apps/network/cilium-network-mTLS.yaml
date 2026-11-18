@@ -58,7 +58,9 @@ spec:
 ---
 
 # 4: mTLS everywhere (cluster-wide). Selects every pod except those in kube-system /
-# cilium-spire / flux-system / kubevirt and except pods labelled exposed=nodeport.
+# cilium-spire / flux-system / kubevirt, pods labelled exposed=nodeport, and pods with a
+# stricter policy of their own (listed under "app" below; Cilium rules only ADD access,
+# so a stricter policy does nothing while this one still allows every pod).
 # It allows incoming traffic from any pod in the cluster, but only with mutual TLS.
 # Side effect: every selected pod becomes "deny incoming unless allowed", so outside
 # traffic (Ingress, LAN, Tailscale) needs an extra rule in a namespace policy below.
@@ -83,6 +85,10 @@ spec:
       operator: NotIn
       values:
       - nodeport
+    - key: "app"
+      operator: NotIn
+      values:
+      - teslamate-postgresql   # policy 8 (monitoring): only the monitoring apps may connect
   ingress:
   - fromEndpoints:
     - matchLabels: {}
@@ -428,3 +434,36 @@ spec:
     - ports:
       - port: "5678"
         protocol: TCP
+
+---
+
+# 8: TeslaMate's Postgres (app=teslamate-postgresql, set in apps/monitoring/helmrelease.yaml).
+# Left out of the cluster-wide mTLS rule (4), so ONLY these may connect, on 5432 with mTLS:
+# the apps of policy 7, and TeslaMate + Grafana (its "TeslaMate" datasource) by their chart
+# label, because those two pods have no "app" label. Before this, any pod in the cluster
+# (GitHub runners, n8n code, the devbox VM) could reach it, and it uses the chart's default password.
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: teslamate-postgresql
+  namespace: monitoring
+spec:
+  endpointSelector:
+    matchLabels:
+      app: teslamate-postgresql
+  ingress:
+  - fromEndpoints:             # no namespace given = namespace monitoring only
+    - matchExpressions:
+      - key: app
+        operator: In
+        values: [mealie, grafana, teslamate, homarr, snapotter, glances]   # same list as policy 7
+    - matchExpressions:
+      - key: app.kubernetes.io/name
+        operator: In
+        values: [teslamate, grafana]
+    toPorts:
+    - ports:
+      - port: "5432"
+        protocol: TCP
+    authentication:
+      mode: "required"
