@@ -533,7 +533,7 @@ spec:
           - name: "null"
           - name: discord
             discord_configs:
-              - webhook_url_file: /etc/alertmanager/secrets/alertmanager-discord/webhook-url
+              - webhook_url_file: /etc/alertmanager/secrets/alert-manager/alertmanager-discord
                 send_resolved: true
     prometheusOperator:            # turns ServiceMonitor/PrometheusRule objects into Prometheus config
       resources:
