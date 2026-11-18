@@ -514,7 +514,57 @@ spec:
             cpu: 2
             memory: 4Gi
     alertmanager:
-      alertmanagerSpec:            # only the chart's "null" receiver: alerts show in its UI/Grafana but aren't sent anywhere
+      # Message format for Discord, shared with Grafana's contact point (same text in
+      # /home/server/docker/monitoring/grafana/provisioning/alerting/templates.yaml; change both).
+      # Only uses template functions both have (Grafana lacks since/humanizeDuration).
+      # Test a change without sending anything:
+      #   docker run --rm -v $PWD:/t --entrypoint amtool quay.io/prometheus/alertmanager:v0.35.0 \
+      #     template render --template.glob=/t/home.tmpl --template.text='{{ template "home.message" . }}'
+      templateFiles:
+        home.tmpl: |-
+          {{/* Shared Discord alert format: the SAME text is in Alertmanager (FluxCD apps/monitoring/helmrelease.yaml,
+               alertmanager.templateFiles.home.tmpl) and Grafana (provisioning/alerting/templates.yaml). Change both. */}}
+
+          {{ define "home.title" -}}
+          {{ if eq .Status "firing" }}{{ if eq .CommonLabels.severity "critical" }}🚨 {{ else }}⚠️ {{ end }}{{ else }}✅ Resolved: {{ end -}}
+          {{ if .CommonLabels.alertname }}{{ .CommonLabels.alertname }}{{ else }}{{ len .Alerts }} alerts{{ with .CommonLabels.namespace }} in {{ . }}{{ end }}{{ end -}}
+          {{ if and (eq .Status "firing") (gt (len .Alerts.Firing) 1) }} ({{ len .Alerts.Firing }} firing){{ end }}
+          {{- end }}
+
+          {{ define "home.where" -}}
+          {{ if .Labels.namespace }}📍 `{{ .Labels.namespace }}{{ with .Labels.pod }}/{{ . }}{{ end }}`{{ with .Labels.container }} · container `{{ . }}`{{ end }}
+          {{- else if .Labels.instance }}📍 `{{ .Labels.instance }}`{{ with .Labels.mountpoint }} · `{{ . }}`{{ end }}
+          {{- else }}📍 whole cluster{{ end }}
+          {{- end }}
+
+          {{ define "home.when" -}}
+          {{ if eq .Status "firing" }}🕒 since {{ .StartsAt | tz "America/Denver" | date "Mon Jan 2, 3:04 PM" }}
+          {{- else }}🕒 {{ .StartsAt | tz "America/Denver" | date "Mon Jan 2, 3:04 PM" }} → {{ .EndsAt | tz "America/Denver" | date "3:04 PM" }} (lasted {{ reReplaceAll "m0s$" "m" ((.EndsAt.Sub .StartsAt).Round 1000000000).String }}){{ end }}
+          {{- end }}
+
+          {{ define "home.alert" -}}
+          {{ if eq .Status "firing" }}{{ if eq .Labels.severity "critical" }}🔴{{ else }}🟠{{ end }}{{ else }}🟢{{ end }} **{{ or .Annotations.summary .Labels.alertname "Alert" }}**
+          {{ with or .Annotations.description .Annotations.message }}{{ reReplaceAll " on cluster ?\\." "." . }}
+          {{ end -}}
+          {{ template "home.where" . }}
+          {{ template "home.when" . }}
+          {{- with .Annotations.runbook_url }}
+          📖 [What it means / how to fix](<{{ . }}>){{ end }}
+          {{- end }}
+
+          {{ define "home.message" -}}
+          {{ range $i, $a := .Alerts.Firing }}{{ if lt $i 5 }}{{ template "home.alert" $a }}
+
+          {{ end }}{{ end -}}
+          {{ range $i, $a := .Alerts.Resolved }}{{ if lt $i 5 }}{{ template "home.alert" $a }}
+
+          {{ end }}{{ end -}}
+          {{ if or (gt (len .Alerts.Firing) 5) (gt (len .Alerts.Resolved) 5) }}… {{ len .Alerts }} alerts in this group; the first 5 firing / 5 resolved are shown.
+
+          {{ end -}}
+          🔗 [All alerts in Grafana](<https://grafana.waffle-systems.com/alerting/list>)
+          {{- end }}
+      alertmanagerSpec:            # receivers are in config below (Discord via the SOPS secret alert-manager)
         resources:
           requests:
             cpu: 10m
@@ -535,6 +585,8 @@ spec:
             discord_configs:
               - webhook_url_file: /etc/alertmanager/secrets/alert-manager/alertmanager-discord
                 send_resolved: true
+                title: '{{ template "home.title" . }}'      # templates from templateFiles above
+                message: '{{ template "home.message" . }}'
     prometheusOperator:            # turns ServiceMonitor/PrometheusRule objects into Prometheus config
       resources:
         requests:
