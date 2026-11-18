@@ -316,6 +316,9 @@ spec:
         # relabel (keep this node's pods; add namespace/pod/container/app/node labels) →
         # read their logs through the Kubernetes API → Loki. Every log line gets the
         # label cluster="eu-west-1-prod" (a placeholder from an example; harmless).
+        # The node name comes from K8S_NODE_NAME, which the chart sets on the pod. (Until
+        # 2026-11-17 this read NODE_NAME, which doesn't exist: the node filter then kept
+        # no pods, so Loki only ever had syslog.)
         content: |-
           loki.write "loki" {
             endpoint {
@@ -328,7 +331,7 @@ spec:
           loki.source.file "host_syslogs" {
             targets = [{
               __path__ = "/var/log/syslog",
-              host     = sys.env("NODE_NAME"),
+              host     = sys.env("K8S_NODE_NAME"),
               job      = "host-syslogs",
             }]
             forward_to = [loki.write.loki.receiver]
@@ -344,7 +347,7 @@ spec:
 
             rule {
               source_labels = ["__meta_kubernetes_pod_node_name"]
-              regex         = sys.env("NODE_NAME")
+              regex         = sys.env("K8S_NODE_NAME")
               action        = "keep"
             }
             rule {
