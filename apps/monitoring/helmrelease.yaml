@@ -115,7 +115,9 @@ spec:
           enabled: true
           existingClaim: teslamate-postgres-pvc   # hand-made PVC → hostPath PV (teslamate-pv.yaml)
       auth:
-        existingSecret: teslamate-postgresql   # postgres password (secret.postgresql.yaml, SOPS)
+        existingSecret: teslamate-password   # postgres password (secret.postgresql.yaml, SOPS)
+        secretKeys:
+          adminPasswordKey: teslamate-pass
         database: teslamate
         persistence:               # misplaced key (persistence isn't an auth option); ignored
           enabled: false
