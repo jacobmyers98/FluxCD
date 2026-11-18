@@ -9,9 +9,9 @@ spec:
   capacity:
     storage: 10Gi
   claimRef:
-    name: loki-data
+    name: storage-loki-0
     namespace: monitoring
   hostPath:
     path: /home/server/docker/monitoring/loki/
     type: DirectoryOrCreate
-  persistentVolumeReclaimPolicy: Delete
+  persistentVolumeReclaimPolicy: Retain
