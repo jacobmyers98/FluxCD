@@ -3,8 +3,10 @@
 # restored (`etcdutl snapshot restore`) if etcd is ever corrupted. It does NOT back up app
 # data on hostPath folders; the weekly-server-backup CronJob covers /home/server.
 #
-# How it works (one pod, three steps that run in order; if a step fails, the later ones
+# How it works (one pod, four steps that run in order; if a step fails, the later ones
 # don't run, the pod fails and the Job retries / shows as Failed):
+#   0. check-disk (init): fails if /mnt/backup/etcd is on the same filesystem as /mnt (= the
+#      root SSD), i.e. the backup HDD isn't mounted, so a snapshot never fills the SSD.
 #   1. snapshot (init): `etcdctl snapshot save` over 127.0.0.1:2379 (host network) into
 #      /mnt/backup/etcd/incoming.db. etcdctl writes incoming.db.part first and only renames
 #      it when the whole snapshot arrived and its checksum matched.
@@ -46,6 +48,26 @@ spec:
             kubernetes.io/hostname: gameserver   # the control-plane node, where etcd runs
           hostNetwork: true        # share the node's network so 127.0.0.1:2379 is etcd
           initContainers:
+          - name: check-disk         # same check as weekly-server-backup (server-backup-cron.yaml)
+            image: alpine:3.24
+            command: ["/bin/sh", "-c"]
+            args:
+              - |
+                if [ "$(stat -c %d /backup)" = "$(stat -c %d /host-mnt)" ]; then
+                  echo "ERROR: /mnt/backup/etcd is on the root filesystem; is the backup HDD mounted?" >&2
+                  exit 1
+                fi
+                echo "backup HDD mounted"
+            resources:
+              requests: { cpu: 10m, memory: 16Mi }
+              limits: { cpu: 100m, memory: 32Mi }
+            volumeMounts:
+            - name: backup-storage
+              mountPath: /backup
+              readOnly: true
+            - name: host-mnt
+              mountPath: /host-mnt
+              readOnly: true
           - name: snapshot
             # Keep the same version as the cluster's etcd
             # (kubectl -n kube-system get pod -l component=etcd -o jsonpath='{..image}').
@@ -102,10 +124,14 @@ spec:
             - name: backup-storage
               mountPath: /backup
           volumes:
+          - name: host-mnt             # /mnt on the root SSD; only used by check-disk to compare filesystems
+            hostPath:
+              path: /mnt
+              type: Directory
           - name: etcd-certs
             secret:
               secretName: etcd-certs   # apps/kube-system/secret.etcd-backup.yaml (SOPS)
           - name: backup-storage
             hostPath:
-              path: /mnt/backup/etcd   # backup HDD; type Directory = must already exist, so if
-              type: Directory          # the HDD isn't mounted the pod fails instead of filling the SSD
+              path: /mnt/backup/etcd   # backup HDD; type Directory = must already exist (the folder
+              type: Directory          # is on the HDD, so this alone fails when it's unmounted; check-disk covers the rest)
