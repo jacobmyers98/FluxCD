@@ -11,3 +11,7 @@ spec:
   claimRef:
     name: prom-data-pvc
     namespace: monitoring
+  hostPath:
+    path: /home/server/docker/monitoring/prometheus/
+    type: DirectoryOrCreate
+  persistentVolumeReclaimPolicy: Retain
