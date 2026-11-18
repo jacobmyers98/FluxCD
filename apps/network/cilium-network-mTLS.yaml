@@ -322,6 +322,10 @@ spec:
           protocol: TCP
         - port: "3000" # Grafana
           protocol: TCP
+        - port: "5055" # Seerr (Homarr app tile ping; missing it made the dashboard wait 10 s)
+          protocol: TCP
+        - port: "1349" # SnapOtter (same)
+          protocol: TCP
 
 ---
 
