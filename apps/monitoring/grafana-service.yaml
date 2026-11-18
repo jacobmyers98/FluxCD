@@ -4,13 +4,12 @@ metadata:
   name: port-service-grafana
   namespace: monitoring
 spec:
-  type: NodePort
+  type: ClusterIP   # reached via the HTTPS Ingress; was NodePort 30008 until 2026-11-17
   selector:
     app.kubernetes.io/instance: prometheus-community
     app.kubernetes.io/name: grafana
   ports:
     - name: grafana-port
       protocol: TCP
-      port: 80 
+      port: 80
       targetPort: 3000
-      nodePort: 30008

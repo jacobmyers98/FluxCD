@@ -1,0 +1,16 @@
+# Line endings. Store and check out text files with LF (Unix) line endings, even when they are
+# edited on Windows (VS Code, Notepad, ...). Without this, a file saved with CRLF shows up in diffs
+# as "every line changed", and a CRLF inside a setter comment or script can break tools.
+* text=auto eol=lf
+
+# SOPS-encrypted files: git must never rewrite their bytes. SOPS adds a MAC over the file's content,
+# and these were encrypted with CRLF; leave them exactly as they are (re-encrypting one with sops
+# writes it with LF, which is fine).
+secret.*.yaml -text
+apps/network/cert-manager.yaml -text
+
+# Binary files: never touch.
+*.png binary
+*.jpg binary
+*.gz binary
+*.tgz binary

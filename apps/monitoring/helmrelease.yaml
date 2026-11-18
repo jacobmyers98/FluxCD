@@ -16,7 +16,7 @@
 # ---- TeslaMate: logs the car's drives, charging and state into PostgreSQL ------------------
 # The car's data arrives from Tesla's API; TeslaMate stores it in its own Postgres (bundled
 # Bitnami sub-chart below) and also publishes live values to MQTT (Mosquitto, next release).
-# Web UI: NodePort service in teslamate-nodeport.yaml + teslamate.waffle-systems.com.
+# Web UI: ClusterIP service in teslamate-service.yaml, reached via https://teslamate.waffle-systems.com.
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -53,9 +53,8 @@ spec:
       - name: DATABASE_PASS
         valueFrom:
           secretKeyRef:
-            name: teslamate-password 
+            name: teslamate-password
             key: teslamate-pass
-        # teslamate-postgresql secret. Better: valueFrom.secretKeyRef on that secret (FLUX_TODO.md)
       - name: DATABASE_NAME
         value: "{{ .Values.postgresql.auth.database }}"
       - name: DISABLE_MQTT

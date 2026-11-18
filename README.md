@@ -138,7 +138,7 @@ minecraft - a NeoForge 1.21.8 Minecraft server configured through environment va
 
 cloudflare-ddns - checks whether the network's public IP address has changed and, if so, updates the `minecraft.waffle-systems.com` record in Cloudflare.<br>
 
-project-zomboid - a Project Zomboid server manifest is kept in the repo but is currently disabled in the gaming kustomization.<br>
+project-zomboid - disabled; its manifest and SOPS secret are kept in `archive/gaming/`.<br>
 
 
 ## **dev**<br>

@@ -4,12 +4,12 @@ kind: Kustomization
 resources:
   - helmrelease.yaml              # Helm charts: TeslaMate, Mosquitto, Loki, Alloy, DCGM, kube-prometheus-stack, prometheus-adapter
   - helmrepo.yaml                 # where those charts come from
-  - teslamate-nodeport.yaml       # NodePort for TeslaMate
+  - teslamate-service.yaml        # Service for TeslaMate (ClusterIP; HTTPS via the Ingress)
   - teslamate-pv.yaml             # storage for TeslaMate's Postgres and Mosquitto
   - secret.teslamate.yaml         # TeslaMate encryption key (SOPS)
   - secret.postgresql.yaml        # TeslaMate Postgres password (SOPS)
   - homarr.yaml                   # Homarr dashboard
-  - grafana-nodeport.yaml         # NodePort for Grafana
+  - grafana-service.yaml          # Service for Grafana (ClusterIP; HTTPS via the Ingress)
   - secret.grafana.yaml           # Grafana admin login (SOPS)
   - glances.yaml                  # host stats web UI
   - snapotter.yaml                # image/file processing toolkit

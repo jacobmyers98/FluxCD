@@ -6,6 +6,4 @@ resources:
   - helmrepo.yaml      # Aqua's chart repo
   - trivy-pv.yaml      # storage for trivy-server's vulnerability DB
   - headlamp.yaml      # Headlamp dashboard + its read-only login
-  # Kubescape disabled 2026-11-14 (see helmrelease.yaml):
-  # - kubescape-pv.yaml
-  # - kubescape-servicemonitor.yaml
+  # Kubescape disabled 2026-11-14 (see helmrelease.yaml); its PV + ServiceMonitor are in archive/compliance/

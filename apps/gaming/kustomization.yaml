@@ -4,6 +4,5 @@ kind: Kustomization
 resources:
   - minecraft.yaml                # NeoForge Minecraft server
   - cloudflare-ddns.yaml          # keeps the Minecraft DNS record on the current home IP
-#  - project-zomboid.yaml         # disabled: uncomment both lines to run it again
-#  - secret.pz.yaml
+# Project Zomboid is disabled; its files are in archive/gaming/ (move both back and list them here to run it)
   - secret.cloudflare-ddns.yaml   # Cloudflare API token (SOPS)

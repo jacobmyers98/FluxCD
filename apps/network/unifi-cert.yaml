@@ -45,7 +45,7 @@ spec:
           restartPolicy: Never
           containers:
             - name: push
-              image: alpine:3.20     # out of support; move to 3.24 (FLUX_TODO.md)
+              image: alpine:3.24
               env:
                 - name: UDM
                   value: "192.168.1.1"   # the UDM Pro

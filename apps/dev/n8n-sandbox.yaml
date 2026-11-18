@@ -48,6 +48,13 @@ spec:
       containers:
       - name: api
         image: n8nio/n8n-sandbox-service-api:1.15.0 # {"$imagepolicy": "flux-system:n8n-sandbox-api-policy"}
+        resources:               # idle ~10 Mi / ~0 CPU (2026-11-17)
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
         env:
         - name: SANDBOX_API_KEYS
           value: "my-sandbox-secret-key"
@@ -143,6 +150,13 @@ spec:
       containers:
       - name: runner
         image: n8nio/n8n-sandbox-service-runner-dind:1.15.0 # {"$imagepolicy": "flux-system:n8n-sandbox-runner-policy"}
+        resources:               # dockerd + the sandbox containers it starts all count here; idle ~200 Mi (2026-11-17)
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: "2"
+            memory: 2Gi
         securityContext:
           privileged: true # Absolutely required for Docker-in-Docker
         env:

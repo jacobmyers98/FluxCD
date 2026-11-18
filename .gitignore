@@ -1,0 +1,28 @@
+# Things that must never be committed to this repo.
+
+# Decrypted SOPS files and private keys. Only encrypted secret.*.yaml files belong here.
+*.dec.yaml
+*.decrypted.yaml
+*.decrypted
+*.agekey
+age.key
+keys.txt
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+.env
+*.env
+
+# Editor and OS clutter
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# Local scratch / backups
+*.bak
+*.orig
+*.tmp
