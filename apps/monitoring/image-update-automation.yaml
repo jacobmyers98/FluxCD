@@ -3,7 +3,7 @@
 # update.path for image lines with a setter comment like
 #   # {"$imagepolicy": "<namespace>:<policy>"}
 # replaces the tag with what that ImagePolicy picked, and pushes one commit to main.
-# The normal "apps" sync then deploys it (within ~1 minute).
+# The "monitoring" Flux Kustomization then deploys it (within ~1 minute).
 # Needs a deploy key WITH write access (secret flux-system/flux-system); after a
 # `flux bootstrap` without --read-write-key every push fails with "key … read only".
 # There are 4 of these (dev, gaming, monitoring, plex), each limited to its folder; when

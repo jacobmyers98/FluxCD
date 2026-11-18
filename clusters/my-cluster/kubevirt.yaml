@@ -1,4 +1,4 @@
-# KubeVirt (operator + KubeVirt CR). Its own Flux Kustomization, separate from "apps", so the
+# KubeVirt (operator + KubeVirt CR). Its own Flux Kustomization, separate from apps.yaml, so the
 # operator's CRDs are owned by exactly one Kustomization. Upgrade one minor version at a time
 # (latest patch of each minor), see apps/kubevirt/kustomization.yaml.
 apiVersion: kustomize.toolkit.fluxcd.io/v1

@@ -11,8 +11,8 @@ FluxCD GitOps pipeline for home automation<br>
 
 
 ## **Directory Structure**<br>
-**apps** - Everything Flux deploys to the cluster, one folder per area. `apps/kustomization.yaml` lists which folders are active.<br>
-**clusters** - Flux bootstrap files (`flux-system`), the root `apps` Kustomization that points Flux at `./apps` with SOPS decryption, and the separate `kubevirt` Kustomization (`kubevirt.yaml`) for `./apps/kubevirt`.<br>
+**apps** - Everything Flux deploys to the cluster, one folder per area. Each folder is applied by its own Flux Kustomization (`clusters/my-cluster/apps.yaml`), so a broken manifest only stops its own folder.<br>
+**clusters** - Flux bootstrap files (`flux-system`), `apps.yaml` (one Flux Kustomization per `./apps/<folder>`, all with SOPS decryption), and the separate `kubevirt` Kustomization (`kubevirt.yaml`) for `./apps/kubevirt`.<br>
 **examples** - Files that are not deployed by Flux: KEDA, HAProxy/Keepalived configs, and the `research-dependency` example project.<br>
 
 The manifests under `apps/` and `clusters/my-cluster/` are commented: every HelmRelease, Flux object, CronJob, network policy, PV and other non-trivial resource explains what it does and why it's set up that way (SOPS-encrypted files and the generated `gotk-*.yaml` are the exceptions).<br>
@@ -65,7 +65,7 @@ spire-server / spire-agent - installed by Cilium. They issue SPIFFE identities t
 
 ## **flux-system**<br>
 
-source / kustomize / helm / notification / image-reflector / image-automation controllers - the FluxCD controllers. They pull this repo, apply the `apps` Kustomization (decrypting SOPS secrets with the `sops-age` key), install HelmReleases, and scan container registries to automatically bump image tags marked with `$imagepolicy` comments.<br>
+source / kustomize / helm / notification / image-reflector / image-automation controllers - the FluxCD controllers. They pull this repo, apply the per-folder Kustomizations (decrypting SOPS secrets with the `sops-age` key), install HelmReleases, and scan container registries to automatically bump image tags marked with `$imagepolicy` comments.<br>
 
 
 ## **monitoring**<br>
@@ -162,7 +162,7 @@ arc-gha-rs-controller / my-runner-set-listener - Actions Runner Controller. It r
 
 ## **kubevirt**<br>
 
-virt-operator / virt-api / virt-controller / virt-handler - KubeVirt v1.9.1, installed from the upstream release manifests through its own Flux Kustomization (`clusters/my-cluster/kubevirt.yaml`, path `./apps/kubevirt`); `apps` does not include that folder, so the operator and its CRDs have exactly one owner. KubeVirt only supports upgrading one minor version at a time, from the latest patch of each minor (e.g. v1.8.4 → v1.9.1), so bump the version in `apps/kubevirt/kustomization.yaml` one step at a time. It lets the cluster run virtual machines (such as the devbox) alongside containers, which is useful for testing security implementations.<br>
+virt-operator / virt-api / virt-controller / virt-handler - KubeVirt v1.9.1, installed from the upstream release manifests through its own Flux Kustomization (`clusters/my-cluster/kubevirt.yaml`, path `./apps/kubevirt`); `apps.yaml` does not include that folder, so the operator and its CRDs have exactly one owner. KubeVirt only supports upgrading one minor version at a time, from the latest patch of each minor (e.g. v1.8.4 → v1.9.1), so bump the version in `apps/kubevirt/kustomization.yaml` one step at a time. It lets the cluster run virtual machines (such as the devbox) alongside containers, which is useful for testing security implementations.<br>
 
 
 
@@ -218,16 +218,16 @@ cat age.agekey | kubectl create secret generic sops-age \
 --from-file=age.agekey=/dev/stdin
 ```
 
-  Tell FluxCD to use the key. This is the `apps` Kustomization in `clusters/my-cluster/server.yaml`:<br>
+  Tell FluxCD to use the key. Every Kustomization in `clusters/my-cluster/apps.yaml` (one per folder in `./apps`) has the `decryption` block, e.g. plex:<br>
 ```yaml
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: apps
+  name: plex
   namespace: flux-system
 spec:
   interval: 1m
-  path: ./apps
+  path: ./apps/plex
   prune: true
   sourceRef:
     kind: GitRepository

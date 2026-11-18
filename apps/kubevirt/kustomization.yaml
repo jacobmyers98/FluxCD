@@ -1,6 +1,6 @@
 # KubeVirt: runs real virtual machines (like dev/devbox) next to containers.
 # Applied by its own Flux Kustomization "kubevirt" (clusters/my-cluster/kubevirt.yaml), NOT by
-# "apps": the operator's CRDs must have exactly one owner, or moving/removing them between two
+# clusters/my-cluster/apps.yaml: the operator's CRDs must have exactly one owner, or moving/removing them between two
 # Kustomizations can prune the CRDs and with them every VM.
 #
 # The two files come straight from the KubeVirt GitHub release (kustomize downloads them):

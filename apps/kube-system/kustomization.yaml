@@ -1,5 +1,5 @@
-# Files in kube-system that Flux applies (via apps/kustomization.yaml → the "apps" Flux
-# Kustomization). A file not listed here is ignored. secret.*.yaml files are
+# Files in kube-system that Flux applies (the "kube-system" Flux Kustomization in
+# clusters/my-cluster/apps.yaml). A file not listed here is ignored. secret.*.yaml files are
 # SOPS-encrypted in git and decrypted by Flux with the sops-age key.
 # Cilium itself, CoreDNS and the control plane are NOT here: they were installed by
 # kubeadm / the cilium CLI (see README).

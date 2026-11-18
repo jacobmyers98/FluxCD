@@ -7,8 +7,8 @@
 # kube-node-lease / default (Kubernetes makes those), flux-system (flux bootstrap makes
 # it), kubevirt (comes from the KubeVirt operator manifest) and cilium-spire (Cilium).
 #
-# Careful: deleting a Namespace deletes EVERYTHING inside it. Because the "apps" Flux
-# Kustomization has prune: true, removing a block from this file deletes that namespace
+# Careful: deleting a Namespace deletes EVERYTHING inside it. Because the "admin-namespaces"
+# Flux Kustomization (clusters/my-cluster/apps.yaml) has prune: true, removing a block from this file deletes that namespace
 # and all of its apps. Leave these alone unless you really mean it.
 #
 # The "app: <name>" label is just a tag. It can be used by network policies or

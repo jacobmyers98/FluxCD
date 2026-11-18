@@ -1,0 +1,211 @@
+# One Flux Kustomization per folder in ./apps (split from the single "apps" Kustomization on
+# 2026-11-17). Before, one bad manifest in any folder stopped updates for every namespace; now it
+# only stops its own folder.
+# (kustomize.toolkit.fluxcd.io = a Flux object, not the kustomization.yaml file format.)
+# This file lives in clusters/my-cluster, which the flux-system Kustomization (made by
+# `flux bootstrap`) applies, so changes here roll out within its 10 min interval
+# (now: flux reconcile ks flux-system --with-source).
+#
+# Status: flux get ks        Force a sync of one folder: flux reconcile ks plex --with-source
+#
+# Shared settings on every entry:
+#   interval: 1m   re-apply every minute: manual `kubectl edit`s are reverted within ~1 min
+#   timeout: 5m    how long one apply may take before it counts as failed
+#   prune: true    objects removed from git are deleted from the cluster
+#   decryption     decrypt SOPS-encrypted secret files with the age key in secret sops-age
+#                  (made by hand, see README step 2)
+#   dependsOn      admin-namespaces: wait until the namespaces exist (only matters on a fresh cluster)
+#
+# Careful: DELETING or RENAMING an entry here deletes everything that folder created (prune: true),
+# e.g. removing admin-namespaces deletes the namespaces and every app in them. To move a folder or
+# rename an entry, first set prune: false on it and let that roll out (check with
+# kubectl -n flux-system get ks <name> -o jsonpath='{.spec.prune}'), then make the change.
+#
+# ./kubevirt has its own entry in kubevirt.yaml. dev does NOT dependsOn kubevirt: that would stop
+# n8n updates whenever KubeVirt is unhealthy (e.g. during an upgrade). On a fresh cluster the devbox
+# VM fails until KubeVirt's CRDs exist, then dev succeeds on the next retry.
+---
+# admin-namespaces: the namespaces (gaming, plex, monitoring, compliance, dev)
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: admin-namespaces
+  namespace: flux-system
+spec:
+  interval: 1m
+  timeout: 5m
+  path: ./apps/admin-namespaces
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+---
+# network: cert-manager + all Ingresses and certs, Cilium policies/BGP/L2, UDM cert push
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: network
+  namespace: flux-system
+spec:
+  interval: 1m
+  timeout: 5m
+  path: ./apps/network
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+  dependsOn:
+    - name: admin-namespaces
+---
+# kube-system: GPU plugin, Tailscale, etcd + server backups, Vaultwarden
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: kube-system
+  namespace: flux-system
+spec:
+  interval: 1m
+  timeout: 5m
+  path: ./apps/kube-system
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+---
+# monitoring: Prometheus/Grafana/Loki/Alloy, TeslaMate, Homarr, Mealie, SnapOtter, Glances
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: monitoring
+  namespace: flux-system
+spec:
+  interval: 1m
+  timeout: 5m
+  path: ./apps/monitoring
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+  dependsOn:
+    - name: admin-namespaces
+---
+# compliance: trivy-operator + trivy-server, Headlamp
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: compliance
+  namespace: flux-system
+spec:
+  interval: 1m
+  timeout: 5m
+  path: ./apps/compliance
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+  dependsOn:
+    - name: admin-namespaces
+---
+# plex: Plex + *arr apps, qBittorrent, Tdarr, cloudflared ("production")
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: plex
+  namespace: flux-system
+spec:
+  interval: 1m
+  timeout: 5m
+  path: ./apps/plex
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+  dependsOn:
+    - name: admin-namespaces
+---
+# gaming: Minecraft + Cloudflare DDNS ("production")
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: gaming
+  namespace: flux-system
+spec:
+  interval: 1m
+  timeout: 5m
+  path: ./apps/gaming
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+  dependsOn:
+    - name: admin-namespaces
+---
+# dev: n8n + Ollama, SearXNG, MongoDB, backtester, Discord relay, devbox VM
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: dev
+  namespace: flux-system
+spec:
+  interval: 1m
+  timeout: 5m
+  path: ./apps/dev
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+  dependsOn:
+    - name: admin-namespaces
+---
+# arc-runner: GitHub Actions runner controller + scale set (runs in namespace dev)
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: arc-runner
+  namespace: flux-system
+spec:
+  interval: 1m
+  timeout: 5m
+  path: ./apps/arc-runner
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+  dependsOn:
+    - name: admin-namespaces

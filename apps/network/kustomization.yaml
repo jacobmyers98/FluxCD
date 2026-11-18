@@ -1,5 +1,5 @@
-# Networking pieces Flux applies (via apps/kustomization.yaml → the "apps" Flux
-# Kustomization). Cilium itself isn't here: it was installed with the cilium CLI (README).
+# Networking pieces Flux applies (the "network" Flux Kustomization in
+# clusters/my-cluster/apps.yaml). Cilium itself isn't here: it was installed with the cilium CLI (README).
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:

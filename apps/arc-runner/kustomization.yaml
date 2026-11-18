@@ -1,8 +1,8 @@
 # A kustomize "Kustomization" (kustomize.config.k8s.io) is just a list of files to bundle
 # together. Don't confuse it with a *Flux* Kustomization (kustomize.toolkit.fluxcd.io),
 # which tells Flux to apply a folder from git.
-# The parent apps/kustomization.yaml includes this folder, so these files are applied by
-# the "apps" Flux Kustomization. A file that isn't listed here is ignored by Flux.
+# The "arc-runner" Flux Kustomization (clusters/my-cluster/apps.yaml) applies this folder.
+# A file that isn't listed here is ignored by Flux.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
