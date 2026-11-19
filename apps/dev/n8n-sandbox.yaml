@@ -149,7 +149,7 @@ spec:
           readOnly: true
       containers:
       - name: runner
-        image: n8nio/n8n-sandbox-service-runner-dind:1.15.0 # {"$imagepolicy": "flux-system:n8n-sandbox-runner-policy"}
+        image: n8nio/n8n-sandbox-service-runner-dind:1.16.0 # {"$imagepolicy": "flux-system:n8n-sandbox-runner-policy"}
         resources: # dockerd + the sandbox containers it starts all count here; idle ~200 Mi (2026-11-17)
           requests:
             cpu: 100m
