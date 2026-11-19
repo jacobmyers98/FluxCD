@@ -75,7 +75,7 @@ spec:
       # 2. Python/JavaScript Sandbox (Task Runner)
       # Version must match n8n: both images follow the "stable" tag (apps/image-automation/dev.yaml)
       - name: n8n-task-runner
-        image: n8nio/runners:stable@sha256:3d502b6dcb975958df66f80ceb59d30584e86d7339a4659730d3ecfb74c91fc0 # {"$imagepolicy": "flux-system:n8n-runners-policy"}
+        image: n8nio/runners:stable@sha256:4f99e9d82bb26565eae8cb00b687a26e7ce09a8ab476cb39ac9c1ef2d8ecd132 # {"$imagepolicy": "flux-system:n8n-runners-policy"}
         env:
         - name: N8N_RUNNERS_AUTH_TOKEN
           value: "my-secure-random-token" # Matches the n8n token
