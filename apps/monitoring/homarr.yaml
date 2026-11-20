@@ -12,7 +12,7 @@ spec:
       targetPort: 7575
   selector:
     app: homarr
-  type: ClusterIP   # reached via https://homarr… (Ingress); was NodePort 30010 until 2026-11-17
+  type: ClusterIP # reached via https://homarr… (Ingress); was NodePort 30010 until 2026-11-17
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -39,7 +39,7 @@ spec:
         fsGroup: 1004
       containers:
         - name: homarr
-          image: ghcr.io/homarr-labs/homarr:v2.13.1 # {"$imagepolicy": "flux-system:homarr-policy"}
+          image: ghcr.io/homarr-labs/homarr:v2.14.0 # {"$imagepolicy": "flux-system:homarr-policy"}
           imagePullPolicy: Always
           env:
             - name: SECRET_ENCRYPTION_KEY
