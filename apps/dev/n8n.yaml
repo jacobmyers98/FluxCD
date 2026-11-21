@@ -85,7 +85,7 @@ spec:
           value: "600" # must match the n8n container
       # --- Container 2: Ollama ---
       - name: ollama
-        image: ollama/ollama:0.40.16 # {"$imagepolicy": "flux-system:ollama-policy"}
+        image: ollama/ollama:0.40.17 # {"$imagepolicy": "flux-system:ollama-policy"}
         securityContext:
           runAsUser: 1001 # container_user
           runAsGroup: 1004
