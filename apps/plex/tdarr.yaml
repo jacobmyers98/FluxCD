@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: tdarr-server
-          image: ghcr.io/haveagitgat/tdarr:3.08.00 #  {"$imagepolicy": "flux-system:tdarr-policy"}
+          image: ghcr.io/haveagitgat/tdarr:3.09.00 #  {"$imagepolicy": "flux-system:tdarr-policy"}
           env:
             - name: serverIP
               value: "0.0.0.0"
