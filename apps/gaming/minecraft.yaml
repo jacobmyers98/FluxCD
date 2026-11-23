@@ -12,9 +12,7 @@ spec:
     nodePort: 30016
   selector:
     app: minecraft
-    
 ---
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -36,7 +34,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: mc
-        image: itzg/minecraft-server:2026.11.0-java21 # {"$imagepolicy": "flux-system:minecraft-policy"}
+        image: itzg/minecraft-server:2026.11.1-java21 # {"$imagepolicy": "flux-system:minecraft-policy"}
         resources:
           requests:
             cpu: "1"
