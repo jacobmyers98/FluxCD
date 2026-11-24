@@ -33,7 +33,7 @@ spec:
           mountPath: /ollama
       containers:
       - name: n8n
-        image: n8nio/n8n:stable@sha256:e0df076a41076127d5f765e05acb8ba746bddff86442a92269c0f5a7219a7e4b # {"$imagepolicy": "flux-system:n8n-policy"}
+        image: n8nio/n8n:stable@sha256:c349b24d6e242b4ea14d75e6f1a90c50e348cf4b1c4512b4a0a50219ead6533d # {"$imagepolicy": "flux-system:n8n-policy"}
         securityContext:
           runAsUser: 1001 # container_user
           runAsGroup: 1004
