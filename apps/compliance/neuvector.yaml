@@ -77,7 +77,7 @@ spec:
           memory: 256Mi
         limits:
           cpu: "2"
-          memory: 3Gi
+          memory: 4Gi        # ~2.5Gi seen during the first full scan
     manager:
       env:
         ssl: false           # plain HTTP inside the cluster; the Ingress does HTTPS (Let's Encrypt)
@@ -87,7 +87,7 @@ spec:
           memory: 128Mi
         limits:
           cpu: "1"
-          memory: 1Gi
+          memory: 2Gi        # ~1Gi right after start
     cve:
       scanner:
         replicas: 1
@@ -97,7 +97,7 @@ spec:
             memory: 256Mi
           limits:
             cpu: "2"
-            memory: 3Gi
+            memory: 6Gi      # ~4Gi seen (its CVE database is loaded into memory)
       updater:
         resources:
           limits:
