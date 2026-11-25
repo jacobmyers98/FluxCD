@@ -1,7 +1,7 @@
 # Trivy: vulnerability and configuration scanning for the whole cluster.
 #   - "aqua" (release trivy-operator) scans every workload's images and config
 #   - "trivy-server" holds the vulnerability database the scans look things up in
-# Results are Kubernetes objects (browse them in Headlamp's Trivy plugin) and Prometheus
+# Results are Kubernetes objects (read them with kubectl, e.g. `kubectl get vulnerabilityreports -A`) and Prometheus
 # metrics (Grafana "Security Posture" + Trivy dashboards).
 #
 # A HelmRelease = "install this Helm chart with these values and keep it that way".
@@ -35,9 +35,8 @@ spec:
       # the whole image, which caused heavy IO wait on the root SSD.
       scanJobsConcurrentLimit: 1
       scannerReportTTL: 168h
-    # Compliance reports stay on reportType: summary (chart default). The Headlamp
-    # Trivy plugin reads failure counts only from status.summaryReport; with
-    # "all" it shows 0 everywhere (tried 2026-11-14).
+    # Compliance reports stay on reportType: summary (chart default; the Grafana
+    # Security Posture dashboard uses the summary counts).
     resources:               # the operator pod itself (not the scan Jobs)
       requests:
         cpu: 100m
@@ -112,8 +111,8 @@ spec:
 
 # Kubescape disabled 2026-11-14: Trivy covers images + config. To re-enable, uncomment this block,
 # the kubescape HelmRepository (helmrepo.yaml), move archive/compliance/kubescape-pv.yaml +
-# kubescape-servicemonitor.yaml back here and list them in kustomization.yaml, and the headlamp_kubescape
-# plugin in apps/compliance/headlamp.yaml.
+# kubescape-servicemonitor.yaml back here and list them in kustomization.yaml. (Headlamp, which had the
+# headlamp_kubescape plugin, was removed 2026-11-25).
 # apiVersion: helm.toolkit.fluxcd.io/v2
 # kind: HelmRelease
 # metadata:

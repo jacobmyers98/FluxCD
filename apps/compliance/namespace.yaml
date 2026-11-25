@@ -1,4 +1,4 @@
-# The compliance namespace: Trivy scanners and Headlamp.
+# The compliance namespace: Trivy scanners and NeuVector.
 # Moved here from apps/admin-namespaces on 2026-11-18.
 #
 # Deleting a Namespace deletes EVERYTHING inside it. The prune: disabled annotation stops Flux

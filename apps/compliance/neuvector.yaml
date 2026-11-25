@@ -1,5 +1,5 @@
-# NeuVector (SUSE, open source): runtime container security. Added 2026-11-25 to compare
-# with Trivy + Headlamp. Unlike Trivy it watches running containers: it learns which
+# NeuVector (SUSE, open source): runtime container security. Added 2026-11-25; replaced
+# Headlamp as the security UI the same day. Unlike Trivy it watches running containers: it learns which
 # processes, files and network connections each workload uses, and can alert on (or block)
 # anything new. It also has its own CVE scanner and CIS/compliance checks.
 #

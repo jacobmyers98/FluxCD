@@ -23,7 +23,7 @@ The manifests under `apps/` and `clusters/my-cluster/` are commented: every Helm
 **cilium-spire** - SPIRE server and agent that issue workload identities for Cilium's mutual TLS.<br>
 **flux-system** - The FluxCD controllers that sync this repo to the cluster.<br>
 **monitoring** - Dashboards, metrics, logs and other self-hosted tools (Grafana, Prometheus, Loki, Homarr, Teslamate, etc.).<br>
-**compliance** - Vulnerability and configuration scanning (Trivy) and the Headlamp dashboard.<br>
+**compliance** - Vulnerability and configuration scanning (Trivy) and NeuVector runtime security.<br>
 **plex** - Media server and the automation around it. Note that this Namespace should be considered a production Namespace as outside users utilize this service.<br>
 **gaming** - Video game servers such as Minecraft, with Cloudflare DDNS. Note that this Namespace should be considered a production Namespace as outside users utilize this service.<br>
 **dev** - Personal projects (n8n automations, local LLMs, a backtester), a KubeVirt dev VM and self-hosted GitHub Actions runners.<br>
@@ -106,7 +106,7 @@ trivy-operator / trivy-server - deployed via the trivy-operator and trivy charts
 
 <img width="1340" height="486" alt="image" src="https://github.com/user-attachments/assets/d576d94e-a4c9-45e9-a77c-9ed7e991d102" />
 
-headlamp - the Headlamp Kubernetes dashboard at headlamp.waffle-systems.com, with the Trivy plugin for browsing vulnerability, config-audit and compliance (CIS / NSA / PSS) reports. It logs in with a read-only service account token (no cluster-admin, no access to Secrets).<br>
+neuvector - NeuVector (SUSE, open source) at neuvector.waffle-systems.com: watches running containers (processes, files, network connections), scans them for CVEs, and runs the CIS Kubernetes and Docker benchmarks. Groups stay in Discover/Monitor mode (Protect is untested with Cilium). Replaced the Headlamp dashboard on 2026-11-25.<br>
 
 kubescape - disabled since 2026-11-14 (Trivy covers the same checks). Its config is kept as comments in `apps/compliance` so it can be turned back on.<br>
 

@@ -21,7 +21,7 @@ spec:
   template:
     metadata:
       labels:
-        app: tailscale # Headlamp's network policy allows traffic from pods with this label
+        app: tailscale # NeuVector's network policy allows traffic from pods with this label
         exposed: nodeport
     spec:
       serviceAccountName: tailscale # gives the pod the Role below (to save its state in a Secret)
