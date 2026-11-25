@@ -86,7 +86,7 @@ spec:
     secretRef:
       name: sops-age
 ---
-# compliance: trivy-operator + trivy-server, Headlamp
+# compliance: trivy-operator + trivy-server, Headlamp, NeuVector
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:

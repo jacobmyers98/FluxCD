@@ -1,0 +1,145 @@
+# NeuVector (SUSE, open source): runtime container security. Added 2026-11-25 to compare
+# with Trivy + Headlamp. Unlike Trivy it watches running containers: it learns which
+# processes, files and network connections each workload uses, and can alert on (or block)
+# anything new. It also has its own CVE scanner and CIS/compliance checks.
+#
+# Web UI: https://neuvector.waffle-systems.com (Ingress in apps/network/ingresses.yaml).
+# Login: user admin; the first password comes from Secret compliance/neuvector-bootstrap-secret
+# (created by hand, not in git; a copy is in ~/.neuvector-admin). NeuVector asks for a new
+# password at first login. There is no persistent storage: if the controller pod restarts,
+# NeuVector forgets learned rules, settings and the changed password (back to the bootstrap one).
+#
+# Components: controller (brain + API), enforcer (privileged DaemonSet, one per node: watches
+# containers), manager (web UI), scanner (CVE DB is baked into the image; the updater CronJob
+# restarts it nightly to pull the newest "scanner:6"), cert-upgrader CronJob.
+#
+# DON'T switch any group to "Protect" mode: in Protect mode the enforcer puts itself inline in
+# each pod's network path, which isn't tested with Cilium here and can cut pod traffic.
+# Discover (learn) and Monitor (alert only) are passive.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: neuvector
+  namespace: flux-system
+spec:
+  interval: 6h
+  url: https://neuvector.github.io/neuvector-helm/
+
+---
+
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: neuvector
+  namespace: compliance
+spec:
+  interval: 1h
+  timeout: 10m
+  chart:
+    spec:
+      chart: core
+      version: "2.12.0"     # NeuVector 5.7.0; pinned: upgrade by changing this number
+      sourceRef:
+        kind: HelmRepository
+        name: neuvector
+        namespace: flux-system
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
+  values:
+    # Single node: one of each (the chart defaults to 3 controllers + 3 scanners).
+    controller:
+      replicas: 1
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          cpu: "2"
+          memory: 3Gi
+      # First-start settings (only read when the controller starts with no config).
+      configmap:
+        enabled: true
+        data:
+          sysinitcfg.yaml: |
+            New_Service_Policy_Mode: Discover   # learn only; see the warning at the top
+            No_Telemetry_Report: true
+            Scan_Config:
+              Auto_Scan: true                   # scan every running container once (and new ones)
+    enforcer:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: "2"
+          memory: 3Gi
+    manager:
+      env:
+        ssl: false           # plain HTTP inside the cluster; the Ingress does HTTPS (Let's Encrypt)
+      resources:
+        requests:
+          cpu: 20m
+          memory: 128Mi
+        limits:
+          cpu: "1"
+          memory: 1Gi
+    cve:
+      scanner:
+        replicas: 1
+        resources:
+          requests:
+            cpu: 50m
+            memory: 256Mi
+          limits:
+            cpu: "2"
+            memory: 3Gi
+      updater:
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+
+---
+
+# NeuVector pods are covered by the cluster-wide mTLS rule (pod-to-pod is fine). Outside
+# traffic needs its own rule: the Ingress/Tailscale to the web UI, and the API server to the
+# controller's admission + CRD webhooks.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: neuvector
+  namespace: compliance
+spec:
+  endpointSelector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values:
+          - neuvector-manager-pod
+          - neuvector-controller-pod
+  ingress:
+    - fromEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: "8443"
+              protocol: TCP
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            app: tailscale
+      toPorts:
+        - ports:
+            - port: "8443"
+              protocol: TCP
+    - fromEntities:
+        - kube-apiserver
+        - host
+      toPorts:
+        - ports:
+            - port: "20443"   # admission webhook (only used if admission control is turned on)
+              protocol: TCP
+            - port: "30443"   # CRD webhook (NeuVector's own security-rule CRDs)
+              protocol: TCP

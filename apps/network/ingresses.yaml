@@ -279,7 +279,7 @@ spec:
 
 ---
 
-# ---- compliance: Headlamp (Kubernetes UI, read only) ----
+# ---- compliance: Headlamp (Kubernetes UI, read only) + NeuVector ----
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -292,6 +292,7 @@ spec:
   tls:
   - hosts:
     - headlamp.waffle-systems.com
+    - neuvector.waffle-systems.com
     secretName: compliance-tls
   rules:
   # --- Headlamp ---
@@ -305,3 +306,14 @@ spec:
             name: headlamp
             port:
               number: 80
+  # --- NeuVector (web UI; plain HTTP behind the Ingress, see apps/compliance/neuvector.yaml) ---
+  - host: neuvector.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: neuvector-service-webui
+            port:
+              number: 8443
