@@ -48,6 +48,9 @@ spec:
   upgrade:
     crds: CreateReplace
   values:
+    # This host also runs Docker. Without this the enforcer picks /run/docker.sock first,
+    # sees none of the Kubernetes containers and crash-loops ("Container list is empty").
+    runtimePath: /run/containerd/containerd.sock
     # Single node: one of each (the chart defaults to 3 controllers + 3 scanners).
     controller:
       replicas: 1
