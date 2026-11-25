@@ -121,7 +121,7 @@ spec:
               memory: 64Mi
       containers:
         - name: tdarr-node
-          image: ghcr.io/haveagitgat/tdarr_node:3.09.00 #  {"$imagepolicy": "flux-system:tdarr-node-policy"}
+          image: ghcr.io/haveagitgat/tdarr_node:3.10.00 #  {"$imagepolicy": "flux-system:tdarr-node-policy"}
           env:
             - name: nodeName
               value: "k8s-node-1"
