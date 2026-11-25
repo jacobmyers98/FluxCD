@@ -6,8 +6,9 @@
 # Web UI: https://neuvector.waffle-systems.com (Ingress in apps/network/ingresses.yaml).
 # Login: user admin; the first password comes from Secret compliance/neuvector-bootstrap-secret
 # (created by hand, not in git; a copy is in ~/.neuvector-admin). NeuVector asks for a new
-# password at first login. There is no persistent storage: if the controller pod restarts,
-# NeuVector forgets learned rules, settings and the changed password (back to the bootstrap one).
+# password at first login. Settings, learned rules, users and the changed password are saved
+# in /var/neuvector on the PV at the bottom (/home/server/docker/neuvector), and restored when the
+# controller restarts.
 #
 # Components: controller (brain + API), enforcer (privileged DaemonSet, one per node: watches
 # containers), manager (web UI), scanner (CVE DB is baked into the image; the updater CronJob
@@ -54,6 +55,10 @@ spec:
     # Single node: one of each (the chart defaults to 3 controllers + 3 scanners).
     controller:
       replicas: 1
+      # Keeps NeuVector's config (settings, rules, users) across restarts; PVC + PV below.
+      pvc:
+        enabled: true
+        existingClaim: neuvector-data
       resources:
         requests:
           cpu: 100m
@@ -146,3 +151,41 @@ spec:
               protocol: TCP
             - port: "30443"   # CRD webhook (NeuVector's own security-rule CRDs)
               protocol: TCP
+
+---
+
+# Storage for the controller's config backup (/var/neuvector). The controller runs as root, so
+# the host folder needs no chown; it's mode 700 because the backup includes secrets.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: neuvector-data-pv
+spec:
+  capacity:
+    storage: 1Gi             # config files only (a few MB); hostPath doesn't enforce it
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain   # keep the files if the PVC is deleted
+  storageClassName: local-storage
+  claimRef:                  # reserve this PV for the claim below only
+    namespace: compliance
+    name: neuvector-data
+  hostPath:
+    path: /home/server/docker/neuvector
+    type: Directory          # fail instead of silently creating an empty folder
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: neuvector-data
+  namespace: compliance
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-storage
+  volumeName: neuvector-data-pv
+  resources:
+    requests:
+      storage: 1Gi
