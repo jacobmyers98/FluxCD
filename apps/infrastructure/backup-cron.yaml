@@ -51,6 +51,7 @@ spec:
             args:
               - |
                 set -eu
+                umask 077   # archives hold secrets (Vaultwarden's rsa_key.pem, Mealie's .secret): root-only
                 # Refuse to run if the backup HDD isn't mounted (then /mnt/backup would be an empty
                 # folder on the root SSD and the copies would fill it).
                 if [ "$(stat -c %d /mnt/backup)" = "$(stat -c %d /src/vaultwarden)" ]; then
@@ -82,6 +83,7 @@ spec:
                   for db in "$@"; do
                     mkdir -p "$(dirname "$WORK/$name/$db")"
                     sqlite3 "$src/$db" ".timeout 30000" ".backup '$WORK/$name/$db'"
+                    chown "$(stat -c %u:%g "$src/$db")" "$WORK/$name/$db"   # keep the app's owner for restores
                     ok="$(sqlite3 "$WORK/$name/$db" 'PRAGMA integrity_check;')"
                     [ "$ok" = "ok" ] || { echo "ERROR: $name/$db integrity_check: $ok" >&2; exit 1; }
                   done
