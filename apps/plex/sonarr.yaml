@@ -47,11 +47,7 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 8989
-          securityContext:
-            allowPrivilegeEscalation: false   # no setuid/sudo tricks to gain root
-            capabilities:
-              drop:
-                - ALL                         # runs as a normal user; needs no Linux capabilities
+          # no container securityContext: the linuxserver s6 init must fix /run's owner at start
           resources:
             requests:
               cpu: 50m
