@@ -44,11 +44,10 @@ metadata:
   name: port-service-snapotter
   namespace: monitoring
 spec:
-  type: NodePort
+  type: ClusterIP   # reached via the HTTPS Ingress; was NodePort 30014 until 2026-11-25
   selector:
     app: snapotter
   ports:
     - protocol: TCP
       port: 1349
       targetPort: 1349
-      nodePort: 30014

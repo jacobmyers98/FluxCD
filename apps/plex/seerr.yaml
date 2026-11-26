@@ -4,14 +4,13 @@ metadata:
   name: port-service-seerr
   namespace: plex
 spec:
-  type: NodePort
+  type: ClusterIP   # reached via the HTTPS Ingress; was NodePort 30023 until 2026-11-25
   selector:
     app: seerr
   ports:
     - name: seerr-port
       port: 5055
       targetPort: 5055
-      nodePort: 30023
 ---
 apiVersion: apps/v1
 kind: Deployment

@@ -11,20 +11,10 @@ spec:
       protocol: TCP
       port: 8080
       targetPort: 8080
-      nodePort: 30004
-    - name: qbittorrent-port2
-      protocol: TCP
-      port: 34567
-      targetPort: 34567
-      nodePort: 30005
-    - name: qbittorrent-port3
-      protocol: UDP
-      port: 34567
-      targetPort: 34567
-      nodePort: 30006
+    # torrent port 34567 removed: peers reach qBittorrent through the VPN (gluetun), never through this Service
   selector:
     app: qbittorrent
-  type: NodePort
+  type: ClusterIP   # reached via the HTTPS Ingress; was NodePort 30004-30006 until 2026-11-25
 ---
 apiVersion: apps/v1
 kind: Deployment

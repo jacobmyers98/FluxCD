@@ -10,7 +10,6 @@ resources:
   - nvidia-runtime.yaml       # RuntimeClass "nvidia"
   - etcd-backup.yaml          # weekly etcd snapshot to the HDD
   - tailscale.yaml            # Tailscale subnet router (remote access)
-  - cilium-nodeport.yaml      # NodePort for Hubble UI
   - cilium-metrics.yaml       # Service + ServiceMonitor so Prometheus scrapes the Cilium agent (:9962)
   - server-backup-cron.yaml   # weekly rsync of /home/server to the HDD
   - secret.tailscale.yaml     # Tailscale auth key (SOPS)

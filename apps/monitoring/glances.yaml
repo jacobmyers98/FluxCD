@@ -60,11 +60,10 @@ metadata:
   name: port-service-glances
   namespace: monitoring
 spec:
-  type: NodePort
+  type: ClusterIP   # reached via the HTTPS Ingress; was NodePort 30015 until 2026-11-25
   selector:
     app: glances
   ports:
     - protocol: TCP
       port: 61208
       targetPort: 61208
-      nodePort: 30015

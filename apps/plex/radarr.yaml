@@ -10,10 +10,9 @@ spec:
     - name: radarr-port
       port: 7878
       targetPort: 7878
-      nodePort: 30001
   selector:
     app: radarr
-  type: NodePort
+  type: ClusterIP   # reached via the HTTPS Ingress; was NodePort 30001 until 2026-11-25
 ---
 apiVersion: apps/v1 #kubectl api-resources | grep {kind}
 kind: Deployment
