@@ -19,7 +19,7 @@ spec:
       automountServiceAccountToken: false
       containers:
       - name: glances
-        image: nicolargo/glances:4.4.0 # {"$imagepolicy": "flux-system:glances-policy"}
+        image: nicolargo/glances:4.5.9 # {"$imagepolicy": "flux-system:glances-policy"}
         env:
         - name: GLANCES_OPT
           value: "-w"
@@ -41,7 +41,6 @@ spec:
         hostPath:
           path: /
           type: Directory
-
 ---
 apiVersion: v1
 kind: Service
@@ -49,7 +48,7 @@ metadata:
   name: port-service-glances
   namespace: monitoring
 spec:
-  type: ClusterIP   # reached via the HTTPS Ingress; was NodePort 30015 until 2026-11-25
+  type: ClusterIP # reached via the HTTPS Ingress; was NodePort 30015 until 2026-11-25
   selector:
     app: glances
   ports:
