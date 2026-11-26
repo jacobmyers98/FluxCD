@@ -1,26 +1,24 @@
-# Nightly backup of everything in the infrastructure namespace to the backup HDD (/mnt/backup).
-# Added 2026-11-26. Two parts:
+# Nightly backup of the Immich photo library to the backup HDD (/mnt/backup).
+# Added 2026-11-26.
 #
-# 1. App data → /mnt/backup/infrastructure/app-data/<date>/<app>.tar.zst (compressed, one file per app)
-#    Vaultwarden is NOT backed up here (owner's choice 2026-11-26: the phone app keeps a local
-#    copy of the vault, and the vault can be recreated).
-#      mealie       /home/server/docker/mealie               (mealie.db, recipe images, its own backups)
-#      homarr       /home/server/docker/homarr               (data2/db/db.sqlite, icons, backgrounds)
-#      snapotter    /home/server/docker/snapotter            (without ai/: 7.6 GB of models, re-installable from its admin UI)
-#    SQLite databases are copied with sqlite3 ".backup" (a consistent copy while the app runs) and
-#    checked with "PRAGMA integrity_check". SnapOtter's embedded Postgres is copied as files while
-#    running (crash-consistent: on restore Postgres replays its WAL, like after a power cut).
-#    Dated folders older than 30 days are deleted. A day's folder is only renamed into place once
-#    every app succeeded, so a half-written backup never looks complete (leftover *.part dirs are deleted).
+# Only Immich, because it's the one thing the weekly server backup can't see: the photos live on
+# /mnt/Media/immich, while weekly-server-backup (apps/kube-system/server-backup-cron.yaml) copies
+# /home/server. Mealie, Homarr, SnapOtter and Immich's Postgres folder all live under
+# /home/server/docker, so they're covered there (weekly, newest 3 copies). Vaultwarden too (the owner
+# doesn't need it backed up: the phone app keeps a local copy). The owner dropped the nightly
+# app-data archives on 2026-11-26 for that reason.
 #
-# 2. Immich library → /mnt/backup/immich-library/current (rsync mirror of /mnt/Media/immich)
-#      upload/ library/ profile/  = original photos/videos and avatars
-#      backups/                   = Immich's own nightly database dump (02:00, keeps 14)
-#    Not copied: thumbs/ and encoded-video/ (Immich rebuilds them: Administration → Jobs).
-#    Files deleted or changed since the last run are moved to deleted/<date>/ instead of being lost,
-#    and kept 30 days, so an accidental delete in Immich can still be recovered from here.
+# What this job copies: rsync mirror of /mnt/Media/immich → /mnt/backup/immich-library/current
+#   upload/ library/ profile/  = original photos/videos and avatars
+#   backups/                   = Immich's own nightly database dump (02:00, keeps 14). This is the
+#                                DB copy to restore from: the weekly copy of the Postgres folder is
+#                                taken while Postgres runs and may not start cleanly.
+# Not copied: thumbs/ and encoded-video/ (Immich rebuilds them: Administration → Jobs).
+# Files deleted or changed since the last run are moved to deleted/<date>/ instead of being lost,
+# and kept 30 days, so an accidental delete in Immich can still be recovered from here.
 #
-# Restore: see the comment at the end of this file.
+# Restore: copy current/ back to /mnt/Media/immich, then restore the newest dump from backups/ per
+# https://immich.app/docs/administration/backup-and-restore (or "Restore" on Immich's welcome page).
 # Google Drive (offsite copy of the photos only) is planned but not set up yet (owner, 2026-11-26).
 # Failures show up as a failed Job (KubeJobFailed alert → Discord).
 apiVersion: batch/v1
@@ -37,7 +35,7 @@ spec:
   jobTemplate:
     spec:
       backoffLimit: 1
-      activeDeadlineSeconds: 21600   # 6 h: the first Immich copy of a large library can take a while
+      activeDeadlineSeconds: 21600   # 6 h: the first copy of a large library can take a while
       template:
         spec:
           automountServiceAccountToken: false
@@ -52,60 +50,21 @@ spec:
             args:
               - |
                 set -eu
-                umask 077   # archives hold secrets (Mealie's .secret, Homarr's DB): root-only
                 # Refuse to run if the backup HDD isn't mounted (then /mnt/backup would be an empty
-                # folder on the root SSD and the copies would fill it).
-                if [ "$(stat -c %d /mnt/backup)" = "$(stat -c %d /src/mealie)" ]; then
+                # folder on the root SSD and the copy would fill it). /rootfs-check is a folder on the root SSD.
+                if [ "$(stat -c %d /mnt/backup)" = "$(stat -c %d /rootfs-check)" ]; then
                   echo "ERROR: /mnt/backup is on the root filesystem; is the backup HDD mounted?" >&2
                   exit 1
                 fi
-                if [ ! -d /src/immich/upload ] && [ -n "$(ls -A /src/immich 2>/dev/null)" ]; then
-                  echo "WARN: /mnt/Media/immich has no upload/ folder yet"
+                # And refuse if the library looks empty (e.g. /mnt/Media not mounted): with --delete
+                # that would move the whole mirror into deleted/.
+                if [ ! -d /src/immich/upload ] && [ ! -d /src/immich/library ]; then
+                  echo "ERROR: /mnt/Media/immich has no upload/ or library/ folder; is /mnt/Media mounted?" >&2
+                  exit 1
                 fi
-                apk add --no-cache sqlite rsync tar zstd >/dev/null
+                apk add --no-cache rsync >/dev/null
 
                 STAMP="$(date +%F_%H%M)"
-                ROOT=/mnt/backup/infrastructure/app-data
-                OUT="$ROOT/$STAMP"
-                mkdir -p "$ROOT"
-                rm -rf "$ROOT"/*.part
-                mkdir "$OUT.part"
-                WORK=/work
-
-                # backup_app <name> <source dir> [sqlite db paths relative to the source...]
-                # Copies the folder without its live SQLite files, adds consistent .backup copies, tars + compresses.
-                backup_app() {
-                  name="$1"; src="$2"; shift 2
-                  rm -rf "$WORK/$name"; mkdir -p "$WORK/$name"
-                  excl=""
-                  for db in "$@"; do excl="$excl --exclude=/$db --exclude=/$db-wal --exclude=/$db-shm --exclude=/$db-journal"; done
-                  # shellcheck disable=SC2086
-                  rsync -a $excl $EXTRA_EXCLUDES "$src/" "$WORK/$name/"
-                  for db in "$@"; do
-                    mkdir -p "$(dirname "$WORK/$name/$db")"
-                    sqlite3 "$src/$db" ".timeout 30000" ".backup '$WORK/$name/$db'"
-                    chown "$(stat -c %u:%g "$src/$db")" "$WORK/$name/$db"   # keep the app's owner for restores
-                    ok="$(sqlite3 "$WORK/$name/$db" 'PRAGMA integrity_check;')"
-                    [ "$ok" = "ok" ] || { echo "ERROR: $name/$db integrity_check: $ok" >&2; exit 1; }
-                  done
-                  tar -C "$WORK" -cf - "$name" | zstd -q -T0 -10 -o "$OUT.part/$name.tar.zst"
-                  zstd -q -t "$OUT.part/$name.tar.zst"
-                  rm -rf "$WORK/$name"
-                  echo "$name: $(du -h "$OUT.part/$name.tar.zst" | cut -f1)"
-                }
-
-                EXTRA_EXCLUDES="--exclude=/mealie.log"
-                backup_app mealie /src/mealie mealie.db
-                EXTRA_EXCLUDES="--exclude=/data2/redis"
-                backup_app homarr /src/homarr data2/db/db.sqlite
-                EXTRA_EXCLUDES="--exclude=/ai --exclude=/logs --exclude=/redis"
-                backup_app snapotter /src/snapotter
-
-                mv "$OUT.part" "$OUT"
-                find "$ROOT" -mindepth 1 -maxdepth 1 -type d -mtime +30 -exec rm -rf {} +
-                echo "app data done: $OUT"
-
-                # --- Immich library mirror ---
                 LIB=/mnt/backup/immich-library
                 mkdir -p "$LIB/current" "$LIB/deleted"
                 rsync -a --delete --backup --backup-dir="$LIB/deleted/$STAMP" \
@@ -116,28 +75,10 @@ spec:
                 echo "immich library done: $(du -sh "$LIB/current" | cut -f1) in $LIB/current"
                 df -h /mnt/backup | tail -1
             volumeMounts:
-            # The two SQLite apps are mounted read-write only because sqlite3 needs to take the
-            # same locks as the running app (it never changes the source data).
-            - {name: mealie, mountPath: /src/mealie}
-            - {name: homarr, mountPath: /src/homarr}
-            - {name: snapotter, mountPath: /src/snapotter, readOnly: true}
             - {name: immich, mountPath: /src/immich, readOnly: true}
             - {name: backup, mountPath: /mnt/backup}
-            - {name: work, mountPath: /work}
+            - {name: rootfs-check, mountPath: /rootfs-check, readOnly: true}
           volumes:
-          - {name: mealie, hostPath: {path: /home/server/docker/mealie, type: Directory}}
-          - {name: homarr, hostPath: {path: /home/server/docker/homarr, type: Directory}}
-          - {name: snapotter, hostPath: {path: /home/server/docker/snapotter, type: Directory}}
           - {name: immich, hostPath: {path: /mnt/Media/immich, type: Directory}}
           - {name: backup, hostPath: {path: /mnt/backup, type: Directory}}
-          - name: work                 # scratch space for the copies before compressing (on the node's disk)
-            emptyDir:
-              sizeLimit: 2Gi
-# Restore (example: Mealie from a given night):
-#   kubectl -n infrastructure scale deploy/mealie --replicas=0
-#   sudo mv /home/server/docker/mealie /home/server/docker/mealie.old
-#   sudo tar --zstd -xf /mnt/backup/infrastructure/app-data/<date>/mealie.tar.zst -C /home/server/docker
-#   kubectl -n infrastructure scale deploy/mealie --replicas=1
-#   (Flux puts replicas back to 1 within a minute anyway; same pattern for homarr / snapotter.)
-# Immich: copy current/ back to /mnt/Media/immich, then restore the newest dump from backups/ per
-# https://immich.app/docs/administration/backup-and-restore (or the "Restore" option on Immich's welcome page).
+          - {name: rootfs-check, hostPath: {path: /home/server/docker/immich, type: Directory}}
