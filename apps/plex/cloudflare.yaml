@@ -13,9 +13,22 @@ spec:
       labels:
         app: cloudflared
     spec:
+      automountServiceAccountToken: false   # never calls the Kubernetes API
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532                    # the image's own "nonroot" user
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: cloudflared
         image: cloudflare/cloudflared:2026.11.2 #  {"$imagepolicy": "flux-system:cloudflared-policy"}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true      # writes nothing to disk
+          capabilities:
+            drop:
+              - ALL
         resources:
           requests:
             cpu: 25m

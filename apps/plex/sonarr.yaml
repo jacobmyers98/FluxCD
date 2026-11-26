@@ -34,16 +34,24 @@ spec:
       labels:
         app: sonarr
     spec:
+      automountServiceAccountToken: false   # the app never calls the Kubernetes API
       securityContext:
         runAsUser: 1001
         runAsGroup: 1004
         fsGroup: 1004
+        seccompProfile:
+          type: RuntimeDefault              # block rarely used kernel calls
       containers:
         - name: sonarr
           image: linuxserver/sonarr:4.0.20 # {"$imagepolicy": "flux-system:sonarr-policy"}
           imagePullPolicy: Always
           ports:
             - containerPort: 8989
+          securityContext:
+            allowPrivilegeEscalation: false   # no setuid/sudo tricks to gain root
+            capabilities:
+              drop:
+                - ALL                         # runs as a normal user; needs no Linux capabilities
           resources:
             requests:
               cpu: 50m

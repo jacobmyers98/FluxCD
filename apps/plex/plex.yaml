@@ -34,15 +34,23 @@ spec:
         app: plex
         exposed: nodeport
     spec:
+      automountServiceAccountToken: false   # the app never calls the Kubernetes API
       securityContext:
         runAsUser: 1001
         runAsGroup: 1004
         fsGroup: 1004
+        seccompProfile:
+          type: RuntimeDefault              # block rarely used kernel calls
       containers:
         - name: plex
           image: lscr.io/linuxserver/plex:1.43.3
           ports:
             - containerPort: 32400
+          securityContext:
+            allowPrivilegeEscalation: false   # no setuid/sudo tricks to gain root
+            capabilities:
+              drop:
+                - ALL                         # runs as a normal user; needs no Linux capabilities
           env:
             - name: PUID
               value: "1001"
@@ -67,6 +75,7 @@ spec:
               name: plex-config
             - mountPath: /data
               name: media-data
+              readOnly: true   # Plex only reads the library ("allow media deletion" is off)
       volumes:
         - name: plex-config
           hostPath:
