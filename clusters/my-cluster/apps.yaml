@@ -48,7 +48,7 @@ spec:
     secretRef:
       name: sops-age
 ---
-# kube-system: GPU plugin, Tailscale, etcd + server backups, Vaultwarden
+# kube-system: GPU plugin, Tailscale, etcd + server backups
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
@@ -67,7 +67,7 @@ spec:
     secretRef:
       name: sops-age
 ---
-# monitoring: Prometheus/Grafana/Loki/Alloy, TeslaMate, Homarr, Mealie, SnapOtter, Glances
+# monitoring: Prometheus/Grafana/Loki/Alloy, TeslaMate, Glances
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
@@ -77,6 +77,25 @@ spec:
   interval: 1m
   timeout: 5m
   path: ./apps/monitoring
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+---
+# infrastructure: Immich, Vaultwarden, Homarr, Mealie, SnapOtter + their nightly backup
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infrastructure
+  namespace: flux-system
+spec:
+  interval: 1m
+  timeout: 10m          # longer than the others: Immich's HelmRelease may take a few minutes on install
+  path: ./apps/infrastructure
   prune: true
   sourceRef:
     kind: GitRepository

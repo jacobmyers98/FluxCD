@@ -172,7 +172,7 @@ spec:
       - {port: "8267", protocol: TCP}   # Tdarr node
   - fromEndpoints:
     - matchLabels:
-        k8s:io.kubernetes.pod.namespace: monitoring
+        k8s:io.kubernetes.pod.namespace: infrastructure
         app: homarr
     toPorts:                            # only the apps' own ports (a sidecar port stays closed)
     - ports:
@@ -226,7 +226,7 @@ spec:
           protocol: ANY
     - toEndpoints:
       - matchLabels:
-          k8s:io.kubernetes.pod.namespace: monitoring
+          k8s:io.kubernetes.pod.namespace: infrastructure
           app: homarr
     - toEndpoints:
       - matchLabels:
@@ -238,11 +238,11 @@ spec:
 ---
 
 # 7: monitoring namespace (the listed apps only; Prometheus/Loki/etc. aren't selected).
-# Incoming: each other (mTLS), the Ingress, Homarr, Tailscale and n8n.
+# Incoming: each other (mTLS), the Ingress, Homarr (namespace infrastructure since 2026-11-26),
+# Tailscale and n8n.
 # Outgoing: DNS, Prometheus (9090), Loki (3100), Alertmanager (9093), Postgres (5432) and
-# Mosquitto (1883) in monitoring, Ollama in dev (11434, Mealie's AI),
-# Tailscale, n8n, and the listed ports anywhere in the cluster or outside (Homarr's
-# widgets poll the other apps; Mealie scrapes recipe sites over 80/443).
+# Mosquitto (1883) in monitoring, Tailscale, n8n, and the listed ports anywhere in the
+# cluster or outside. (Homarr, Mealie and SnapOtter moved to infrastructure, policy #10.)
 # A new app here must be added to both "app" lists, or it can't be reached.
 apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
@@ -255,11 +255,8 @@ spec:
     - key: "app"
       operator: In
       values:
-      - mealie
       - grafana
       - teslamate
-      - homarr
-      - snapotter
       - glances
   ingress:
   - fromEndpoints:
@@ -267,11 +264,8 @@ spec:
       - key: "app"
         operator: In
         values:
-        - mealie
         - grafana
         - teslamate
-        - homarr
-        - snapotter
         - glances
     authentication:
       mode: "required"
@@ -279,7 +273,7 @@ spec:
     - ingress
   - fromEndpoints:
     - matchLabels:
-        k8s:io.kubernetes.pod.namespace: monitoring
+        k8s:io.kubernetes.pod.namespace: infrastructure
         app: homarr
   - fromEndpoints:
     - matchLabels:
@@ -315,20 +309,13 @@ spec:
           protocol: TCP
     - toEndpoints:
       - matchLabels:
-          k8s:io.kubernetes.pod.namespace: dev
-      toPorts:
-      - ports:
-        - port: "11434" # ollama
-          protocol: TCP
-    - toEndpoints:
-      - matchLabels:
           k8s:io.kubernetes.pod.namespace: kube-system
           app: tailscale
     - toEndpoints:
       - matchLabels:
           k8s:io.kubernetes.pod.namespace: dev
           app: n8n
-    # Homarr API / Dashboard Connections
+    # Grafana plugins/updates (443) and the old Homarr widget ports (harmless to keep)
     - toEntities:
       - cluster # Allows traffic to other namespaces (e.g., your 'gaming' namespace)
       - world   # Allows traffic to the internet AND your local external LAN (192.168.x.x)
@@ -390,7 +377,7 @@ spec:
           protocol: TCP
   - fromEndpoints:
     - matchLabels:
-        k8s:io.kubernetes.pod.namespace: monitoring
+        k8s:io.kubernetes.pod.namespace: infrastructure
         app: homarr
     toPorts:
       - ports:
@@ -422,7 +409,7 @@ spec:
           protocol: TCP
     - toEndpoints:
       - matchLabels:
-          k8s:io.kubernetes.pod.namespace: monitoring
+          k8s:io.kubernetes.pod.namespace: infrastructure
           app: homarr
     - toEndpoints:
       - matchLabels:
@@ -433,7 +420,7 @@ spec:
 
 # 9: dev namespace, n8n pods only (the other dev apps aren't selected here; the
 # backtester has its own NetworkPolicies in apps/dev/backtest). Incoming: internet/LAN,
-# node and Ingress (forms, webhooks, UI), Homarr, Mealie (calls Ollama in the n8n pod),
+# node and Ingress (forms, webhooks, UI), Homarr and Mealie (infrastructure; Mealie calls Ollama in the n8n pod),
 # Tailscale, and the backtest API on 5678 only (run-finished callbacks).
 # No egress rules, so n8n's outgoing traffic is not restricted.
 apiVersion: "cilium.io/v2"
@@ -455,11 +442,11 @@ spec:
     - ingress
   - fromEndpoints:
     - matchLabels:
-        k8s:io.kubernetes.pod.namespace: monitoring
+        k8s:io.kubernetes.pod.namespace: infrastructure
         app: homarr
   - fromEndpoints:
     - matchLabels:
-        k8s:io.kubernetes.pod.namespace: monitoring
+        k8s:io.kubernetes.pod.namespace: infrastructure
         app: mealie
   - fromEndpoints:
     - matchLabels:
@@ -474,4 +461,140 @@ spec:
     toPorts:
     - ports:
       - port: "5678"
+        protocol: TCP
+
+---
+
+# 10: infrastructure namespace: Homarr, Mealie, SnapOtter (moved here from monitoring 2026-11-26).
+# Vaultwarden isn't selected: it's exposed=nodeport (policy #5, open in, unrestricted out).
+# Incoming: each other (mTLS), the Ingress, Tailscale and n8n.
+# Outgoing: DNS, any pod in infrastructure (Homarr's tile pings to Immich/SnapOtter/Mealie),
+# Ollama in dev (Mealie's AI), Tailscale, n8n, and the listed ports anywhere in the cluster or
+# outside (Homarr's widgets poll the other apps; Mealie scrapes recipe sites over 80/443).
+# A new app here must be added to both "app" lists; a new Homarr target port to the egress list.
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: infrastructure-stack-ingress
+  namespace: infrastructure
+spec:
+  endpointSelector:
+    matchExpressions:
+    - key: "app"
+      operator: In
+      values:
+      - homarr
+      - mealie
+      - snapotter
+  ingress:
+  - fromEndpoints:
+    - matchExpressions:
+      - key: "app"
+        operator: In
+        values:
+        - homarr
+        - mealie
+        - snapotter
+    authentication:
+      mode: "required"
+  - fromEntities:
+    - ingress
+  - fromEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: kube-system
+        app: tailscale
+  - fromEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: dev
+        app: n8n
+  egress:
+    - toEndpoints:
+      - matchLabels:
+          k8s:io.kubernetes.pod.namespace: kube-system
+          k8s-app: kube-dns
+      toPorts:
+      - ports:
+        - port: "53"
+          protocol: ANY
+    - toEndpoints:
+      - matchLabels:
+          k8s:io.kubernetes.pod.namespace: infrastructure
+    - toEndpoints:
+      - matchLabels:
+          k8s:io.kubernetes.pod.namespace: dev
+      toPorts:
+      - ports:
+        - port: "11434" # Ollama (Mealie's AI)
+          protocol: TCP
+    - toEndpoints:
+      - matchLabels:
+          k8s:io.kubernetes.pod.namespace: kube-system
+          app: tailscale
+    - toEndpoints:
+      - matchLabels:
+          k8s:io.kubernetes.pod.namespace: dev
+          app: n8n
+    # Homarr API / dashboard connections, Mealie recipe scraping
+    - toEntities:
+      - cluster
+      - world
+      toPorts:
+      - ports:
+        - port: "80"
+          protocol: TCP
+        - port: "443"
+          protocol: TCP
+        - port: "25575" # minecraft RCON
+          protocol: TCP
+        - port: "25565" # minecraft
+          protocol: TCP
+        - port: "8989" # Sonarr
+          protocol: TCP
+        - port: "7878" # Radarr
+          protocol: TCP
+        - port: "32400" # Plex
+          protocol: TCP
+        - port: "8080" # Qbit
+          protocol: TCP
+        - port: "9696" # Prowlarr
+          protocol: TCP
+        - port: "8265" # Tdarr
+          protocol: TCP
+        - port: "61208" # Glances (monitoring)
+          protocol: TCP
+        - port: "3000" # Grafana (monitoring)
+          protocol: TCP
+        - port: "5055" # Seerr
+          protocol: TCP
+
+---
+
+# 11: Immich web server (the chart labels every Immich pod app=immich; this selects only the
+# server). Incoming: the Ingress, Tailscale and Homarr. Immich's own pods (server ↔ ML ↔ valkey ↔
+# Postgres) reach each other through policy #4 (any pod, with mTLS). No egress rules: the server
+# fetches map tiles / version checks and ML downloads models from Hugging Face.
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: immich-ingress
+  namespace: infrastructure
+spec:
+  endpointSelector:
+    matchLabels:
+      app: immich
+      app.kubernetes.io/name: server
+  ingress:
+  - fromEntities:
+    - ingress
+  - fromEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: kube-system
+        app: tailscale
+  - fromEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: infrastructure
+        app: homarr
+    toPorts:
+    - ports:
+      - port: "2283"
         protocol: TCP

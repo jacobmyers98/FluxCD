@@ -1,0 +1,15 @@
+# infrastructure namespace: household self-hosted tools (photos, passwords, recipes, dashboard).
+# Created 2026-11-26 (Vaultwarden from kube-system; Homarr, Mealie, SnapOtter from monitoring).
+# Their HTTPS Ingress is in apps/network/ingresses.yaml, their Cilium policy in
+# apps/network/cilium-network-mTLS.yaml (#10).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml        # this folder's Namespace (never pruned)
+  - immich.yaml           # Immich photos: chart + its Postgres + library volume (/mnt/Media/immich)
+  - secret.immich-db.yaml # Immich's Postgres password (SOPS)
+  - vaultwarden.yaml      # Vaultwarden password manager (NodePort 30009 + HTTPS)
+  - homarr.yaml           # Homarr dashboard
+  - mealie.yaml           # recipe manager
+  - snapotter.yaml        # image/file processing toolkit
+  - backup-cron.yaml      # nightly backup of all of the above to /mnt/backup

@@ -21,7 +21,8 @@ resources:
   - compliance.yaml               # Trivy (scanner client + trivy-server, one policy)
   - common.yaml                   # busybox + alpine helper images (used in several namespaces)
   - dev.yaml                      # n8n, n8n runners, n8n sandbox, Ollama, Node (discord-assistant), MongoDB, SearXNG
+  - infrastructure.yaml           # Immich (server + ML share one policy)
   - gaming.yaml                   # Cloudflare DDNS, Minecraft server image
-  - kube-system.yaml              # Vaultwarden, Tailscale
-  - monitoring.yaml               # Homarr, Mealie, Glances, SnapOtter, TeslaMate
+  - kube-system.yaml              # Vaultwarden (runs in infrastructure now), Tailscale
+  - monitoring.yaml               # Homarr, Mealie, SnapOtter (run in infrastructure now), Glances, TeslaMate
   - plex.yaml                     # *arr apps, Seerr, qBittorrent, Tdarr, cloudflared, kubectl (restarter), FlareSolverr, Gluetun, curl

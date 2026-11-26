@@ -1,0 +1,247 @@
+# Immich: self-hosted photo/video backup (like Google Photos), https://immich.waffle-systems.com
+# Added 2026-11-26. Parts:
+#   - immich-server (web UI + API + background jobs) and immich-machine-learning (face/object
+#     search), both from the official chart (oci://ghcr.io/immich-app/immich-charts/immich)
+#   - valkey (job queue), from the same chart
+#   - immich-postgres (below): the chart doesn't ship a database any more (since chart 0.10.0);
+#     Immich needs Postgres with the VectorChord extension, so this uses Immich's own Postgres
+#     image (the same one as Immich's docker-compose.yml)
+#
+# Where things live on the host:
+#   /mnt/Media/immich                         photos/videos, thumbnails, Immich's nightly DB dumps (backups/)
+#   /home/server/docker/immich/postgres       the database (SSD)
+#   /home/server/docker/immich/ml-cache       downloaded ML models (so they aren't re-downloaded on every start)
+# Backups: backup-cron.yaml copies the library to /mnt/backup/immich-library every night.
+#
+# Upgrades: the server and ML images share one tag (image-automation infrastructure.yaml,
+# immich-policy, Immich 3.x only). Read the release notes before a major. The Postgres image is
+# pinned by hand: a Postgres major upgrade needs a dump + restore.
+
+# ---- Storage: hostPath volumes, bound to fixed claims ----
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: immich-library
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-storage
+  capacity:
+    storage: 2Ti              # informational only: hostPath doesn't enforce sizes
+  claimRef:
+    name: immich-library
+    namespace: infrastructure
+  hostPath:
+    path: /mnt/Media/immich   # RAID array; folder made by hand (group container_user, mode 2775)
+    type: Directory           # don't silently create it on the root SSD if /mnt/Media isn't mounted
+  persistentVolumeReclaimPolicy: Retain   # deleting the claim never deletes photos
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: immich-library
+  namespace: infrastructure
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-storage
+  volumeName: immich-library
+  resources:
+    requests:
+      storage: 2Ti
+
+---
+
+# ---- Postgres (VectorChord) ----
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: immich-postgres
+  namespace: infrastructure
+  labels:
+    app: immich-postgres
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate            # never two Postgres processes on one data dir
+  selector:
+    matchLabels:
+      app: immich-postgres
+  template:
+    metadata:
+      labels:
+        app: immich-postgres
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: postgres
+          # Pinned by digest, same tag as Immich v3.2.0's docker-compose.yml. Not automated on purpose.
+          image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
+          env:
+            - name: POSTGRES_USER
+              value: immich
+            - name: POSTGRES_DB
+              value: immich
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: immich-db       # secret.immich-db.yaml (SOPS)
+                  key: password
+            - name: POSTGRES_INITDB_ARGS
+              value: "--data-checksums"
+            - name: PGDATA
+              value: /var/lib/postgresql/data
+          ports:
+            - containerPort: 5432
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "immich", "-d", "immich"]
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+            - name: shm               # Postgres needs more shared memory than the 64 MB default
+              mountPath: /dev/shm
+      volumes:
+        - name: data
+          hostPath:
+            path: /home/server/docker/immich/postgres
+            type: DirectoryOrCreate   # the image's entrypoint chowns it to postgres (999)
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: immich-postgres
+  namespace: infrastructure
+spec:
+  type: ClusterIP
+  selector:
+    app: immich-postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+
+---
+
+# ---- The Immich chart ----
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: immich
+  namespace: flux-system
+spec:
+  interval: 6h
+  type: oci                   # charts stored as OCI artifacts on GHCR (the old HTTP repo is gone)
+  url: oci://ghcr.io/immich-app/immich-charts
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: immich
+  namespace: infrastructure
+spec:
+  interval: 30m
+  timeout: 10m                # the first start downloads ~1.5 GB of images
+  chart:
+    spec:
+      chart: immich
+      version: ">=0.13.4 <0.14.0"   # chart patch updates only; 0.x minors have had breaking changes
+      sourceRef:
+        kind: HelmRepository
+        name: immich
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    # Top-level keys apply to every component (server, machine-learning, valkey).
+    defaultPodOptions:
+      labels:
+        app: immich           # what the Cilium policy (network/cilium-network-mTLS.yaml) selects
+      automountServiceAccountToken: false
+    controllers:
+      main:
+        containers:
+          main:
+            image:
+              tag: v3.2.0 # {"$imagepolicy": "flux-system:immich-policy:tag"}
+            env:
+              TZ: America/Denver
+    immich:
+      persistence:
+        library:
+          existingClaim: immich-library   # mounted at /data in immich-server
+      # No `configuration` here on purpose: setting it makes every option in the admin UI
+      # read-only. Settings live in the database (Administration → Settings). Immich's own
+      # nightly DB dump (02:00, keeps 14) is on by default and lands in /mnt/Media/immich/backups.
+    valkey:
+      enabled: true           # job queue; emptyDir (queued jobs are re-created after a restart)
+      controllers:
+        main:
+          containers:
+            main:
+              resources:
+                requests: {cpu: 10m, memory: 32Mi}
+                limits: {cpu: 500m, memory: 256Mi}
+    server:
+      controllers:
+        main:
+          pod:
+            securityContext:
+              runAsUser: 1001         # container_user, like the other apps on /mnt/Media
+              runAsGroup: 1004
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
+          containers:
+            main:
+              env:                    # only the server talks to Postgres
+                DB_HOSTNAME: immich-postgres
+                DB_USERNAME: immich
+                DB_DATABASE_NAME: immich
+                DB_PASSWORD:
+                  valueFrom:
+                    secretKeyRef:
+                      name: immich-db
+                      key: password
+              resources:
+                requests: {cpu: 100m, memory: 512Mi}
+                limits: {cpu: "4", memory: 4Gi}
+      # The Ingress is in apps/network/ingresses.yaml with the other sites (not the chart's).
+    machine-learning:
+      controllers:
+        main:
+          pod:
+            securityContext:
+              runAsUser: 1001
+              runAsGroup: 1004
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
+          containers:
+            main:
+              resources:
+                requests: {cpu: 100m, memory: 1Gi}
+                limits: {cpu: "4", memory: 6Gi}
+      persistence:
+        cache:
+          enabled: true
+          type: hostPath
+          hostPath: /home/server/docker/immich/ml-cache
+          hostPathType: Directory
+          globalMounts:
+            - path: /cache            # TRANSFORMERS_CACHE etc. point here

@@ -1,0 +1,15 @@
+# The infrastructure namespace: self-hosted tools for the household (photos, passwords,
+# recipes, dashboard, image tools). Created 2026-11-26; Vaultwarden came from kube-system,
+# Homarr/Mealie/SnapOtter from monitoring.
+#
+# Deleting a Namespace deletes EVERYTHING inside it. The prune: disabled annotation stops Flux
+# from ever deleting this one, even if this file or the whole folder's Flux Kustomization is
+# removed. To really delete the namespace, do it by hand with kubectl.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: infrastructure
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+  labels:
+    app: infrastructure   # just a tag; nothing requires it

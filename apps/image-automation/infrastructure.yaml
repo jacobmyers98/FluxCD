@@ -1,0 +1,29 @@
+# Image automation for apps/infrastructure. Vaultwarden, Homarr, Mealie and SnapOtter keep their
+# policies in kube-system.yaml / monitoring.yaml (names unchanged, so their setter comments still work).
+# These objects live in flux-system. Setter comments point here as "flux-system:<policy-name>".
+#
+# Immich: server and machine-learning share one tag (set once at the top of the HelmRelease values),
+# so one policy on the server image drives both. Tags look like v3.2.0.
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: immich-server
+  namespace: flux-system
+spec:
+  image: ghcr.io/immich-app/immich-server
+  interval: 6h
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: immich-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: immich-server
+  filterTags:
+    pattern: '^v(?P<ver>\d+\.\d+\.\d+)$'   # only release tags (skips release, main, pr-*, commit tags)
+    extract: '$ver'
+  policy:
+    semver:
+      range: ">=3.2.0 <4.0.0"   # Immich 3.x; a major needs its release notes read first

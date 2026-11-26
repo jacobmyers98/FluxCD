@@ -19,7 +19,7 @@
 #      LAN or over Tailscale (with split DNS).
 # Not here: backtest.waffle-systems.com (apps/dev/backtest/overlays/home/ingress.yaml).
 
-# ---- kube-system: Hubble UI (Cilium network flows) and Vaultwarden (passwords) ----
+# ---- kube-system: Hubble UI (Cilium network flows) ----
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -32,7 +32,6 @@ spec:
   tls:
   - hosts:
     - hubble.waffle-systems.com
-    - vault.waffle-systems.com
     secretName: kube-system-tls # cert-manager stores the certificate + key here
   rules:
   # --- Hubble ---
@@ -44,17 +43,6 @@ spec:
         backend:
           service:
             name: hubble-ui
-            port:
-              number: 80
-  # --- Vaultwarden ---
-  - host: vault.waffle-systems.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: port-service-vaultwarden
             port:
               number: 80
 
@@ -161,7 +149,7 @@ spec:
 
 ---
 
-# ---- monitoring: dashboards and self-hosted tools ----
+# ---- monitoring: Grafana, TeslaMate, Glances ----
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -173,12 +161,9 @@ spec:
   ingressClassName: cilium
   tls:
   - hosts:
-    - homarr.waffle-systems.com
     - grafana.waffle-systems.com
-    - snapotter.waffle-systems.com
     - teslamate.waffle-systems.com
     - glances.waffle-systems.com
-    - mealie.waffle-systems.com
     secretName: monitoring-tls
   rules:
   # --- Grafana ---
@@ -192,17 +177,6 @@ spec:
             name: port-service-grafana
             port:
               number: 80
-  # --- Homarr ---
-  - host: homarr.waffle-systems.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: port-service-homarr
-            port:
-              number: 7575
   # --- Teslamate ---
   - host: teslamate.waffle-systems.com
     http:
@@ -214,17 +188,6 @@ spec:
             name: port-service-teslamate
             port:
               number: 4000
-  # --- Snapotter ---
-  - host: snapotter.waffle-systems.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: port-service-snapotter
-            port:
-              number: 1349
   # --- Glances ---
   - host: glances.waffle-systems.com
     http:
@@ -236,17 +199,6 @@ spec:
             name: port-service-glances
             port:
               number: 61208
-  # --- Mealie ---
-  - host: mealie.waffle-systems.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: port-service-mealie
-            port:
-              number: 9000
 
 ---
 
@@ -305,3 +257,84 @@ spec:
             name: neuvector-service-webui
             port:
               number: 8443
+
+---
+
+# ---- infrastructure: Immich (photos), Vaultwarden (passwords), Homarr, Mealie, SnapOtter ----
+# Moved out of monitoring-tls / kube-system-tls on 2026-11-26 together with the apps.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: infrastructure-tls
+  namespace: infrastructure
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # Envoy's default route timeout is 15 s (counted after the request is fully received), which
+    # would cut off long video downloads/streams from Immich. 0 = no timeout.
+    ingress.cilium.io/request-timeout: "0"
+spec:
+  ingressClassName: cilium
+  tls:
+  - hosts:
+    - immich.waffle-systems.com
+    - vault.waffle-systems.com
+    - homarr.waffle-systems.com
+    - mealie.waffle-systems.com
+    - snapotter.waffle-systems.com
+    secretName: infrastructure-tls
+  rules:
+  # --- Immich ---
+  - host: immich.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: immich-server
+            port:
+              number: 2283
+  # --- Vaultwarden ---
+  - host: vault.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-vaultwarden
+            port:
+              number: 80
+  # --- Homarr ---
+  - host: homarr.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-homarr
+            port:
+              number: 7575
+  # --- Mealie ---
+  - host: mealie.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-mealie
+            port:
+              number: 9000
+  # --- SnapOtter ---
+  - host: snapotter.waffle-systems.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: port-service-snapotter
+            port:
+              number: 1349
