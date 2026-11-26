@@ -2,7 +2,8 @@
 # Added 2026-11-26. Two parts:
 #
 # 1. App data → /mnt/backup/infrastructure/app-data/<date>/<app>.tar.zst (compressed, one file per app)
-#      vaultwarden  /home/server/docker/vaultwarden-server   (db.sqlite3, rsa_key.pem, attachments, ...)
+#    Vaultwarden is NOT backed up here (owner's choice 2026-11-26: the phone app keeps a local
+#    copy of the vault, and the vault can be recreated).
 #      mealie       /home/server/docker/mealie               (mealie.db, recipe images, its own backups)
 #      homarr       /home/server/docker/homarr               (data2/db/db.sqlite, icons, backgrounds)
 #      snapotter    /home/server/docker/snapotter            (without ai/: 7.6 GB of models, re-installable from its admin UI)
@@ -51,10 +52,10 @@ spec:
             args:
               - |
                 set -eu
-                umask 077   # archives hold secrets (Vaultwarden's rsa_key.pem, Mealie's .secret): root-only
+                umask 077   # archives hold secrets (Mealie's .secret, Homarr's DB): root-only
                 # Refuse to run if the backup HDD isn't mounted (then /mnt/backup would be an empty
                 # folder on the root SSD and the copies would fill it).
-                if [ "$(stat -c %d /mnt/backup)" = "$(stat -c %d /src/vaultwarden)" ]; then
+                if [ "$(stat -c %d /mnt/backup)" = "$(stat -c %d /src/mealie)" ]; then
                   echo "ERROR: /mnt/backup is on the root filesystem; is the backup HDD mounted?" >&2
                   exit 1
                 fi
@@ -93,8 +94,6 @@ spec:
                   echo "$name: $(du -h "$OUT.part/$name.tar.zst" | cut -f1)"
                 }
 
-                EXTRA_EXCLUDES="--exclude=/icon_cache --exclude=/tmp"
-                backup_app vaultwarden /src/vaultwarden db.sqlite3
                 EXTRA_EXCLUDES="--exclude=/mealie.log"
                 backup_app mealie /src/mealie mealie.db
                 EXTRA_EXCLUDES="--exclude=/data2/redis"
@@ -117,9 +116,8 @@ spec:
                 echo "immich library done: $(du -sh "$LIB/current" | cut -f1) in $LIB/current"
                 df -h /mnt/backup | tail -1
             volumeMounts:
-            # The three SQLite apps are mounted read-write only because sqlite3 needs to take the
+            # The two SQLite apps are mounted read-write only because sqlite3 needs to take the
             # same locks as the running app (it never changes the source data).
-            - {name: vaultwarden, mountPath: /src/vaultwarden}
             - {name: mealie, mountPath: /src/mealie}
             - {name: homarr, mountPath: /src/homarr}
             - {name: snapotter, mountPath: /src/snapotter, readOnly: true}
@@ -127,7 +125,6 @@ spec:
             - {name: backup, mountPath: /mnt/backup}
             - {name: work, mountPath: /work}
           volumes:
-          - {name: vaultwarden, hostPath: {path: /home/server/docker/vaultwarden-server, type: Directory}}
           - {name: mealie, hostPath: {path: /home/server/docker/mealie, type: Directory}}
           - {name: homarr, hostPath: {path: /home/server/docker/homarr, type: Directory}}
           - {name: snapotter, hostPath: {path: /home/server/docker/snapotter, type: Directory}}
@@ -136,12 +133,11 @@ spec:
           - name: work                 # scratch space for the copies before compressing (on the node's disk)
             emptyDir:
               sizeLimit: 2Gi
-# Restore (example: Vaultwarden from a given night):
-#   kubectl -n infrastructure scale deploy/vaultwarden-server --replicas=0
-#   sudo mv /home/server/docker/vaultwarden-server /home/server/docker/vaultwarden-server.old
-#   sudo tar --zstd -xf /mnt/backup/infrastructure/app-data/<date>/vaultwarden.tar.zst -C /home/server/docker
-#   sudo mv /home/server/docker/vaultwarden /home/server/docker/vaultwarden-server
-#   kubectl -n infrastructure scale deploy/vaultwarden-server --replicas=1
-#   (Flux puts replicas back to 1 within a minute anyway; same pattern for mealie / homarr / snapotter.)
+# Restore (example: Mealie from a given night):
+#   kubectl -n infrastructure scale deploy/mealie --replicas=0
+#   sudo mv /home/server/docker/mealie /home/server/docker/mealie.old
+#   sudo tar --zstd -xf /mnt/backup/infrastructure/app-data/<date>/mealie.tar.zst -C /home/server/docker
+#   kubectl -n infrastructure scale deploy/mealie --replicas=1
+#   (Flux puts replicas back to 1 within a minute anyway; same pattern for homarr / snapotter.)
 # Immich: copy current/ back to /mnt/Media/immich, then restore the newest dump from backups/ per
 # https://immich.app/docs/administration/backup-and-restore (or the "Restore" option on Immich's welcome page).
