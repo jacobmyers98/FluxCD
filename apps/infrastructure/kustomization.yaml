@@ -12,4 +12,4 @@ resources:
   - homarr.yaml           # Homarr dashboard
   - mealie.yaml           # recipe manager
   - snapotter.yaml        # image/file processing toolkit
-  - backup-cron.yaml      # nightly backup of the above except Vaultwarden to /mnt/backup
+  - backup-cron.yaml      # nightly copy of the Immich photos to /mnt/backup (the rest is in the weekly server backup)
