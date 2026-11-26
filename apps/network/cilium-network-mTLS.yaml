@@ -158,14 +158,50 @@ spec:
     - world
     - host
     - ingress
+    toPorts:                            # only the apps' own ports (a sidecar port stays closed)
+    - ports:
+      - {port: "32400", protocol: TCP}  # Plex
+      - {port: "8080", protocol: TCP}   # qBittorrent web UI
+      - {port: "34567", protocol: ANY}  # qBittorrent torrent port (TCP + UDP)
+      - {port: "9696", protocol: TCP}   # Prowlarr
+      - {port: "7878", protocol: TCP}   # Radarr
+      - {port: "8989", protocol: TCP}   # Sonarr
+      - {port: "5055", protocol: TCP}   # Seerr
+      - {port: "8265", protocol: TCP}   # Tdarr web UI
+      - {port: "8266", protocol: TCP}   # Tdarr server (nodes connect here)
+      - {port: "8267", protocol: TCP}   # Tdarr node
   - fromEndpoints:
     - matchLabels:
         k8s:io.kubernetes.pod.namespace: monitoring
         app: homarr
+    toPorts:                            # only the apps' own ports (a sidecar port stays closed)
+    - ports:
+      - {port: "32400", protocol: TCP}  # Plex
+      - {port: "8080", protocol: TCP}   # qBittorrent web UI
+      - {port: "34567", protocol: ANY}  # qBittorrent torrent port (TCP + UDP)
+      - {port: "9696", protocol: TCP}   # Prowlarr
+      - {port: "7878", protocol: TCP}   # Radarr
+      - {port: "8989", protocol: TCP}   # Sonarr
+      - {port: "5055", protocol: TCP}   # Seerr
+      - {port: "8265", protocol: TCP}   # Tdarr web UI
+      - {port: "8266", protocol: TCP}   # Tdarr server (nodes connect here)
+      - {port: "8267", protocol: TCP}   # Tdarr node
   - fromEndpoints:
     - matchLabels:
         k8s:io.kubernetes.pod.namespace: kube-system
         app: tailscale
+    toPorts:                            # only the apps' own ports (a sidecar port stays closed)
+    - ports:
+      - {port: "32400", protocol: TCP}  # Plex
+      - {port: "8080", protocol: TCP}   # qBittorrent web UI
+      - {port: "34567", protocol: ANY}  # qBittorrent torrent port (TCP + UDP)
+      - {port: "9696", protocol: TCP}   # Prowlarr
+      - {port: "7878", protocol: TCP}   # Radarr
+      - {port: "8989", protocol: TCP}   # Sonarr
+      - {port: "5055", protocol: TCP}   # Seerr
+      - {port: "8265", protocol: TCP}   # Tdarr web UI
+      - {port: "8266", protocol: TCP}   # Tdarr server (nodes connect here)
+      - {port: "8267", protocol: TCP}   # Tdarr node
   egress:
     - toEndpoints:
       - matchExpressions:

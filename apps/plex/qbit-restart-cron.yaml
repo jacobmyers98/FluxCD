@@ -15,12 +15,14 @@ kind: Role
 metadata:
   name: deployment-restarter-role
   namespace: plex
-# What it may do: read and patch Deployments in plex only (a Role is namespace-scoped).
-# `rollout restart` works by patching a timestamp annotation onto the pod template.
+# What it may do: read and patch the qbittorrent Deployment only (a Role is namespace-scoped,
+# resourceNames limits it to that one object). `rollout restart` patches a timestamp annotation onto the pod template.
+# resourceNames can't limit list/watch, so the CronJob names the Deployment instead of using a label selector.
 rules:
   - apiGroups: ["apps"]
     resources: ["deployments"]
-    verbs: ["get", "patch", "list", "watch"]
+    resourceNames: ["qbittorrent"]
+    verbs: ["get", "patch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -53,7 +55,7 @@ spec:
           - name: kubectl
             # Official image (Bitnami stopped publishing free images in 2025). It has no shell; the entrypoint is kubectl.
             image: registry.k8s.io/kubectl:v1.37.3 # {"$imagepolicy": "flux-system:kubectl-policy"}
-            args: ["rollout", "restart", "deployment", "-l", "app=qbittorrent", "-n", "plex"]
+            args: ["rollout", "restart", "deployment/qbittorrent", "-n", "plex"]
             securityContext:
               runAsNonRoot: true
               runAsUser: 65532
