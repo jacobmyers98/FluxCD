@@ -14,4 +14,3 @@ resources:
   - server-backup-cron.yaml   # weekly rsync of /home/server to the HDD
   - secret.tailscale.yaml     # Tailscale auth key (SOPS)
   - secret.etcd-backup.yaml   # etcd client certs for the backup (SOPS)
-  - vault-warden.yaml         # Vaultwarden password manager

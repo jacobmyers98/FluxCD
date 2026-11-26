@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: snapotter
-  namespace: monitoring
+  namespace: infrastructure
   labels:
     app: snapotter
 spec:
@@ -42,7 +42,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: port-service-snapotter
-  namespace: monitoring
+  namespace: infrastructure
 spec:
   type: ClusterIP   # reached via the HTTPS Ingress; was NodePort 30014 until 2026-11-25
   selector:

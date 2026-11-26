@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: vaultwarden-server
-  namespace: kube-system
+  namespace: infrastructure
 spec:
   replicas: 1
   strategy:
@@ -66,7 +66,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: port-service-vaultwarden
-  namespace: kube-system
+  namespace: infrastructure
 spec:
   type: NodePort
   selector:
