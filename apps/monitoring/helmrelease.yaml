@@ -491,7 +491,7 @@ spec:
           cpu: 1
           memory: 1536Mi
     prometheus:
-      prometheusSpec: # no storageSpec: the TSDB is on an emptyDir, so metrics history is lost when the pod restarts (chart default retention 10d)
+      prometheusSpec: # TSDB on hostPath PV prom-data (prometheus-pv.yaml) via storageSpec below; keeps 10d (chart default) or 9GB, whichever is hit first
         # false = scrape EVERY ServiceMonitor in the cluster, not only those labelled
         # release: prometheus-community (moved here 2026-11-17 from grafana.sidecar, where it did
         # nothing). Picks up kube-system/cilium-metrics, which is labelled release: prometheus.
@@ -503,6 +503,9 @@ spec:
           limits:
             cpu: 2
             memory: 4Gi
+        # Safety cap: hostPath doesn't enforce the PV's 10Gi, so drop the oldest blocks past 9GB
+        # (~7.5GB expected at 10d with ~141k series, 2026-11-25).
+        retentionSize: 9GB
         storageSpec:
           volumeClaimTemplate:
             spec:
