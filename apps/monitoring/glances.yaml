@@ -16,9 +16,10 @@ spec:
         app: glances
     spec:
       hostPID: true
+      automountServiceAccountToken: false
       containers:
       - name: glances
-        image: nicolargo/glances:4.4.0
+        image: nicolargo/glances:4.4.0 # {"$imagepolicy": "flux-system:glances-policy"}
         env:
         - name: GLANCES_OPT
           value: "-w"
@@ -32,27 +33,15 @@ spec:
             cpu: 500m
             memory: 512Mi
         volumeMounts:
-        - name: glances-config
-          mountPath: /glances/conf
         - name: host-root
           mountPath: /host
           readOnly: true
-        - name: host-run
-          mountPath: /var/run
-          readOnly: true
       volumes:
-      - name: glances-config
-        hostPath:
-          path: /home/server/docker/glances
-          type: DirectoryOrCreate
       - name: host-root
         hostPath:
           path: /
           type: Directory
-      - name: host-run
-        hostPath:
-          path: /var/run
-          type: Directory
+
 ---
 apiVersion: v1
 kind: Service
