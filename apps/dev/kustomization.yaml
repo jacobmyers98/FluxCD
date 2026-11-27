@@ -9,8 +9,6 @@ resources:
   - searxng.yaml                  # private web search used by n8n
   - mongodb.yaml                  # database for n8n workflows' memory/data
   - secret.mongodb.yaml           # MongoDB root + n8n user logins (SOPS)
-  - discord-assistant.yaml        # Discord → n8n relay bot
-  - secret.discord-assistant.yaml # bot token + relay secret (SOPS)
   - dev-box.yaml                  # KubeVirt Fedora VM
   - secret.cloud-init.yaml        # the VM's cloud-init config (SOPS)
   - backtest/overlays/home        # backtester (a kustomize overlay folder; source = backtester repo k8s/)

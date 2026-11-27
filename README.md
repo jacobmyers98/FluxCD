@@ -151,8 +151,6 @@ searxng - a private metasearch engine used by the n8n workflows for web searches
 
 mongodb - the database for n8n's AI memory and the workflows' saved data.<br>
 
-discord-assistant - a small relay that forwards Discord messages to an n8n workflow and posts the reply.<br>
-
 backtest-api / backtest-report-web / data-update - a trading-strategy backtester (`apps/dev/backtest`, image from GHCR) with a web UI at backtest.waffle-systems.com, a static report site and a weekday CronJob that downloads market data.<br>
 
 devbox (virt-launcher) - a KubeVirt VirtualMachine running Fedora 45 (containerDisk, so its disk resets on restart) with 2 cores, 2Gi of memory and EFI Secure Boot, configured by a cloud-init secret.<br>
