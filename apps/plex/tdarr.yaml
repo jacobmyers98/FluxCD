@@ -4,9 +4,6 @@ metadata:
   name: tdarr-server
   namespace: plex
 spec:
-  securityContext:
-    seccompProfile:
-      type: RuntimeDefault
   replicas: 1
   strategy:
     type: RollingUpdate
@@ -21,6 +18,9 @@ spec:
       labels:
         app: tdarr-server
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: tdarr-server
           image: ghcr.io/haveagitgat/tdarr:3.10.00 #  {"$imagepolicy": "flux-system:tdarr-policy"}
@@ -115,9 +115,6 @@ metadata:
   name: tdarr-node
   namespace: plex
 spec:
-  securityContext:
-    seccompProfile:
-      type: RuntimeDefault
   strategy:
     type: Recreate
   replicas: 1
@@ -129,6 +126,9 @@ spec:
       labels:
         app: tdarr-node
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       initContainers:
         - name: tdarr-checker
           image: curlimages/curl:8.23.0 # {"$imagepolicy": "flux-system:curl-policy"}
