@@ -15,7 +15,9 @@ spec:
   selector:
     app: qbittorrent
   type: ClusterIP   # reached via the HTTPS Ingress; was NodePort 30004-30006 until 2026-11-25
+
 ---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
