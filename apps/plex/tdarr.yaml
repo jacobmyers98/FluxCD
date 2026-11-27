@@ -52,16 +52,37 @@ spec:
           volumeMounts:
             - name: tdarr-config
               mountPath: /app/server
-            - name: tdarr-media
-              mountPath: /media
+            # Only the folders Tdarr should transcode (since 2026-11-27). It used to mount all of /mnt/Media and
+            # re-encoded Immich originals and seeding torrents. Paths inside the pod stay /media/<folder>, so the
+            # library ("/media") and cache ("/media/Transcode-cache") settings are unchanged.
+            - name: media-movies
+              mountPath: /media/Movies
+            - name: media-tv-shows
+              mountPath: /media/TV_Shows
+            - name: media-videos
+              mountPath: /media/Videos
+            - name: media-transcode-cache
+              mountPath: /media/Transcode-cache
       volumes:
         - name: tdarr-config
           hostPath:
             path: /home/server/docker/tdarr/config
             type: DirectoryOrCreate
-        - name: tdarr-media
+        - name: media-movies
           hostPath:
-            path: /mnt/Media
+            path: /mnt/Media/Movies
+            type: Directory
+        - name: media-tv-shows
+          hostPath:
+            path: /mnt/Media/TV_Shows
+            type: Directory
+        - name: media-videos
+          hostPath:
+            path: /mnt/Media/Videos
+            type: Directory
+        - name: media-transcode-cache
+          hostPath:
+            path: /mnt/Media/Transcode-cache
             type: Directory
 ---
 apiVersion: v1
@@ -150,16 +171,37 @@ spec:
           volumeMounts:
             - name: tdarr-config
               mountPath: /app/configs
-            - name: tdarr-media
-              mountPath: /media
+            # Only the folders Tdarr should transcode (since 2026-11-27). It used to mount all of /mnt/Media and
+            # re-encoded Immich originals and seeding torrents. Paths inside the pod stay /media/<folder>, so the
+            # library ("/media") and cache ("/media/Transcode-cache") settings are unchanged.
+            - name: media-movies
+              mountPath: /media/Movies
+            - name: media-tv-shows
+              mountPath: /media/TV_Shows
+            - name: media-videos
+              mountPath: /media/Videos
+            - name: media-transcode-cache
+              mountPath: /media/Transcode-cache
       volumes:
         - name: tdarr-config
           hostPath:
             path: /home/server/docker/tdarr/config
             type: DirectoryOrCreate
-        - name: tdarr-media
+        - name: media-movies
           hostPath:
-            path: /mnt/Media
+            path: /mnt/Media/Movies
+            type: Directory
+        - name: media-tv-shows
+          hostPath:
+            path: /mnt/Media/TV_Shows
+            type: Directory
+        - name: media-videos
+          hostPath:
+            path: /mnt/Media/Videos
+            type: Directory
+        - name: media-transcode-cache
+          hostPath:
+            path: /mnt/Media/Transcode-cache
             type: Directory
 ---
 apiVersion: v1
