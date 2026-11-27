@@ -56,8 +56,11 @@ spec:
           value: "wireguard"
         - name: DOT
           value: "off"
+        # Destinations allowed to skip the VPN. Cluster ranges only: the home LAN (192.168.1.0/24: UDM, PiKVM, ...)
+        # was removed 2026-11-27 so a compromised qBittorrent can't reach LAN devices. Inbound web UI traffic is
+        # allowed by FIREWALL_INPUT_PORTS and doesn't need this.
         - name: FIREWALL_OUTBOUND_SUBNETS
-          value: "10.96.0.0/12,10.244.0.0/16,192.168.1.0/24"
+          value: "10.96.0.0/12,10.244.0.0/16"
         - name: FIREWALL_INPUT_PORTS
           value: "8080,34567"
         ports:
@@ -127,9 +130,7 @@ spec:
         - name: qbit-config
           mountPath: /config
         - name: torrent-downloads
-          mountPath: /downloads
-        - name: movies-shows-raid
-          mountPath: /mnt/Media
+          mountPath: /downloads   # only /mnt/Media/Torrent; the whole drive (photos, Important, library) is not mounted since 2026-11-27
       volumes:
       - name: qbit-config
         hostPath:
@@ -138,10 +139,6 @@ spec:
       - name: torrent-downloads
         hostPath:
           path: /mnt/Media/Torrent
-          type: Directory
-      - name: movies-shows-raid
-        hostPath:
-          path: /mnt/Media
           type: Directory
       - name: wireguard-config
         secret:
