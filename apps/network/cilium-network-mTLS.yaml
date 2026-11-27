@@ -96,6 +96,8 @@ spec:
 # Minecraft, Vaultwarden and Tailscale; the others go through the HTTPS Ingress since 2026-11-17) may receive traffic from anywhere: internet/LAN, the node, the
 # Ingress, other pods, the API server. These are left out of the mTLS rule above,
 # because traffic arriving through a NodePort can't do mTLS.
+# "world" must stay: NodePort clients (LAN, Plex's outside users) arrive as world (tested 2026-11-27:
+# without it Plex 30013 and Vaultwarden 30009 stop answering from the LAN).
 apiVersion: "cilium.io/v2"
 kind: CiliumClusterwideNetworkPolicy
 metadata:
@@ -116,9 +118,12 @@ spec:
 ---
 
 # 6: plex namespace. Media apps may talk to each other (with mTLS), and be reached from
-# the internet/LAN, the node, the Ingress, Homarr (dashboard widgets) and Tailscale.
-# Outgoing: each other, DNS, Homarr, Tailscale and the whole internet (indexers,
-# metadata, VPN). A new app in this namespace must be added to BOTH "app" lists.
+# the node, the Ingress, Homarr (dashboard widgets) and Tailscale, on the apps' own ports.
+# No "world" in: browsers come through the Ingress, Plex's NodePort (outside users) is policy #5
+# (Plex is exposed=nodeport), and torrent peers reach qBittorrent inside its VPN tunnel.
+# Outgoing: each other, DNS, Homarr and Tailscale. Internet access is policy #6b, which leaves
+# Tdarr out (it only transcodes local files).
+# A new app in this namespace must be added to BOTH "app" lists (and to #6b if it needs the internet).
 apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
 metadata:
@@ -144,64 +149,94 @@ spec:
       - key: "app"
         operator: In
         values:
-        - plex
-        - qbittorrent
-        - prowlarr
-        - radarr
-        - sonarr
-        - tdarr-node
-        - tdarr-server
-        - seerr
+          - plex
+          - qbittorrent
+          - prowlarr
+          - radarr
+          - sonarr
+          - tdarr-node
+          - tdarr-server
+          - seerr
     authentication:
       mode: "required"
+  # only the apps' own ports (a sidecar port, e.g. gluetun's control server, stays closed)
   - fromEntities:
-    - world
     - host
     - ingress
-    toPorts:                            # only the apps' own ports (a sidecar port stays closed)
+    toPorts:
     - ports:
-      - {port: "32400", protocol: TCP}  # Plex
-      - {port: "8080", protocol: TCP}   # qBittorrent web UI
-      - {port: "34567", protocol: ANY}  # qBittorrent torrent port (TCP + UDP)
-      - {port: "9696", protocol: TCP}   # Prowlarr
-      - {port: "7878", protocol: TCP}   # Radarr
-      - {port: "8989", protocol: TCP}   # Sonarr
-      - {port: "5055", protocol: TCP}   # Seerr
-      - {port: "8265", protocol: TCP}   # Tdarr web UI
-      - {port: "8266", protocol: TCP}   # Tdarr server (nodes connect here)
-      - {port: "8267", protocol: TCP}   # Tdarr node
+      - port: "32400" # Plex
+        protocol: TCP
+      - port: "8080" # qBittorrent web UI
+        protocol: TCP
+      - port: "34567" # qBittorrent torrent port (TCP + UDP)
+        protocol: ANY
+      - port: "9696" # Prowlarr
+        protocol: TCP
+      - port: "7878" # Radarr
+        protocol: TCP
+      - port: "8989" # Sonarr
+        protocol: TCP
+      - port: "5055" # Seerr
+        protocol: TCP
+      - port: "8265" # Tdarr web UI
+        protocol: TCP
+      - port: "8266" # Tdarr server (nodes connect here)
+        protocol: TCP
+      - port: "8267" # Tdarr node
+        protocol: TCP
   - fromEndpoints:
     - matchLabels:
         k8s:io.kubernetes.pod.namespace: infrastructure
         app: homarr
-    toPorts:                            # only the apps' own ports (a sidecar port stays closed)
+    toPorts:
     - ports:
-      - {port: "32400", protocol: TCP}  # Plex
-      - {port: "8080", protocol: TCP}   # qBittorrent web UI
-      - {port: "34567", protocol: ANY}  # qBittorrent torrent port (TCP + UDP)
-      - {port: "9696", protocol: TCP}   # Prowlarr
-      - {port: "7878", protocol: TCP}   # Radarr
-      - {port: "8989", protocol: TCP}   # Sonarr
-      - {port: "5055", protocol: TCP}   # Seerr
-      - {port: "8265", protocol: TCP}   # Tdarr web UI
-      - {port: "8266", protocol: TCP}   # Tdarr server (nodes connect here)
-      - {port: "8267", protocol: TCP}   # Tdarr node
+      - port: "32400" # Plex
+        protocol: TCP
+      - port: "8080" # qBittorrent web UI
+        protocol: TCP
+      - port: "34567" # qBittorrent torrent port (TCP + UDP)
+        protocol: ANY
+      - port: "9696" # Prowlarr
+        protocol: TCP
+      - port: "7878" # Radarr
+        protocol: TCP
+      - port: "8989" # Sonarr
+        protocol: TCP
+      - port: "5055" # Seerr
+        protocol: TCP
+      - port: "8265" # Tdarr web UI
+        protocol: TCP
+      - port: "8266" # Tdarr server (nodes connect here)
+        protocol: TCP
+      - port: "8267" # Tdarr node
+        protocol: TCP
   - fromEndpoints:
     - matchLabels:
         k8s:io.kubernetes.pod.namespace: kube-system
         app: tailscale
-    toPorts:                            # only the apps' own ports (a sidecar port stays closed)
+    toPorts:
     - ports:
-      - {port: "32400", protocol: TCP}  # Plex
-      - {port: "8080", protocol: TCP}   # qBittorrent web UI
-      - {port: "34567", protocol: ANY}  # qBittorrent torrent port (TCP + UDP)
-      - {port: "9696", protocol: TCP}   # Prowlarr
-      - {port: "7878", protocol: TCP}   # Radarr
-      - {port: "8989", protocol: TCP}   # Sonarr
-      - {port: "5055", protocol: TCP}   # Seerr
-      - {port: "8265", protocol: TCP}   # Tdarr web UI
-      - {port: "8266", protocol: TCP}   # Tdarr server (nodes connect here)
-      - {port: "8267", protocol: TCP}   # Tdarr node
+      - port: "32400" # Plex
+        protocol: TCP
+      - port: "8080" # qBittorrent web UI
+        protocol: TCP
+      - port: "34567" # qBittorrent torrent port (TCP + UDP)
+        protocol: ANY
+      - port: "9696" # Prowlarr
+        protocol: TCP
+      - port: "7878" # Radarr
+        protocol: TCP
+      - port: "8989" # Sonarr
+        protocol: TCP
+      - port: "5055" # Seerr
+        protocol: TCP
+      - port: "8265" # Tdarr web UI
+        protocol: TCP
+      - port: "8266" # Tdarr server (nodes connect here)
+        protocol: TCP
+      - port: "8267" # Tdarr node
+        protocol: TCP
   egress:
     - toEndpoints:
       - matchExpressions:
@@ -232,9 +267,34 @@ spec:
       - matchLabels:
           k8s:io.kubernetes.pod.namespace: kube-system
           app: tailscale
+
+---
+
+# 6b: internet access for the plex apps that need it (tested 2026-11-27: without it they all lose
+# the internet): Plex (plex.tv, metadata), qBittorrent (its VPN server; gluetun sends everything
+# through the tunnel), Prowlarr (indexers), Radarr/Sonarr (metadata), Seerr (TMDB). Tdarr isn't
+# listed: it opens every downloaded file, so a hacked Tdarr can't phone home or upload media.
+# "world" also includes the LAN (192.168.x.x); qBittorrent is kept off it by gluetun's firewall.
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: plex-internet-egress
+  namespace: plex
+spec:
+  endpointSelector:
+    matchExpressions:
+    - key: "app"
+      operator: In
+      values:
+      - plex
+      - qbittorrent
+      - prowlarr
+      - radarr
+      - sonarr
+      - seerr
+  egress:
     - toEntities:
       - world
-
 ---
 
 # 7: monitoring namespace (the listed apps only; Prometheus/Loki/etc. aren't selected).
@@ -315,10 +375,18 @@ spec:
       - matchLabels:
           k8s:io.kubernetes.pod.namespace: dev
           app: n8n
-    # Grafana plugins/updates (443) and the old Homarr widget ports (harmless to keep)
+    # Internet (and LAN): web only. Grafana plugins/updates, TeslaMate's Tesla API (443).
+    - toEntities:
+      - world
+      toPorts:
+      - ports:
+        - port: "80"
+          protocol: TCP
+        - port: "443"
+          protocol: TCP
+    # Other pods only: the old Homarr widget ports (harmless to keep)
     - toEntities:
       - cluster # Allows traffic to other namespaces (e.g., your 'gaming' namespace)
-      - world   # Allows traffic to the internet AND your local external LAN (192.168.x.x)
       toPorts:
       - ports:
         - port: "80"
@@ -368,6 +436,7 @@ spec:
       values:
       - minecraft
   ingress:
+  # "world" stays: players connect to NodePort 30016, and the Minecraft pod isn't exposed=nodeport (policy #5)
   - fromEntities:
     - world
     - ingress
@@ -436,6 +505,8 @@ spec:
       values:
       - n8n
   ingress:
+  # "world" stays for NodePort 30018 (forms/links by IP from the LAN; tested 2026-11-27: without it
+  # http://192.168.1.200:30018 stops answering). Drop it once nothing uses the IP address.
   - fromEntities:
     - world
     - host
@@ -534,10 +605,18 @@ spec:
       - matchLabels:
           k8s:io.kubernetes.pod.namespace: dev
           app: n8n
-    # Homarr API / dashboard connections, Mealie recipe scraping
+    # Internet (and LAN): web only. Mealie recipe scraping, Homarr's weather widget, SnapOtter model downloads.
+    - toEntities:
+      - world
+      toPorts:
+      - ports:
+        - port: "80"
+          protocol: TCP
+        - port: "443"
+          protocol: TCP
+    # Homarr API / dashboard connections to the other apps (in-cluster Service names)
     - toEntities:
       - cluster
-      - world
       toPorts:
       - ports:
         - port: "80"
