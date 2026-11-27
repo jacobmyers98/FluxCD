@@ -18,6 +18,7 @@ spec:
       labels:
         app: tdarr-server
     spec:
+      automountServiceAccountToken: false
       securityContext:
         seccompProfile:
           type: RuntimeDefault
@@ -126,6 +127,7 @@ spec:
       labels:
         app: tdarr-node
     spec:
+      automountServiceAccountToken: false
       securityContext:
         seccompProfile:
           type: RuntimeDefault

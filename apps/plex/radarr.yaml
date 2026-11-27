@@ -13,7 +13,9 @@ spec:
   selector:
     app: radarr
   type: ClusterIP   # reached via the HTTPS Ingress; was NodePort 30001 until 2026-11-25
+
 ---
+
 apiVersion: apps/v1 #kubectl api-resources | grep {kind}
 kind: Deployment
 metadata:
@@ -33,6 +35,13 @@ spec:
       labels:
         app: radarr
     spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsUser: 1001
+        runAsGroup: 1004
+        fsGroup: 1004
+        seccompProfile:
+          type: RuntimeDefault      
       containers:
       - name: radarr
         image: linuxserver/radarr:7.0.3 #  {"$imagepolicy": "flux-system:radarr-policy"}

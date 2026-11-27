@@ -37,6 +37,10 @@ spec:
       labels:
         app: qbittorrent
     spec:
+      automountServiceAccountToken: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       hostname: qbit-server
       initContainers:
       # ---------------------------------------------------------
