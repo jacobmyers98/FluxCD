@@ -39,7 +39,7 @@ spec:
         fsGroup: 1004
       containers:
         - name: homarr
-          image: ghcr.io/homarr-labs/homarr:v2.14.0 # {"$imagepolicy": "flux-system:homarr-policy"}
+          image: ghcr.io/homarr-labs/homarr:v2.15.0 # {"$imagepolicy": "flux-system:homarr-policy"}
           imagePullPolicy: Always
           env:
             - name: SECRET_ENCRYPTION_KEY
