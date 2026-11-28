@@ -566,6 +566,11 @@ spec:
           cpu: 200m
           memory: 256Mi
     prometheus-node-exporter: # host metrics (CPU, memory, disks, network) from the node
+      # Skip the host Docker bridge + its veths: every short `docker run` on the host toggles
+      # docker0 up/down, which fired NodeNetworkInterfaceFlapping (2026-11-28). Not used by k8s.
+      extraArgs:
+        - --collector.netclass.ignored-devices=^(docker0|veth.*)$
+        - --collector.netdev.device-exclude=^(docker0|veth.*)$
       resources:
         requests:
           cpu: 100m
